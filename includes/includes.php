@@ -1,21 +1,26 @@
 <?php
 require('vendor/autoload.php');
-$db = new Everyman\Neo4j\Client('localhost', 7474);
-$hashids = new Hashids\Hashids('coledrakeweezykanyejayz');
+$db = new Everyman\Neo4j\Client('69.4.80.29', 7474);
+$db->getTransport()
+  ->setAuth('neo4j', 'gbmpYiJq9f0KOQSjAj');
+$hashids = new Hashids\Hashids("pepper", 4, "abcdefghijkmnpqrstuvwxy23456789");
 
 function DB(){
 	global $db;
 	return $db;
 }
 
-function streamInfoForID($streamID){
-	$results = DB()->query("SELECT *, out('TagConnect')[string] as tags FROM STMStream WHERE @rid = ".$streamID." LIMIT 1");
-	return $results[0]->getOData();
+function query($q) {
+  $query = new Everyman\Neo4j\Cypher\Query(DB(), $q);
+  return $query->getResultSet();
 }
 
-function infoForUserID($userID){
-	$results = DB()->query("SELECT * FROM STMUser WHERE @rid = ".$userID." LIMIT 1");
-	return $results[0]->getOData();
+function streamInfoForID($streamID){
+	return DB()->getNode($streamID);
+}
+
+function infoForUserID($streamID){
+  return query("START x = node({$streamID}) MATCH x <-[:createdStream]-(user) RETURN user")[0];
 }
 
 function getNewComments($streamID, $lastFetch = 0, $userID = null){
