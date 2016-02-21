@@ -1,5 +1,6 @@
 # Ignore all files and directories
 
+**/error_log
 public_html/error_log
 public_html/*/error_log
 
@@ -21,3 +22,5 @@ public_html/_cgi-bin
 public_html/_errorpage
 public_html/error_log
 public_html/*/error_log
+**error_log
+crons/error_log
