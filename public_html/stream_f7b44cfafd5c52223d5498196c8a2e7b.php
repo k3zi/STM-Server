@@ -4,9 +4,6 @@ require_once('../includes/includes.php');
 $streamAlphaID = $_GET['streamID'];
 $streamID = decodeHash($streamAlphaID);
 $stream = streamInfoForID($streamID);
-print_r($streamID);
-print_r($stream);
-die();
 
 if((int)$stream['private'] == 1 && strlen($stream['passcode']) > 0){
 	if(isset($_POST['passcode'])){

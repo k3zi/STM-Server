@@ -16,11 +16,11 @@ function query($q) {
 }
 
 function streamInfoForID($streamID){
-	return DB()->getNode($streamID);
+	return DB()->getNode($streamID)->getProperties();
 }
 
 function infoForUserID($streamID){
-  return query("START x = node({$streamID}) MATCH x <-[:createdStream]-(user) RETURN user")[0];
+  return query("START x = node({$streamID}) MATCH x <-[:createdStream]-(user) RETURN user")[0]->getProperties();
 }
 
 function decodeHash($alpha){
