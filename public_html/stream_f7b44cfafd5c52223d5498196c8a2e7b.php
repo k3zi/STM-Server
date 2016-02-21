@@ -1,19 +1,19 @@
-<?
+<?php
 require_once('../includes/includes.php');
 
 $streamAlphaID = $_GET['streamID'];
 $id = $hashids->decode($streamAlphaID);
-$streamID = "#13:".$id[0];
 $stream = streamInfoForID($streamID);
+print_r($stream);
 
 if((int)$stream['private'] == 1 && strlen($stream['passcode']) > 0){
 	if(isset($_POST['passcode'])){
 		$entered_pass = "";
 		foreach($_POST['passcode'] as $num){
 			if(ctype_digit($num))
-				$entered_pass .= $num;	
+				$entered_pass .= $num;
 		}
-		
+
 		if((string)$entered_pass != (string)$stream['passcode']){
 			header("Location: http://stm.io/p/".$_GET['streamID']);
 		}
@@ -25,7 +25,7 @@ if((int)$stream['private'] == 1 && strlen($stream['passcode']) > 0){
 if(!isset($stream['name']))
     $error = "This stream doesn't exist or was deleted";
 if(!$error){
-    $user = infoForUserID($stream['owner']);
+    $user = infoForUserID($stream['id']);
     if(!isset($user['username']))
         $error = "The owner of this stream has removed their account";
 }
@@ -51,7 +51,7 @@ $stuffedRequest = urlencode($stuffedRequest);
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" prefix="og: http://ogp.me/ns#"><!--<![endif]--><head>
     <meta name="apple-itunes-app" content="app-id=933037647">
-    
+
     <meta property="twitter:account_id" content="4503599627426989">
     <title>STM | <?=$name?></title>
 	<meta charset="UTF-8">
@@ -62,7 +62,7 @@ $stuffedRequest = urlencode($stuffedRequest);
     <? if(!$error): ?>
     <script type="text/javascript">
 		fetchTime = <?=$fetchTime?>;
-		
+
         jQuery(document).ready(function(){
 			jQuery("#comments").animate({scrollTop: jQuery("#comments").height()}, 1000);
 			setInterval(function(){
@@ -73,7 +73,7 @@ $stuffedRequest = urlencode($stuffedRequest);
 					data: {"fetchTime": fetchTime},
 					success: function(data) {
 						fetchTime = data.time;
-						
+
 						if((!data.stream || data.stream.songName.length == 0) && jQuery('#jquery_jplayer_1').data().jPlayer.status.paused){
 							jQuery("#txtSongName").text("Stream Offline");
 							jQuery("#txtSongArtist").text("");
@@ -85,7 +85,7 @@ $stuffedRequest = urlencode($stuffedRequest);
 							jQuery("#txtSongName").text("No Song Playing	");
 							jQuery("#txtSongArtist").text("");
 						}
-						
+
 						if(data.comments && data.comments.length > 0){
 							var list = jQuery("#comments").append('<ul class="comment_set"></ul>').children().last();
 							jQuery.each(data.comments, function(i, val){
@@ -96,7 +96,7 @@ $stuffedRequest = urlencode($stuffedRequest);
       				}
     			});
 			}, 10000);
-			
+
             var redirect = function (location) {
                 jQuery('body').append(jQuery('<iframe></iframe>').attr('src', location).css({
                     width: 1,
@@ -106,8 +106,8 @@ $stuffedRequest = urlencode($stuffedRequest);
                     left: 0
                 }));
             };
-            
-            
+
+
           jQuery("#jquery_jplayer_1").jPlayer({
             ready: function() {
               jQuery(this).jPlayer("setMedia", {
@@ -124,11 +124,11 @@ $stuffedRequest = urlencode($stuffedRequest);
         		if(event.jPlayer.error.type == "e_url"){
 					jQuery("#txtSongName").text("Stream Offline");
 					jQuery("#txtSongArtist").text("");
-					
+
 					setTimeout(function(){
 						jQuery("#jquery_jplayer_1").jPlayer("setMedia", {
 							m4a: "https://api.stm.io/live/<?=$stuffedRequest?>"
-						}).jPlayer("play");	
+						}).jPlayer("play");
 					}, 5000);
 				}
     		},
@@ -147,12 +147,12 @@ $stuffedRequest = urlencode($stuffedRequest);
             swfPath: "/js",
             supplied: "m4a"
           });
-            
+
             redirect('streamtome://stream?id=<?=$_GET['streamID']?>');
-        });    
+        });
     </script>
 	<? endif; ?>
-    
+
     <link rel="stylesheet" href="/assets/style.css">
     <link rel="shortcut icon" href="/wp-content/uploads/2014/11/Untitled-1.png">
 </head>
@@ -162,8 +162,8 @@ $stuffedRequest = urlencode($stuffedRequest);
             <a href="http://stm.io/" title="Stream To Me">
                <img class="logo" src="https://stm.io/logo.png" alt="Stream To Me" title="Stream To Me">
             </a>
-        </div>    
-        
+        </div>
+
         <? if($username): ?>
         <div id="streamInfo">
             <img id="streamAuthorImage" src="https://api.stm.io/getProfilePic/<?=$username?>">
@@ -171,18 +171,18 @@ $stuffedRequest = urlencode($stuffedRequest);
                 <strong style="color: #fff;"><?=$name?></strong>
                 <br>
                 <span style="color: #ccc;">@<?=$username?></span>
-            </div>                   
+            </div>
          </div>
          <? endif; ?>
     </div>
-     
-	 <? if(!$error): ?> 
+
+	 <? if(!$error): ?>
          <div id="comments" class="content">
             <ul class="comment_set">
-                <? foreach($comments as $comment){ 
+                <? foreach($comments as $comment){
 					$comment = $comment->getOData();
 				?>
-                <li>	
+                <li>
                     <div class="author"><img height="20px" width="20px" src="https://api.stm.io/getProfilePic/<?=$comment['user_username']?>"><?=$comment['user_name']?></div>
                     <div class="message"><?=$comment['message']?></div>
                     <div style="clear:both;"></div>
@@ -194,12 +194,12 @@ $stuffedRequest = urlencode($stuffedRequest);
      		<p class="divStyle1"><strong><?=$error?></strong></p>
         </div>
      <? endif; ?>
-	 
-     <? if(!$error): ?> 
+
+     <? if(!$error): ?>
      <div id="footer">
         <div class="shadowBackground">
             <div class="colorBackground">
-                <div id="jquery_jplayer_1"></div>                          
+                <div id="jquery_jplayer_1"></div>
                 <div class="i_container" style="height: 50px; display: inline-block;">
                     <img id="songArtwork" class="inbl" src="https://api.stm.io/artwork/<?=$username?>/<?=$_GET['streamID']?>" alt="<?=$stream["songAlbum"]?>"/>
                     <div class="inbl" style="margin-left: 2px; width: calc(100% - 50px);">
@@ -208,9 +208,9 @@ $stuffedRequest = urlencode($stuffedRequest);
                             <strong id="txtSongName"><?=$stream["songName"]?></strong>
                             <t id="txtSongArtist" style="color: #eee;"><?=$stream["songArtist"]?></t>
                         </span>
-                    </div>   
+                    </div>
                 </div>
-                
+
                 <span style="float:right" id="jp_container_1">
                     <a href="#" class="jp-play" style="float: right;"><img src="/assets/play.png" height="50px" /></a>
                     <a href="#" class="jp-pause" style="float: right;"><img src="/assets/pause.png" height="50px" /></a>
@@ -224,10 +224,10 @@ $stuffedRequest = urlencode($stuffedRequest);
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-    
+
       ga('create', 'UA-56458019-1', 'auto');
       ga('send', 'pageview');
-    
+
     </script>
 </body>
 </html>
