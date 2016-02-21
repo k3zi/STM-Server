@@ -24,6 +24,7 @@ function infoForUserID($streamID){
 }
 
 function getNewComments($streamID, $lastFetch = 0, $userID = null){
+  return array();
 	if($lastFetch > 0){
 		$includeUser = $userID ? "in('CommentLikeConnect')[@rid = ".$userID."] as didLike, in('CommentRepostConnect')[@rid = ".$userID."] as didRepost," : '';
 		$results = DB()->query("select *,".$includeUser." in('CommentLikeConnect').size() as hearts, in('CommentRepostConnect').size() as reposts, user.* as user_ from STMComment WHERE stream.@rid = ".$streamID." and date > ".$lastFetch." ORDER BY date DESC fetchplan in_*:-2 out_*:-2");
