@@ -1,0 +1,15 @@
+.page{
+    background-color: #eee;
+}
+
+.section {
+    background-color: #fff !important;
+}
+
+.logo{
+    margin-top: -4px;
+}
+
+.marginleft10{
+    margin-left: 10px;
+}

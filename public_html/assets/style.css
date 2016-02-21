@@ -1,0 +1,232 @@
+@font-face {
+    font-family: "Sansnation";
+    src: url("/assets/sansation.ttf");
+}
+
+@font-face {
+    font-family: "Sansnation Bold";
+    src: url("/assets/sansation_bold.ttf");
+}
+
+*{
+	font-family:'Sansnation', sans-serif;
+}
+
+strong{
+	font-family:'Sansnation Bold', sans-serif;
+}
+
+.divStyle1{
+	color: #fff;
+  	font-size: 15px;
+  	background: #444;
+  	padding: 15px;
+  	border-radius: 10px;
+}
+
+.logo{
+	margin-top:0;
+}
+
+#songArtwork{
+	height: 50px;
+	width: 50px;
+	-webkit-border-radius: 7px; 
+	-moz-border-radius: 7px; 
+	border-radius: 7px; 
+	background-color: #eee;
+}
+
+.inbl{
+	display: inline-block;
+	vertical-align: top;
+}
+
+.i_container{
+	white-space: nowrap;
+	height: 50px;
+  	display: inline-block;
+  	max-width: calc(100% - 50px);
+}
+
+body{
+	margin: 0;
+	background: rgba(92, 35, 255, 0.66);
+	overflow-x: hidden;
+}
+
+#header{
+	text-align: center;
+	background-color: #f2f2f2;
+	height: 57px;
+}
+
+#headerHolder{
+	position:fixed; 
+	top:0;
+	width: 100%;
+}
+
+#footer{
+	width: 100%; 
+	position:fixed; 
+	bottom: 0; 
+	background-color: rgb(255, 255, 255);
+}
+
+.logo{
+	margin-top: 10px;
+}
+
+#streamInfo{
+	width: 100%;
+  	padding: 8px 0;
+  	background-color: #444;
+  	text-align: center;
+}
+
+#txtSongName, #txtSongArtist{
+	display: block;
+	color: #fff;
+	text-overflow: ellipsis;
+  	white-space: nowrap;
+  	overflow: hidden
+}
+
+#streamAuthorImage{
+	height: 50px;
+	width: 50px;
+	
+	vertical-align: middle; 
+	margin-bottom:0; 
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	border-radius: 7px;
+}
+
+.content{
+	 margin-top: 133px;
+	 margin-bottom: 64px;
+	 padding-top: 10px;
+	 padding-bottom: 10px;
+}
+
+.fullContent{
+	position: absolute;
+	bottom: 0;
+	top: 57px;
+	 left: 0;
+	 right: 0;
+  	text-align: center;
+}
+
+.fullContent:before {
+    content: "";
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+}
+
+.fullContent :first-child {
+    display:inline-block;
+}
+
+.cen {
+  min-height:5em; width:12em; background:red; margin:1em 0;
+}
+
+.cen p {
+  display:inline-block; vertical-align:middle;
+  margin:0 0 0 1em; width:10em;
+}
+
+.cen::after {
+   display:inline-block; vertical-align:middle; line-height:5em;
+   width:0; content:"\00A0"; overflow:hidden;
+}
+
+#comments ul{
+	 list-style: none;
+  	padding-left: 30px;
+  	padding-right: 30px;
+	  margin-top: 0;
+	  margin-bottom: 0;
+}
+
+#comments li{
+  	margin-bottom: 20px;
+  	font-size: 14px;
+  	list-style: none;	
+}
+
+#comments li .author{
+	  float: left;
+	  padding: 5px;
+	  padding-right: 8px;
+	  padding-left: 8px;
+	  margin-right: 8px;
+	  background-color: #444;
+	  border-radius: 7px;
+	  color: white;
+}
+
+#comments li .author img{
+	margin: -2px;
+	margin-right: 5px;
+	float: left;
+	-webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+}
+
+#comments li .message{
+	float: left;
+	background: #fff;
+	-webkit-border-radius: 7px;
+	-moz-border-radius: 7px;
+	border-radius: 7px;
+	padding: 5px;
+}
+
+.shadowBackground{
+	background: -moz-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 1%, rgba(0,0,0,0) 26%, rgba(0,0,0,0.65) 100%);
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(1%,rgba(0,0,0,0)), color-stop(26%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.65)));
+background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0) 1%,rgba(0,0,0,0) 26%,rgba(0,0,0,0.65) 100%);
+background: -o-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0) 1%,rgba(0,0,0,0) 26%,rgba(0,0,0,0.65) 100%);
+background: -ms-linear-gradient(top, rgba(0,0,0,0) 0%,rgba(0,0,0,0) 1%,rgba(0,0,0,0) 26%,rgba(0,0,0,0.65) 100%);
+background: linear-gradient(to bottom, rgba(0,0,0,0) 0%,rgba(0,0,0,0) 1%,rgba(0,0,0,0) 26%,rgba(0,0,0,0.65) 100%);
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#a6000000',GradientType=0 );
+	
+	width: 100%; 
+}
+
+.colorBackground{
+	background: rgba(92, 35, 255, 0.66);
+	padding: 7px;
+}
+
+form{
+	margin: 0;
+	max-width: 300px;
+}
+
+input[type=password] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    width: 33px;
+    height: 50px;
+    text-align: center;
+    font-size: 30px;
+}
+
+.but1{
+	  background: white;
+	  -webkit-appearance: none;
+	  border: 0;
+	  border-radius: 3px;
+	  margin-top: 9px;
+	  font-size: 15px;
+	  cursor: pointer;
+	  color: rgb(92,35,255);
+	  padding: 6px;
+}
