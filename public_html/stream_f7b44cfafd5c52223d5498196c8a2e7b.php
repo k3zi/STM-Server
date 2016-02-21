@@ -2,7 +2,7 @@
 require_once('../includes/includes.php');
 
 $streamAlphaID = $_GET['streamID'];
-$id = $hashids->decode($streamAlphaID);
+$streamID = $hashids->decode($streamAlphaID);
 $stream = streamInfoForID($streamID);
 print_r($stream);
 
@@ -25,7 +25,7 @@ if((int)$stream['private'] == 1 && strlen($stream['passcode']) > 0){
 if(!isset($stream['name']))
     $error = "This stream doesn't exist or was deleted";
 if(!$error){
-    $user = infoForUserID($stream['id']);
+    $user = infoForUserID($streamID);
     if(!isset($user['username']))
         $error = "The owner of this stream has removed their account";
 }
