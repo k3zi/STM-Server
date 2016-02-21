@@ -2,7 +2,7 @@
 require_once('../includes/includes.php');
 
 $streamAlphaID = $_GET['streamID'];
-$streamID = $hashids->decode($streamAlphaID);
+$streamID = decodeHash($streamAlphaID);
 $stream = streamInfoForID($streamID);
 print_r($streamID);
 print_r($stream);

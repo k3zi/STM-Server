@@ -23,6 +23,11 @@ function infoForUserID($streamID){
   return query("START x = node({$streamID}) MATCH x <-[:createdStream]-(user) RETURN user")[0];
 }
 
+function decodeHash($alpha){
+  global $hashids;
+  return $hashids->decode($alpha)[0];
+}
+
 function getNewComments($streamID, $lastFetch = 0, $userID = null){
   return array();
 	if($lastFetch > 0){
