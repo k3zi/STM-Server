@@ -1,2 +1,0 @@
-[05-Jul-2015 07:05:50 Europe/Berlin] PHP Fatal error:  Allowed memory size of 104857600 bytes exhausted (tried to allocate 32 bytes) in phar:///home/stream/includes/PhpOrient/composer.phar/src/Composer/Json/JsonFile.php on line 259
-[05-Jul-2015 07:06:12 Europe/Berlin] PHP Fatal error:  Allowed memory size of 104857600 bytes exhausted (tried to allocate 23 bytes) in phar:///home/stream/includes/PhpOrient/composer.phar/src/Composer/Json/JsonFile.php on line 259
