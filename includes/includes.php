@@ -20,7 +20,7 @@ function streamInfoForID($streamID){
 }
 
 function infoForUserID($streamID){
-  return query("START x = node({$streamID}) MATCH x <-[:createdStream]-(user) RETURN user")[0]->getProperties();
+  return query("START x = node({$streamID}) MATCH x <-[:createdStream]-(user) RETURN user")[0]['user']->getProperties();
 }
 
 function decodeHash($alpha){
