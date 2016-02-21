@@ -1,0 +1,23 @@
+# Ignore all files and directories
+
+public_html/error_log
+public_html/*/error_log
+
+**.DS_Store
+
+/*
+
+# Except our actual application folders
+!.git
+!.gitignore
+!.htaccess
+!README.md
+
+!crons/
+!public_html/
+!includes/
+
+public_html/_cgi-bin
+public_html/_errorpage
+public_html/error_log
+public_html/*/error_log
