@@ -1,5 +1,6 @@
 {
     "require": {
-        "everyman/neo4jphp": "dev-master"
+        "everyman/neo4jphp": "dev-master",
+        "hashids/hashids": "^1.0"
     }
 }
