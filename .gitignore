@@ -15,6 +15,8 @@ public_html/*/error_log
 !.bowerrc
 !bower.config
 !bower_components
+!dist
+!package.json
 !README.md
 
 
@@ -22,10 +24,14 @@ public_html/*/error_log
 !public_html/
 !includes/
 !bower_components/
+!new
+!node_modules
 
 public_html/_cgi-bin
 public_html/_errorpage
 public_html/error_log
 public_html/*/error_log
+public_html/_lib
 **error_log
 crons/error_log
+new/neo4j/data/

@@ -1,3 +1,4 @@
 {
-  "directory": "public_html/components"
+  "directory": "public_html/_lib",
+  "json": "bower.json"
 }
