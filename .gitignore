@@ -12,11 +12,16 @@ public_html/*/error_log
 !.git
 !.gitignore
 !.htaccess
+!.bowerrc
+!bower.config
+!bower_components
 !README.md
+
 
 !crons/
 !public_html/
 !includes/
+!bower_components/
 
 public_html/_cgi-bin
 public_html/_errorpage
