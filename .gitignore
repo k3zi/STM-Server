@@ -33,6 +33,7 @@ public_html/error_log
 public_html/*/error_log
 public_html/_lib
 new/neo4j/data/graph.db/
+new/content/
 **error_log
 crons/error_log
 new/neo4j/data/
