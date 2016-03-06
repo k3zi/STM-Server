@@ -1,4 +1,4 @@
 {
-  "directory": "public_html/_lib",
+  "directory": "_lib",
   "json": "bower.json"
 }
