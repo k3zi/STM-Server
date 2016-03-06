@@ -121,7 +121,7 @@ app.use(session({
     saveUninitialized: true
 }));
 
-var server = (new http()).Server(app);
+var server =  http.Server(app);
 var io = sio(server);
 var adapter = redis({ host: '127.0.0.1', port: 6379 });
 io.adapter(adapter);
