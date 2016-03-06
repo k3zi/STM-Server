@@ -17,6 +17,7 @@ public_html/*/error_log
 !bower_components
 !dist
 !package.json
+!start.sh
 !README.md
 
 
