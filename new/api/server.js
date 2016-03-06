@@ -1,5 +1,6 @@
 //************** IMPORTANT INCLUDES **************\\\
 var http = require('http');
+var express = require('express');
 
 var sio = require('socket.io');
 var xio = require('socket.io-client');
@@ -9,8 +10,14 @@ var seraph = require("seraph");
 var Hashids = require("hashids");
 var fs = require("fs");
 
+//Cryptography
+var md5 = require('md5');
+var crypto = require('crypto');
+
 //Misc
-var IsThere = require("is-there");
+var apn = require('apn');
+var isThere = require("is-there");
+var domain = require('domain');
 
 //Middleware
 var cookieParser = require('cookie-parser');
@@ -19,19 +26,23 @@ var basicAuth = require('basic-auth');
 var bodyParser = require('body-parser');
 var helmet = require('helmet');
 
-var API_CONTENT_DIRECTORY = "/home/stream/new/content";
-var ONE_YEAR = 31536000000;
+//************** SERVER SETTINGS **************\\\
+var API_CONTENT_DIRECTORY = "/home/stream/user_content";
+var API_AUTH_USER = 'STM-API';
+var API_AUTH_PASS = "PXsd<rhKG0r'@U.-Z`>!9V%-Z<Z";
 var STM_HASH = "Jkbtui5Czz55e2QtuMLjhrduXg0lCWBm3OkH4wyDmnXNLWC8tG";
-var AUTH_USER = 'STM-API';
-var AUTH_PASS = "PXsd<rhKG0r'@U.-Z`>!9V%-Z<Z";
 var STM_STREAM_SETTINGS = {
     'secondsRequiredToStartPlaying': 1.5,
     'secondsRequiredToStartPlayingAfterBufferUnderun': 3.0,
     //'bufferSizeInSeconds': 10.0
 };
+var STM_CONFIG = {
+    'hashSalt': 'pepper',
+    'hashMinLength': '4',
+    'hashChars': 'abcdefghijkmnpqrstuxyACDEFGHKMNPQRSTUQY23456789'
+}
 
-//APN
-var apn = require('apn');
+//************** Apple Push Notifications **************\\\
 var apnConnection = new apn.Connection({
     'cert': '/home/stream/keychain/production_com.stormedgeapps.streamtome.pem',
     'key': '/home/stream/keychain/production_com.stormedgeapps.streamtome.pkey',
@@ -57,10 +68,25 @@ function determineAuthentication(authorized, req, res, next) {
     }
 }
 
-//Random Global
-var d = require('domain').create();
-d.on('error', function(err) {
-    // handle the error safely
+var regularAuth = function(req, res, next) {
+    var auth = basicAuth(req);
+    var authorized = auth && auth.name && auth.pass && auth.name === API_AUTH_USER && auth.pass === API_AUTH_PASS;
+    return determineAuthentication(authorized, req, res, next);
+};
+
+var sessionAuth = function(req, res, next) {
+    var auth = basicAuth(req);
+    var authorized = auth && auth.name && auth.pass && auth.name === API_AUTH_USER && auth.pass === API_AUTH_PASS && req.session.user;
+    return determineAuthentication(authorized, req, res, next);
+};
+
+var decrypt = function(encryptedMessage, encryptionMethod, secret, iv) {
+    var decryptor = crypto.createDecipheriv(encryptionMethod, secret, iv);
+    return decryptor.update(encryptedMessage, 'base64', 'utf8') + decryptor.final('utf8');
+};
+
+//TODO: Handle errors
+d = (new domain()).create();
     console.log(err);
 });
 
@@ -70,11 +96,12 @@ if (!Date.secNow) {
     }
 }
 
-var express = require('express');
+
+//************** Let's Connect Everything! **************\\\
+console.log('Running Fork on Port: %d', process.argv[2]);
+
 var app = new express();
 app.set('trust proxy', 1);
-
-console.log('Running Fork on Port: %d', process.argv[2]);
 
 //Use Middleware
 app.use(express.static(API_CONTENT_DIRECTORY));
@@ -93,20 +120,7 @@ app.use(session({
     saveUninitialized: true
 }));
 
-//Authentication Middleware
-var regularAuth = function(req, res, next) {
-    var auth = basicAuth(req);
-    var authorized = auth && auth.name && auth.pass && auth.name === AUTH_USER && auth.pass === AUTH_PASS;
-    return determineAuthentication(authorized, req, res, next);
-};
-
-var sessionAuth = function(req, res, next) {
-    var auth = basicAuth(req);
-    var authorized = auth && auth.name && auth.pass && auth.name === AUTH_USER && auth.pass === AUTH_PASS && req.session.user;
-    return determineAuthentication(authorized, req, res, next);
-};
-
-var server = require('http').Server(app);
+var server = (new http()).Server(app);
 var io = sio(server);
 var adapter = redis({ host: '127.0.0.1', port: 6379 });
 io.adapter(adapter);
@@ -126,15 +140,7 @@ var db = seraph({
 });
 
 //Hashing
-var hasher = new Hashids("pepper", 4, "abcdefghijkmnpqrstuvwxy23456789");
-
-//Cryptography
-var md5 = require('md5');
-var crypto = require('crypto');
-var decrypt = function(encryptedMessage, encryptionMethod, secret, iv) {
-    var decryptor = crypto.createDecipheriv(encryptionMethod, secret, iv);
-    return decryptor.update(encryptedMessage, 'base64', 'utf8') + decryptor.final('utf8');
-};
+var hasher = new Hashids(STM_CONFIG.hashSalt, STM_CONFIG.hashMinLength, STM_CONFIG.hashChars);
 
 //****************** REGULAR AUTH METHODS ********************\\
 
@@ -186,6 +192,7 @@ app.post('/v1/signIn', regularAuth, function(req, res) {
         if (err) {
             throw err;
         }
+
         if (results.length == 0) {
             return res.json(outputError('Invalid username/password'));
         }
@@ -227,6 +234,7 @@ app.post('/v1/updateAPNS', sessionAuth, function(req, res) {
     user.apnsToken = token;
     db.save(user, function(err, user) {
         if (err) throw err;
+
         req.session.user = user;
         res.json(outputResult(user));
     });
@@ -270,35 +278,43 @@ app.post('/v1/createStream', sessionAuth, function(req, res) {
         'private': private,
         'description': data.description
     };
-    if (private) arr.passcode = data.passcode;
 
+    if (private) arr.passcode = data.passcode;
     db.save(arr, 'Stream', function(err, stream) {
         if (err) {
             res.json(outputError('There was a database error. Oops :('));
         } else {
-            db.relate(user, 'createdStream', stream, {
-                'date': Date.secNow()
-            }, function(err, relationship) {
-                var streamAlphaID = encodeStr(stream.id);
-                var lockFile = userDir + streamAlphaID + '.aac.lock';
-                IsThere(lockFile, function(exists) {
-                    if (exists) fs.unlinkSync(lockFile);
-
-                    var securityHash = random(10);
-                    fs.closeSync(fs.openSync(lockFile, 'w'));
-                    fs.appendFileSync(lockFile, securityHash);
-
-                    //Tell Followers
-                    //sendMessageToAPNS(userInfo['name'] + ' created a stream called ' + stream['name'], followers[i]['token']); //Token length 64
-                    stream.streamAlphaID = streamAlphaID;
-                    stream.securityHash = securityHash;
-                    db.save(stream, function(err, stream) {
-                        res.json(outputResult(stream));
-                    });
-                });
-            });
+            relateUserToStream(stream);
         }
     });
+
+    function relateUserToStream(stream) {
+        db.relate(user, 'createdStream', stream, {
+            'date': Date.secNow()
+        }, function(err, relationship) {
+            setupStream(stream);
+        });
+    }
+
+    function setupStream(stream) {
+        var streamAlphaID = encodeStr(stream.id);
+        var lockFile = userDir + streamAlphaID + '.aac.lock';
+        isThere(lockFile, function(exists) {
+            if (exists) fs.unlinkSync(lockFile);
+
+            var securityHash = random(10);
+            fs.closeSync(fs.openSync(lockFile, 'w'));
+            fs.appendFileSync(lockFile, securityHash);
+
+            //Tell Followers
+            //sendMessageToAPNS(userInfo['name'] + ' created a stream called ' + stream['name'], followers[i]['token']); //Token length 64
+            stream.streamAlphaID = streamAlphaID;
+            stream.securityHash = securityHash;
+            db.save(stream, function(err, stream) {
+                res.json(outputResult(stream));
+            });
+        });
+    }
 });
 
 app.post('/v1/continueStream/:streamID', sessionAuth, function(req, res) {
@@ -323,11 +339,11 @@ app.post('/v1/continueStream/:streamID', sessionAuth, function(req, res) {
 
         var stream = results[0];
 
-        IsThere(recordFile, function(exists) {
-            if (exists) fs.unlinkSync(recordFile);
+        isThere(recordFile, function(exists) {
+            if (exists)fs.unlinkSync(recordFile);
 
-            IsThere(lockFile, function(exists) {
-                if (exists) fs.unlinkSync(lockFile);
+            isThere(lockFile, function(exists) {
+                if (exists)fs.unlinkSync(lockFile);
                 var securityHash = random(10);
                 fs.closeSync(fs.openSync(lockFile, 'w'));
                 fs.appendFileSync(lockFile, securityHash);
@@ -737,7 +753,6 @@ commentSocket.on('connection', function(socket) {
 //**************** HOST SOCKET ********************\\
 
 hostSocket.on('connection', function(socket) {
-    var fs = require('fs');
     var params = socket.handshake.query;
     if (params.stmHash != "WrfN'/:_f.#8fYh(=RY(LxTDRrU") return socket.disconnect();
 
@@ -755,7 +770,7 @@ hostSocket.on('connection', function(socket) {
 
     //Hosting
     socket.on('dataForStream', function(data, callback) {
-        IsThere(lockFile, function(exists) {
+        isThere(lockFile, function(exists) {
             if (exists) {
                 var securityHash = fs.readFileSync(lockFile, 'utf8');
                 if (!isVerified && securityHash == givenSecurityHash) {
@@ -775,7 +790,7 @@ hostSocket.on('connection', function(socket) {
 
                         db.save(stream, function(err, stream) {
                             if (data.poster) {
-                                IsThere(posterFile, function(exists) {
+                                isThere(posterFile, function(exists) {
                                     if (exists) fs.unlinkSync(posterFile);
                                     fs.closeSync(fs.openSync(posterFile, 'w'));
                                     fs.appendFileSync(posterFile, new Buffer(data.poster, 'base64'));
@@ -912,7 +927,7 @@ function encodeStr(str) {
 app.get('/getProfilePic/:username', function(req, res) {
     res.setHeader("Content-Type", "image/png");
 
-    IsThere(userPicsDir(req.params.username) + '140x140.png', function(exists) {
+    isThere(userPicsDir(req.params.username) + '140x140.png', function(exists) {
         if (exists) {
             var imageData = fs.readFileSync(userPicsDir(req.params.username) + '140x140.png');
             res.send(imageData);
@@ -926,7 +941,7 @@ app.get('/getProfilePic/:username', function(req, res) {
 app.get('/artwork/:username/:streamAlphaID', function(req, res) {
     res.setHeader("Content-Type", "image/png");
 
-    IsThere(userDir(req.params.username) + req.params.streamAlphaID + '.png', function(exists) {
+    isThere(userDir(req.params.username) + req.params.streamAlphaID + '.png', function(exists) {
         if (exists) {
             console.log(userDir(req.params.username) + req.params.streamAlphaID + '.png');
             var imageData = fs.readFileSync(userDir(req.params.username) + req.params.streamAlphaID + '.png');
@@ -980,7 +995,7 @@ app.post('/api/continueStream/:md5check', requireSessionAuth, function(req, res)
     var streamID = '#13:' + hasher.decode(streamAlphaID);
     var aacFile = userDir + streamAlphaID + '.aac';
     var lockFile = aacFile + '.lock';
-    IsThere(lockFile, function(exists) {
+    isThere(lockFile, function(exists) {
         if (exists) fs.unlinkSync(lockFile);
 
         var securityHash = random(10);
@@ -1489,7 +1504,7 @@ app.post('/api/saveUser/:md5check', requireSessionAuth, function(req, res) {
     var userID = userInfo['@rid'];
     if (data.avatar) {
         var avatar = new Buffer(data.avatar, 'base64');
-        IsThere(pictureFile, function(exists) {
+        isThere(pictureFile, function(exists) {
             if (exists) fs.unlinkSync(pictureFile);
             fs.closeSync(fs.openSync(pictureFile, 'w'));
             fs.appendFileSync(pictureFile, avatar);
