@@ -87,6 +87,7 @@ var decrypt = function(encryptedMessage, encryptionMethod, secret, iv) {
 
 //TODO: Handle errors
 d = (new domain()).create();
+d.on('error', function(err) {
     console.log(err);
 });
 
