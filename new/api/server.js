@@ -904,7 +904,7 @@ function ensureExists(path, mask, cb) {
 }
 
 function getUserDir(userID) {
-    return API_CONTENT_DIRECTORY + '/user/' + encodeStr(userID) + '/';
+    return API_CONTENT_DIRECTORY + encodeStr(userID) + '/';
 }
 
 function encodeStr(str) {
