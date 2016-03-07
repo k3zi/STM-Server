@@ -11,6 +11,6 @@ install:
   - npm install syntax-checker -g
   - npm install uglifyjs -g
   - sudo apt-get update -qq
-	- sudo apt-get -y install php
+  - sudo apt-get -y install php
 
 script: syntax-checker ./
