@@ -1,6 +1,12 @@
 language: node_js
 
+sudo: required
+
 node_js: 
   - "5.5"
 
-script: js -C new/api/server.js
+install:
+  - npm install syntax-checker -g
+  - npm install uglifyjs -g
+
+script: syntax-checker ./
