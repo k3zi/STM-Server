@@ -1,0 +1,15 @@
+language: node_js
+
+sudo: required
+  
+php:
+  - '5.6'
+
+install:
+  - nvm install "5.5"
+  - nvm use "5.5"
+  - npm install syntax-checker -g
+  - sudo apt-get update -qq
+  - sudo apt-get -y install php5 libapache2-mod-php5 php5-mcrypt
+
+script: syntax-checker ./
