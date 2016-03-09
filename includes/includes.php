@@ -3,7 +3,7 @@ require('vendor/autoload.php');
 $db = new Everyman\Neo4j\Client('69.4.80.29', 7474);
 $db->getTransport()
   ->setAuth('neo4j', 'gbmpYiJq9f0KOQSjAj');
-$hashids = new Hashids\Hashids("pepper", 4, "abcdefghijkmnpqrstuvwxy23456789");
+$hashids = new Hashids\Hashids("pepper", 4, "abcdefghijkmnpqrstuxyACDEFGHKMNPQRSTUQY23456789");
 
 function DB(){
 	global $db;
