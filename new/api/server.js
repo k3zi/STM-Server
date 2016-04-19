@@ -881,11 +881,11 @@ hostSocket.on('connection', function(socket) {
                 'streamID': streamID
             }, function(err, results) {
                 if (err) console.log(err);
-                
+
                 callback({
                     'status': 'ok',
                     'bytes': data.data.length,
-                    'listeners': results.length > 0 ? results[0]['count'] : 0
+                    'listeners': results ? results[0]['count'] : 0
                 });
             });
         }
