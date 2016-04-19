@@ -659,6 +659,75 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
     }
 });
 
+app.get('/streamFromBeginningToDevice/:streamID/:userID/:auth', function(req, res) {
+    res.setHeader("Content-Type", "audio/aac");
+
+    req.on('close', function() {
+        if (clientRelationship) {
+            clientRelationship.properties.online = false;
+            db.rel.update(clientRelationship, function(err) {
+                clientRelationship = false;
+            });
+        }
+    });
+
+    var auth = req.params.auth;
+    var streamID = parseInt(req.params.streamID);
+    var userID = parseInt(req.params.userID);
+    var path = '';
+    var clientRelationship = false;
+
+    var xhost = 'http://127.0.0.1:' + process.argv[2] + '/output';
+
+    var cypher = "START user = node({userID}) MATCH (user)-[r:listenedTo]->(stream: Stream) WHERE id(stream) = {streamID} RETURN stream, r LIMIT 1";
+    var params = {
+        'streamID': streamID,
+        'userID':  userID
+    };
+    db.query(cypher, params, function(err, results) {
+        if(results.length > 0) {
+            db.rel.read(results[0]['r'].id, function(err, relationship) {
+                if(relationship.properties.auth != auth) {
+                    return res.json(outputError('Invalid session'));
+                }
+
+                relationship.properties.online = true;
+                db.rel.update(relationship, function(err) {
+                    startStream(relationship);
+                });
+            });
+        } else {
+            res.json(outputError('Invalid session'));
+        }
+    });
+
+    function startStream(relationship) {
+        clientRelationship = relationship;
+        var total = Number.MAX_VALUE;
+        var path
+
+        if (req.headers.range) {
+            var range = req.headers.range;
+            var parts = range.replace(/bytes=/, "").split("-");
+            var partialstart = parts[0];
+            var partialend = parts[1];
+
+            var start = parseInt(partialstart, 10);
+            var end = partialend ? parseInt(partialend, 10) : total-1;
+            var chunksize = (end-start)+1;
+            console.log('RANGE: ' + start + ' - ' + end + ' = ' + chunksize);
+
+            var file = fs.createReadStream(path, {start: start});
+            res.writeHead(206, { 'Content-Range': 'bytes ' + start + '-' + end + '/' + total, 'Accept-Ranges': 'bytes', 'Content-Length': chunksize, 'Content-Type': 'audio/aac' });
+            file.pipe(res);
+          } else {
+            console.log('ALL: ' + total);
+            res.writeHead(200, { 'Content-Length': total, 'Content-Type': 'audio/aac' });
+            fs.createReadStream(path).pipe(res);
+          }
+    }
+});
+
 app.post('/fetch/:hashed', function(req, res) {
     res.header('Access-Control-Allow-Origin', 'https://stm.io');
     res.header('Access-Control-Allow-Methods', 'POST');
@@ -811,10 +880,12 @@ hostSocket.on('connection', function(socket) {
             db.query(cypher, {
                 'streamID': streamID
             }, function(err, results) {
+                if (err) console.log(err);
+                
                 callback({
                     'status': 'ok',
                     'bytes': data.data.length,
-                    'listeners': results[0]['count']
+                    'listeners': results.length > 0 ? results[0]['count'] : 0
                 });
             });
         }
