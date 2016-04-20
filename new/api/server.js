@@ -422,10 +422,25 @@ app.get('/v1/dashboard', sessionAuth, function(req, res) {
     var cypher = "MATCH (stream: Stream) RETURN stream LIMIT 10";
     var params = {
     };
-    db.query(cypher, params, function(err, results1) {
-        items.push({'name': 'Active Streams', 'items': results1});
-        return res.json(outputResult(items));
+    db.query(cypher, params, function(err, results) {
+        if (results.length > 0) {
+            items.push({'name': 'Active Streams (You Follow)', 'items': results});
+        }
+
+        getFeaturedItems(items);
     });
+
+    function getFeaturedItems(items) {
+        var cypher = "MATCH (stream: Stream) RETURN stream LIMIT 10";
+        var params = {
+        };
+        db.query(cypher, params, function(err, results) {
+            if (results.length > 0) {
+                items.push({'name': 'Featured Streams', 'items': results});
+            }
+            return res.json(outputResult(items));
+        });
+    }
 });
 
 //**********************************************************************
