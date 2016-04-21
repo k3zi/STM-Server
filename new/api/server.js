@@ -853,10 +853,10 @@ hostSocket.on('connection', function(socket) {
     var recordFile = userDir + streamAlpha + '.aac';
     var isVerified = false;
 
-    console.log('Host connected!');
 
     //Hosting
     socket.on('dataForStream', function(data, callback) {
+        console.log('Has data!');
         isThere(lockFile, function(exists) {
             if (exists) {
                 var securityHash = fs.readFileSync(lockFile, 'utf8');
