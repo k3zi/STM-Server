@@ -144,11 +144,13 @@ var commentSocket = io.of('/comment');
 var mainSocket = io.of('/main');
 
 //DB
-var db = seraph({
-    'server': 'http://69.4.80.29:7474',
-    user: 'neo4j',
-    pass: 'gbmpYiJq9f0KOQSjAj'
-});
+function db() {
+    return seraph({
+        'server': 'http://69.4.80.29:7474',
+        user: 'neo4j',
+        pass: 'gbmpYiJq9f0KOQSjAj'
+    });
+}
 
 //Hashing
 var hasher = new Hashids(STM_CONFIG.hashSalt, STM_CONFIG.hashMinLength, STM_CONFIG.hashChars);
@@ -163,7 +165,7 @@ app.post('/v1/createAccount', regularAuth, function(req, res) {
             return res.json(outputError('A user is already using this email'));
         }
 
-        db.save({
+        db()..save({
             username: postData.username,
             password: hashPass(postData.password),
             unverifiedEmail: postData.email,
@@ -183,12 +185,12 @@ app.post('/v1/createAccount', regularAuth, function(req, res) {
             return res.json(outputError('A user is already using this email'));
         }
 
-        db.find({
+        db().find({
             username: postData.username
         }, 'User', callbackAllCheckout);
     }
 
-    db.find({
+    db().find({
         email: postData.email
     }, 'User', callbackCheckUsermame);
 });
@@ -196,7 +198,7 @@ app.post('/v1/createAccount', regularAuth, function(req, res) {
 
 app.post('/v1/signIn', regularAuth, function(req, res) {
     var postData = req.body;
-    db.find({
+    db().find({
         username: postData.username,
         password: hashPass(postData.password)
     }, 'User', function(err, results) {
@@ -218,7 +220,7 @@ app.post('/v1/signIn', regularAuth, function(req, res) {
 
 app.post('/v1/authenticate', regularAuth, function(req, res) {
     var data = req.body;
-    db.find({
+    db().find({
         username: data.username,
         password: data.password
     }, 'User', function(err, results) {
@@ -243,7 +245,7 @@ app.post('/v1/updateAPNS', sessionAuth, function(req, res) {
     var user = req.session.user;
 
     user.apnsToken = token;
-    db.save(user, function(err, user) {
+    db().save(user, function(err, user) {
         if (err) throw err;
 
         req.session.user = user;
@@ -257,7 +259,7 @@ app.get('/v1/streams/user/:userID', sessionAuth, function(req, res) {
     var userID = req.params.userID < 1 ? user.id : req.params.userID;
 
     var cypher = "START x = node({userID}) MATCH x -[:createdStream]->(stream) RETURN stream";
-    db.query(cypher, {
+    db().query(cypher, {
         'userID': userID
     }, function(err, results) {
         res.json(outputResult(results));
@@ -271,7 +273,7 @@ app.get('/v1/delete/stream/:streamID', sessionAuth, function(req, res) {
     var streamID = parseInt(req.params.streamID);
 
     var cypher = "START x = node({userID}) MATCH x -[:createdStream]-> (stream) WHERE id(stream) = {streamID} DETACH DELETE stream";
-    db.query(cypher, {
+    db().query(cypher, {
         'userID': userID,
         'streamID': streamID
     }, function(err, results) {
@@ -291,7 +293,7 @@ app.post('/v1/createStream', sessionAuth, function(req, res) {
     };
 
     if (private) arr.passcode = data.passcode;
-    db.save(arr, 'Stream', function(err, stream) {
+    db().save(arr, 'Stream', function(err, stream) {
         if (err) {
             res.json(outputError('There was a database error. Oops :('));
         } else {
@@ -300,7 +302,7 @@ app.post('/v1/createStream', sessionAuth, function(req, res) {
     });
 
     function relateUserToStream(stream) {
-        db.relate(user, 'createdStream', stream, {
+        db().relate(user, 'createdStream', stream, {
             'date': Date.secNow()
         }, function(err, relationship) {
             setupStream(stream);
@@ -321,7 +323,7 @@ app.post('/v1/createStream', sessionAuth, function(req, res) {
             //sendMessageToAPNS(userInfo['name'] + ' created a stream called ' + stream['name'], followers[i]['token']); //Token length 64
             stream.streamAlphaID = streamAlphaID;
             stream.securityHash = securityHash;
-            db.save(stream, function(err, stream) {
+            db().save(stream, function(err, stream) {
                 res.json(outputResult(stream));
             });
         });
@@ -343,7 +345,7 @@ app.post('/v1/continueStream/:streamID', sessionAuth, function(req, res) {
         'userID': user.id,
         'streamID': streamID
     };
-    db.query(cypher, params, function(err, results) {
+    db().query(cypher, params, function(err, results) {
         if (results.length == 0) {
             return res.json(outputError("The stream could not be found."));
         }
@@ -362,7 +364,7 @@ app.post('/v1/continueStream/:streamID', sessionAuth, function(req, res) {
                 //Tell Followers
                 //sendMessageToAPNS(userInfo['name'] + ' created a stream called ' + stream['name'], followers[i]['token']); //Token length 64
                 stream.securityHash = securityHash;
-                db.save(stream, function(err, stream) {
+                db().save(stream, function(err, stream) {
                     res.json(outputResult(stream));
                 });
             });
@@ -385,7 +387,7 @@ app.post('/v1/stream/:streamID/comment', sessionAuth, function(req, res) {
         'date': Date.secNow()
     };
 
-    db.save(arr, 'Comment', function(err, comment) {
+    db().save(arr, 'Comment', function(err, comment) {
         if (err) {
             res.json(outputError('There was a database error. Oops :('));
         } else {
@@ -394,13 +396,13 @@ app.post('/v1/stream/:streamID/comment', sessionAuth, function(req, res) {
     });
 
     function relateUserToComment(comment) {
-        db.relate(user, 'createdComment', comment, {}, function(err, relationship) {
+        db().relate(user, 'createdComment', comment, {}, function(err, relationship) {
             relateCommentToStream(comment, streamID);
         });
     }
 
     function relateCommentToStream(comment, stream) {
-        db.relate(comment, 'on', stream, {}, function(err, relationship) {
+        db().relate(comment, 'on', stream, {}, function(err, relationship) {
             res.json(outputResult({}));
         });
     }
@@ -413,7 +415,7 @@ app.get('/v1/stream/:streamID/comments', sessionAuth, function(req, res) {
     var params = {
         'streamID': streamID
     };
-    db.query(cypher, params, function(err, results) {
+    db().query(cypher, params, function(err, results) {
         for(var i = 0; i < results.length; i++) {
             results[i] = joinCommentWithUser(results[i]['comment'], results[i]['user']);
         }
@@ -432,7 +434,7 @@ app.get('/v1/dashboard', sessionAuth, function(req, res) {
     var cypher = "MATCH (stream: Stream) RETURN stream LIMIT 10";
     var params = {
     };
-    db.query(cypher, params, function(err, results) {
+    db().query(cypher, params, function(err, results) {
         if (results.length > 0) {
             items.push({'name': 'Active Streams (You Follow)', 'items': results});
         }
@@ -444,7 +446,7 @@ app.get('/v1/dashboard', sessionAuth, function(req, res) {
         var cypher = "MATCH (stream: Stream) RETURN stream LIMIT 10";
         var params = {
         };
-        db.query(cypher, params, function(err, results) {
+        db().query(cypher, params, function(err, results) {
             if (results.length > 0) {
                 items.push({'name': 'Featured Streams', 'items': results});
             }
@@ -463,7 +465,7 @@ app.get('/live/:hashed', function(req, res) {
     req.on('close', function(){
         if (clientRelationship) {
             clientRelationship.properties.online = false;
-            db.rel.update(clientRelationship, function(err) {
+            db().rel.update(clientRelationship, function(err) {
                 clientRelationship = false;
             });
         }
@@ -490,7 +492,7 @@ app.get('/live/:hashed', function(req, res) {
             'ipAddress': req.ip
         };
 
-        db.find(arr, 'Anonymous', function (err, users) {
+        db().find(arr, 'Anonymous', function (err, users) {
             if(users.length > 0) {
                 var user = users[0];
                 var userID = user.id;
@@ -500,12 +502,12 @@ app.get('/live/:hashed', function(req, res) {
                     'streamID': streamID,
                     'userID':  userID
                 };
-                db.query(cypher, params, function(err, results) {
+                db().query(cypher, params, function(err, results) {
                     if(results.length > 0) {
-                        db.rel.read(results[0].id, function(err, relationship) {
+                        db().rel.read(results[0].id, function(err, relationship) {
                             relationship.properties.online = true;
                             relationship.properties.plays += 1;
-                            db.rel.update(relationship, function(err) {
+                            db().rel.update(relationship, function(err) {
                                 startStream(relationship);
                             });
                         });
@@ -514,14 +516,14 @@ app.get('/live/:hashed', function(req, res) {
                     }
                 });
             } else {
-                db.save(arr, 'Anonymous', function(err, user) {
+                db().save(arr, 'Anonymous', function(err, user) {
                     createRelationship(user);
                 });
             }
         });
 
         function createRelationship(user) {
-            db.relate(user, 'listenedTo', streamID, {
+            db().relate(user, 'listenedTo', streamID, {
                 'date': Date.secNow(),
                 'online': true,
                 'plays': 1
@@ -547,7 +549,7 @@ app.get('/live/:hashed', function(req, res) {
                         if ((Date.secNow() - lastSave) > 30) {
                             relationship.properties.date = Date.secNow();
                             relationship.properties.online = true;
-                            db.rel.update(relationship, function(err) {
+                            db().rel.update(relationship, function(err) {
                                 res.write(new Buffer(data.data, 'base64'));
                             });
                             lastSave = Date.secNow();
@@ -574,13 +576,13 @@ app.post('/v1/playStream/:streamID', sessionAuth, function(req, res) {
         'streamID': streamID,
         'userID':  userID
     };
-    db.query(cypher, params, function(err, results) {
+    db().query(cypher, params, function(err, results) {
         if(results.length > 0) {
-            db.rel.read(results[0].id, function(err, relationship) {
+            db().rel.read(results[0].id, function(err, relationship) {
                 relationship.properties.online = true;
                 relationship.properties.plays += 1;
                 relationship.properties.auth = hashAuth;
-                db.rel.update(relationship, function(err) {
+                db().rel.update(relationship, function(err) {
                     startStream(relationship);
                 });
             });
@@ -590,7 +592,7 @@ app.post('/v1/playStream/:streamID', sessionAuth, function(req, res) {
     });
 
     function createRelationship(user) {
-        db.relate(user, 'listenedTo', streamID, {
+        db().relate(user, 'listenedTo', streamID, {
             'date': Date.secNow(),
             'online': false,
             'plays': 1,
@@ -611,7 +613,7 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
     req.on('close', function(){
         if (clientRelationship) {
             clientRelationship.properties.online = false;
-            db.rel.update(clientRelationship, function(err) {
+            db().rel.update(clientRelationship, function(err) {
                 clientRelationship = false;
             });
         }
@@ -635,15 +637,15 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
         'streamID': streamID,
         'userID':  userID
     };
-    db.query(cypher, params, function(err, results) {
+    db().query(cypher, params, function(err, results) {
         if(results.length > 0) {
-            db.rel.read(results[0].id, function(err, relationship) {
+            db().rel.read(results[0].id, function(err, relationship) {
                 if(relationship.properties.auth != auth) {
                     return res.json(outputError('Invalid session'));
                 }
 
                 relationship.properties.online = true;
-                db.rel.update(relationship, function(err) {
+                db().rel.update(relationship, function(err) {
                     startStream(relationship);
                 });
             });
@@ -669,7 +671,7 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
                     if ((Date.secNow() - lastSave) > 30) {
                         relationship.properties.date = Date.secNow();
                         relationship.properties.online = true;
-                        db.rel.update(relationship, function(err) {
+                        db().rel.update(relationship, function(err) {
                             res.write(new Buffer(data.data, 'base64'));
                         });
                         lastSave = Date.secNow();
@@ -690,7 +692,7 @@ app.get('/streamFromBeginningToDevice/:streamID/:userID/:auth', function(req, re
     req.on('close', function() {
         if (clientRelationship) {
             clientRelationship.properties.online = false;
-            db.rel.update(clientRelationship, function(err) {
+            db().rel.update(clientRelationship, function(err) {
                 clientRelationship = false;
             });
         }
@@ -709,15 +711,15 @@ app.get('/streamFromBeginningToDevice/:streamID/:userID/:auth', function(req, re
         'streamID': streamID,
         'userID':  userID
     };
-    db.query(cypher, params, function(err, results) {
+    db().query(cypher, params, function(err, results) {
         if(results.length > 0) {
-            db.rel.read(results[0]['r'].id, function(err, relationship) {
+            db().rel.read(results[0]['r'].id, function(err, relationship) {
                 if(relationship.properties.auth != auth) {
                     return res.json(outputError('Invalid session'));
                 }
 
                 relationship.properties.online = true;
-                db.rel.update(relationship, function(err) {
+                db().rel.update(relationship, function(err) {
                     startStream(relationship);
                 });
             });
@@ -808,7 +810,7 @@ commentSocket.on('connection', function(socket) {
 
     console.log('Comment connected!');
 
-    db.read(userID, function(err, user) {
+    db().read(userID, function(err, user) {
         if (err || !user) {
             return socket.disconnect();
         }
@@ -822,7 +824,7 @@ commentSocket.on('connection', function(socket) {
             'date': Date.secNow()
         };
 
-        db.save(arr, 'Comment', function(err, comment) {
+        db().save(arr, 'Comment', function(err, comment) {
             if (err) {
                 callback(outputError('There was a database error. Oops :('));
             } else {
@@ -831,14 +833,14 @@ commentSocket.on('connection', function(socket) {
         });
 
         function relateUserToComment(comment) {
-            db.relate(commentUser, 'createdComment', comment, {}, function(err, relationship) {
+            db().relate(commentUser, 'createdComment', comment, {}, function(err, relationship) {
                 if(err)console.log(err);
                 relateCommentToStream(comment, streamID);
             });
         }
 
         function relateCommentToStream(comment, stream) {
-            db.relate(comment, 'on', stream, {}, function(err, relationship) {
+            db().relate(comment, 'on', stream, {}, function(err, relationship) {
                 if(err)console.log(err);
                 commentSocket.to(roomID).volatile.emit('newComment', joinCommentWithUser(comment, commentUser));
                 callback({});
@@ -880,14 +882,14 @@ hostSocket.on('connection', function(socket) {
                 if (isVerified) {
                     outputSocket.to(roomID).emit('streamData', data);
                     fs.appendFileSync(recordFile, new Buffer(data.data, 'base64'));
-                    db.read(streamID, function(err, stream) {
+                    db().read(streamID, function(err, stream) {
                         if (!stream) return;
                         stream.lastPacket = Date.secNow()
                         if (data.songName) stream.songName = data.songName;
                         if (data.songArtist) stream.songArtist = data.songArtist;
                         if (data.songAlbum) stream.songAlbum = data.songAlbum;
 
-                        db.save(stream, function(err, stream) {
+                        db().save(stream, function(err, stream) {
                             if (data.poster) {
                                 isThere(posterFile, function(exists) {
                                     if (exists) fs.unlinkSync(posterFile);
@@ -906,7 +908,7 @@ hostSocket.on('connection', function(socket) {
 
         function executeCallback() {
             var cypher = "START stream = node({streamID}) MATCH (user) -[r:listenedTo]-> (stream) WHERE r.online RETURN count(r) AS count";
-            db.query(cypher, {
+            db().query(cypher, {
                 'streamID': streamID
             }, function(err, results) {
                 if (err) console.log(err);
@@ -1199,7 +1201,7 @@ app.post('/api/heartComment/:md5check', requireSessionAuth, function(req, res) {
     var userID = userInfo['@rid'];
     var commentID = data.commentID;
 
-    db.select('count(*)').from('CommentLikeConnect').where({
+    db().select('count(*)').from('CommentLikeConnect').where({
         'outV().@rid': userID,
         'inV().@rid': commentID
     }).scalar().then(function(total) {
@@ -1208,7 +1210,7 @@ app.post('/api/heartComment/:md5check', requireSessionAuth, function(req, res) {
                 'status': 'ok'
             });
         } else {
-            db.create('EDGE', 'CommentLikeConnect').from(userID).to(commentID).set({
+            db().create('EDGE', 'CommentLikeConnect').from(userID).to(commentID).set({
                 'date': Date.secNow()
             }).one().then(function(edge) {
                 res.json({
@@ -1227,12 +1229,12 @@ app.post('/api/unheartComment/:md5check', requireSessionAuth, function(req, res)
     var userID = userInfo['@rid'];
     var commentID = data.commentID;
 
-    db.select('count(*)').from('CommentLikeConnect').where({
+    db().select('count(*)').from('CommentLikeConnect').where({
         'outV().@rid': userID,
         'inV().@rid': commentID
     }).scalar().then(function(total) {
         if (total > 0) {
-            db.delete('EDGE', 'CommentLikeConnect').from(userID).to(commentID).scalar().then(function(count) {
+            db().delete('EDGE', 'CommentLikeConnect').from(userID).to(commentID).scalar().then(function(count) {
                 res.json({
                     'status': 'ok'
                 });
@@ -1253,7 +1255,7 @@ app.post('/api/repostComment/:md5check', requireSessionAuth, function(req, res) 
     var userID = userInfo['@rid'];
     var commentID = data.commentID;
 
-    db.select('count(*)').from('CommentRepostConnect').where({
+    db().select('count(*)').from('CommentRepostConnect').where({
         'outV().@rid': userID,
         'inV().@rid': commentID
     }).scalar().then(function(total) {
@@ -1262,7 +1264,7 @@ app.post('/api/repostComment/:md5check', requireSessionAuth, function(req, res) 
                 'status': 'ok'
             });
         } else {
-            db.create('EDGE', 'CommentRepostConnect').from(userID).to(commentID).set({
+            db().create('EDGE', 'CommentRepostConnect').from(userID).to(commentID).set({
                 'date': Date.secNow()
             }).one().then(function(edge) {
                 res.json({
@@ -1281,12 +1283,12 @@ app.post('/api/unrepostComment/:md5check', requireSessionAuth, function(req, res
     var userID = userInfo['@rid'];
     var commentID = data.commentID;
 
-    db.select('count(*)').from('CommentRepostConnect').where({
+    db().select('count(*)').from('CommentRepostConnect').where({
         'outV().@rid': userID,
         'inV().@rid': commentID
     }).scalar().then(function(total) {
         if (total > 0) {
-            db.delete('EDGE', 'CommentRepostConnect').from(userID).to(commentID).scalar().then(function(count) {
+            db().delete('EDGE', 'CommentRepostConnect').from(userID).to(commentID).scalar().then(function(count) {
                 res.json({
                     'status': 'ok'
                 });
@@ -1305,7 +1307,7 @@ app.post('/api/updateDasboard/:md5check', requireSessionAuth, function(req, res)
     var userInfo = req.session.user;
     var userDir = req.session.userDir;
 
-    db.query("SELECT *, owner.* as owner_, out('TagConnect')[string] AS tags FROM (SELECT expand(out('FollowConnect').out('StreamConnect')) FROM " + userInfo['@rid'] + ")").then(function(results) {
+    db().query("SELECT *, owner.* as owner_, out('TagConnect')[string] AS tags FROM (SELECT expand(out('FollowConnect').out('StreamConnect')) FROM " + userInfo['@rid'] + ")").then(function(results) {
         filterOutObjects(results);
         var rowsActive = [];
         var rowsInactive = [];
@@ -1345,7 +1347,7 @@ app.post('/api/updateDasboard/:md5check', requireSessionAuth, function(req, res)
             query = "SELECT *, owner.* as owner_, out('TagConnect')[string] AS tags FROM STMStream ORDER BY last_packet DESC LIMIT 5";
         }
 
-        db.query(query).then(function(rowsFeatured) {
+        db().query(query).then(function(rowsFeatured) {
             filterOutObjects(rowsFeatured);
             res.json({
                 'status': 'ok',
@@ -1366,7 +1368,7 @@ app.post('/api/updateEvents/:md5check', requireSessionAuth, function(req, res) {
     var userDir = req.session.userDir;
 
     if (data.lastUpdate > 0) {
-        db.query(eventSelection(userInfo['@rid']) + " WHERE @class = 'STMComment' AND date > :lastUpdate ORDER BY date DESC", {
+        db().query(eventSelection(userInfo['@rid']) + " WHERE @class = 'STMComment' AND date > :lastUpdate ORDER BY date DESC", {
             'params': {
                 'rid': userInfo['@rid'],
                 'lastUpdate': data.lastUpdate
@@ -1380,7 +1382,7 @@ app.post('/api/updateEvents/:md5check', requireSessionAuth, function(req, res) {
             });
         });
     } else {
-        db.query(eventSelection(userInfo['@rid']) + " WHERE @class = 'STMComment' ORDER BY date DESC LIMIT 25", {
+        db().query(eventSelection(userInfo['@rid']) + " WHERE @class = 'STMComment' ORDER BY date DESC LIMIT 25", {
             'params': {
                 'rid': userInfo['@rid']
             }
@@ -1400,7 +1402,7 @@ app.post('/api/getOlderEvents/:md5check', requireSessionAuth, function(req, res)
     var userInfo = req.session.user;
     var userDir = req.session.userDir;
 
-    db.query(eventSelection(userInfo['@rid']) + " WHERE @class = 'STMComment' AND date < :olderThan ORDER BY date DESC LIMIT 25", {
+    db().query(eventSelection(userInfo['@rid']) + " WHERE @class = 'STMComment' AND date < :olderThan ORDER BY date DESC LIMIT 25", {
         'params': {
             'rid': userInfo['@rid'],
             'olderThan': data.olderThan
@@ -1420,7 +1422,7 @@ app.post('/api/userTimeline/:md5check', requireSessionAuth, function(req, res) {
     var userDir = req.session.userDir;
 
     if (data.lastUpdate > 0) {
-        db.query(timelineSelection(data.userID) + " WHERE @class = 'STMComment' AND date > :lastUpdate ORDER BY date DESC", {
+        db().query(timelineSelection(data.userID) + " WHERE @class = 'STMComment' AND date > :lastUpdate ORDER BY date DESC", {
             'params': {
                 'rid': userInfo['@rid'],
                 'lastUpdate': data.lastUpdate
@@ -1434,7 +1436,7 @@ app.post('/api/userTimeline/:md5check', requireSessionAuth, function(req, res) {
             });
         });
     } else {
-        db.query(timelineSelection(data.userID) + " WHERE @class = 'STMComment' ORDER BY date DESC LIMIT 25", {
+        db().query(timelineSelection(data.userID) + " WHERE @class = 'STMComment' ORDER BY date DESC LIMIT 25", {
             'params': {
                 'rid': userInfo['@rid']
             }
@@ -1454,7 +1456,7 @@ app.post('/api/getOlderUserTimeline/:md5check', requireSessionAuth, function(req
     var userInfo = req.session.user;
     var userDir = req.session.userDir;
 
-    db.query(timelineSelection(data.userID) + " WHERE @class = 'STMComment' AND date < :olderThan ORDER BY date DESC LIMIT 25", {
+    db().query(timelineSelection(data.userID) + " WHERE @class = 'STMComment' AND date < :olderThan ORDER BY date DESC LIMIT 25", {
         'params': {
             'rid': userInfo['@rid'],
             'olderThan': data.olderThan
@@ -1474,7 +1476,7 @@ app.post('/api/userLikes/:md5check', requireSessionAuth, function(req, res) {
     var userDir = req.session.userDir;
 
     if (data.lastUpdate > 0) {
-        db.query(likeSelection(data.userID) + " AND date > :lastUpdate ORDER BY date DESC", {
+        db().query(likeSelection(data.userID) + " AND date > :lastUpdate ORDER BY date DESC", {
             'params': {
                 'rid': userInfo['@rid'],
                 'lastUpdate': data.lastUpdate
@@ -1488,7 +1490,7 @@ app.post('/api/userLikes/:md5check', requireSessionAuth, function(req, res) {
             });
         });
     } else {
-        db.query(likeSelection(data.userID) + " ORDER BY date DESC LIMIT 25" + fetchPlan, {
+        db().query(likeSelection(data.userID) + " ORDER BY date DESC LIMIT 25" + fetchPlan, {
             'params': {
                 'rid': userInfo['@rid']
             }
@@ -1507,7 +1509,7 @@ app.post('/api/getOlderUserLikes/:md5check', requireSessionAuth, function(req, r
     var data = req.body;
     var userInfo = req.session.user;
     var userDir = req.session.userDir;
-    db.query(likeSelection(data.userID) + " AND date < :olderThan ORDER BY date DESC LIMIT 25", {
+    db().query(likeSelection(data.userID) + " AND date < :olderThan ORDER BY date DESC LIMIT 25", {
         'params': {
             'rid': userInfo['@rid'],
             'olderThan': data.olderThan
@@ -1527,7 +1529,7 @@ app.post('/api/autocomplete/:md5check', requireSessionAuth, function(req, res) {
     var userInfo = req.session.user;
     var userDir = req.session.userDir;
 
-    db.query("SELECT *, owner.* as owner_, user.* as user_, stream.* as stream_ FROM V WHERE (@class = 'STMUser' OR @class = 'STMStream' OR @class = 'STMComment') AND any() LIKE '" + data.q + "%' LIMIT 10").then(function(results) {
+    db().query("SELECT *, owner.* as owner_, user.* as user_, stream.* as stream_ FROM V WHERE (@class = 'STMUser' OR @class = 'STMStream' OR @class = 'STMComment') AND any() LIKE '" + data.q + "%' LIMIT 10").then(function(results) {
         filterOutObjects(results);
         res.json({
             'status': 'ok',
@@ -1609,7 +1611,7 @@ app.post('/api/saveUser/:md5check', requireSessionAuth, function(req, res) {
             if (exists) fs.unlinkSync(pictureFile);
             fs.closeSync(fs.openSync(pictureFile, 'w'));
             fs.appendFileSync(pictureFile, avatar);
-            db.update('STMUser').set({
+            db().update('STMUser').set({
                 'name': data.name,
                 'description': data.description
             }).where({
@@ -1621,7 +1623,7 @@ app.post('/api/saveUser/:md5check', requireSessionAuth, function(req, res) {
             });
         });
     } else {
-        db.update('STMUser').set({
+        db().update('STMUser').set({
             'name': data.name,
             'description': data.description
         }).where({
@@ -1643,7 +1645,7 @@ app.post('/api/changePassword/:md5check', requireSessionAuth, function(req, res)
     var newPassowrd = hashPass(data.newPassowrd);
     var userID = userInfo['@rid'];
 
-    db.select().from('STMUser').where({
+    db().select().from('STMUser').where({
         'username': userInfo.username,
         'password': oldPassword
     }).limit(1).one().then(function(user) {
