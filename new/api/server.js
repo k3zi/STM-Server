@@ -1,5 +1,4 @@
 //************** IMPORTANT INCLUDES **************\\\
-var http = require('http');
 var express = require('express');
 
 var sio = require('socket.io');
@@ -41,6 +40,17 @@ var STM_CONFIG = {
     'hashMinLength': '4',
     'hashChars': 'abcdefghijkmnpqrstuxyACDEFGHKMNPQRSTUQY23456789'
 }
+
+var hskey = fs.readFileSync('/home/stream/API.key');
+var hscert = fs.readFileSync('/home/stream/API.crt');
+var hsca1 = fs.readFileSync('/home/stream/API.ca');
+var hsca2 = fs.readFileSync('/home/stream/API.ca2');
+var options = {
+  'key': hskey,
+  'cert': hscert,
+  'ca': [ hsca1, hsca2 ],
+  'honorCipherOrder': true
+};
 
 //************** Apple Push Notifications **************\\\
 var apnConnection = new apn.Connection({
@@ -121,12 +131,12 @@ app.use(session({
     saveUninitialized: true
 }));
 
-var server =  http.Server(app);
-var io = sio(server);
-var adapter = redis({ host: '127.0.0.1', port: 6379 });
-io.adapter(adapter);
+var server = require('https').Server(options, app);
+var io = require('socket.io')(server);
 
-server.listen(process.argv[2], '127.0.0.1');
+server.listen(443, '69.4.80.29', function() {
+  console.log('Listening On api.stm.io:443');
+});
 
 var hostSocket = io.of('/host');
 var outputSocket = io.of('/output');
@@ -795,7 +805,7 @@ commentSocket.on('connection', function(socket) {
     var userID = params.userID;
     var roomID = streamID + '-comments';
     var commentUser = null;
-    
+
     console.log('Comment connected!');
 
     db.read(userID, function(err, user) {
