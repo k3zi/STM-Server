@@ -866,6 +866,8 @@ hostSocket.on('connection', function(socket) {
                 if (isVerified) {
                     outputSocket.to(roomID).emit('streamData', data);
                     fs.appendFileSync(recordFile, new Buffer(data.data, 'base64'));
+                    return executeCallback();
+
                     db.read(streamID, function(err, stream) {
                         if (!stream) return;
                         stream.lastPacket = Date.secNow()
@@ -891,6 +893,12 @@ hostSocket.on('connection', function(socket) {
         });
 
         function executeCallback() {
+            callback({
+                'status': 'ok',
+                'bytes': data.data.length,
+                'listeners': 0
+            });
+            /*
             var cypher = "START stream = node({streamID}) MATCH (user) -[r:listenedTo]-> (stream) WHERE r.online RETURN count(r) AS count";
             db.query(cypher, {
                 'streamID': streamID
@@ -900,9 +908,9 @@ hostSocket.on('connection', function(socket) {
                 callback({
                     'status': 'ok',
                     'bytes': data.data.length,
-                    'listeners': results ? results[0]['count'] : 0
+                    'listeners': 0
                 });
-            });
+            });*/
         }
     });
 });
