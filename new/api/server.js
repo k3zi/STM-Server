@@ -165,7 +165,7 @@ app.post('/v1/createAccount', regularAuth, function(req, res) {
             return res.json(outputError('A user is already using this email'));
         }
 
-        db()..save({
+        db().save({
             username: postData.username,
             password: hashPass(postData.password),
             unverifiedEmail: postData.email,
