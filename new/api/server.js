@@ -71,10 +71,10 @@ var sessionAuth = function(req, res, next) {
     if (!session && authorized && req.body.username && req.body.password) {
         reauthenticate(req.body.username, req.body.password, function (valid) {
             session = valid;
-            determineAuthentication(authorized, req, res, next);
+            determineAuthentication(authorized && session, req, res, next);
         });
     } else {
-        determineAuthentication(authorized, req, res, next);
+        determineAuthentication(authorized && session, req, res, next);
     }
 };
 
