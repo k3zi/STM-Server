@@ -412,7 +412,7 @@ app.get('/v1/stream/:streamID/comments', sessionAuth, function(req, res) {
     };
     db.query(cypher, params, function(err, results) {
         for(var i = 0; i < results.length; i++) {
-            results[i] = joinCommentWithUser(results[i]['comment'], results[i]['user']);
+            results[i] = joinDictWithUser(results[i]['comment'], results[i]['user']);
         }
         return res.json(outputResult(results));
     });
@@ -719,7 +719,12 @@ commentSocket.on('connection', function(socket) {
             return socket.disconnect();
         }
         commentUser = user;
+
         socket.join(roomID);
+        if (!params.owner) {
+            var item = {'message': '@' + commentUser.username + ' joined the stream'};
+            commentSocket.to(roomID).volatile.emit('item', joinDictWithUser(item, commentUser));
+        }
     });
 
     socket.on('addComment', function(data, callback) {
@@ -732,6 +737,7 @@ commentSocket.on('connection', function(socket) {
             if (err) {
                 callback(outputError('There was a database error. Oops :('));
             } else {
+                commentSocket.to(roomID).volatile.emit('newComment', joinDictWithUser(comment, commentUser));
                 relateUserToComment(comment);
             }
         });
@@ -746,7 +752,6 @@ commentSocket.on('connection', function(socket) {
         function relateCommentToStream(comment, stream) {
             db.relate(comment, 'on', stream, {}, function(err, relationship) {
                 if(err)console.log(err);
-                commentSocket.to(roomID).volatile.emit('newComment', joinCommentWithUser(comment, commentUser));
                 callback({});
             });
         }
@@ -833,7 +838,7 @@ function outputResult(result) {
     };
 }
 
-function joinCommentWithUser(c, u) {
+function joinDictWithUser(c, u) {
     c['user'] = u;
     return c;
 }
