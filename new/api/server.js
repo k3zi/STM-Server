@@ -7,6 +7,7 @@ var xio = require('socket.io-client');
 var redis = require('socket.io-redis');
 
 var seraph = require("seraph");
+var mysql = require('mysql');
 var Hashids = require("hashids");
 var fs = require("fs");
 
@@ -139,6 +140,15 @@ var db = seraph({
     user: 'neo4j',
     pass: 'gbmpYiJq9f0KOQSjAj'
 });
+
+var mysqlDB = mysql.createConnection({
+  host: 'localhost',
+  user: 'stream_admin',
+  database: 'stream_main',
+  password: 'gbmpYiJq9f0KOQSjAj'
+});
+
+mysqlDB.connect();
 
 //Hashing
 var hasher = new Hashids(STM_CONFIG.hashSalt, STM_CONFIG.hashMinLength, STM_CONFIG.hashChars);
@@ -448,108 +458,42 @@ app.get('/v1/dashboard', sessionAuth, function(req, res) {
 //**********************************************************************
 
 app.get('/live/:hashed', function(req, res) {
-    res.setHeader("Content-Type", "audio/aac");
-
-    req.on('close', function(){
-        if (clientRelationship) {
-            clientRelationship.properties.online = false;
-            db.rel.update(clientRelationship, function(err) {
-                clientRelationship = false;
-            });
-        }
-
-        if (xsocket) {
-            xsocket.disconnect();
-        }
-    });
-
     var hashed = req.params.hashed;
     var encryptionMethod = 'AES-256-CBC';
     var secret = "JNeKZrihw7WuMx8E5Ou9aiRh2PGDZXAI";
     var iv = secret.substr(0, 16);
     var decryptedMessage = JSON.parse(decrypt(hashed, encryptionMethod, secret, iv));
-    var streamID = parseInt(decryptedMessage.streamID);
-    var roomID = streamID + '-audio';
-    var clientRelationship = false;
-
-    var xhost = 'http://127.0.0.1:' + process.argv[2] + '/output';
-    var xsocket = null;
-
     if (decryptedMessage) {
-        var arr = {
-            'ipAddress': req.ip
-        };
+        var streamID = parseInt(decryptedMessage.streamID);
+        var roomID = streamID + '-audio';
 
-        db.find(arr, 'Anonymous', function (err, users) {
-            if(users.length > 0) {
-                var user = users[0];
-                var userID = user.id;
+        var xhost = 'http://127.0.0.1:' + process.argv[2] + '/output';
+        var xsocket = null;
 
-                var cypher = "START user = node({userID}) MATCH (user)-[r:listenedTo]->(stream: Stream) WHERE id(stream) = {streamID} RETURN r LIMIT 1";
-                var params = {
-                    'streamID': streamID,
-                    'userID':  userID
-                };
-                db.query(cypher, params, function(err, results) {
-                    if(results.length > 0) {
-                        db.rel.read(results[0].id, function(err, relationship) {
-                            relationship.properties.online = true;
-                            relationship.properties.plays += 1;
-                            db.rel.update(relationship, function(err) {
-                                startStream(relationship);
-                            });
-                        });
-                    } else {
-                        createRelationship(user);
-                    }
-                });
-            } else {
-                db.save(arr, 'Anonymous', function(err, user) {
-                    createRelationship(user);
-                });
+        res.setHeader("Content-Type", "audio/aac");
+
+        req.on('close', function(){
+            if (xsocket) {
+                xsocket.disconnect();
             }
         });
 
-        function createRelationship(user) {
-            db.relate(user, 'listenedTo', streamID, {
-                'date': Date.secNow(),
-                'online': true,
-                'plays': 1
-            }, function(err, relationship) {
-                startStream(relationship);
-            });
-        }
+        xsocket = xio.connect(xhost);
+        var lastSkip = 0;
 
-        function startStream(relationship) {
-            clientRelationship = relationship;
+        xsocket.on('connect', function() {
+            xsocket.emit('stream', roomID);
+        });
 
-            xsocket = xio.connect(xhost);
-            var lastSkip = 0;
-            var lastSave = Date.secNow();
-
-            xsocket.on('connect', function() {
-                xsocket.emit('stream', roomID);
-            });
-
-            xsocket.on('streamData', function(data) {
-                if (clientRelationship != false) {
-                    if((Date.secNow() - data.time) < 1.0 || (Date.secNow() - lastSkip) < 15.0) {
-                        if ((Date.secNow() - lastSave) > 30) {
-                            relationship.properties.date = Date.secNow();
-                            relationship.properties.online = true;
-                            db.rel.update(relationship, function(err) {
-                                res.write(new Buffer(data.data, 'base64'));
-                            });
-                            lastSave = Date.secNow();
-                        } else {
-                            res.write(new Buffer(data.data, 'base64'));
-                        }
-                    } else {
-                        lastSkip = Date.secNow();
-                    }
+        xsocket.on('streamData', function(data) {
+            if (clientRelationship != false) {
+                if((Date.secNow() - data.time) < 1.0 || (Date.secNow() - lastSkip) < 15.0) {\
+                    res.write(new Buffer(data.data, 'base64'));
+                } else {
+                    lastSkip = Date.secNow();
                 }
-            });
-        }
+            }
+        });
     }
 });
 
@@ -599,13 +543,6 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
     res.setHeader("Content-Type", "audio/aac");
 
     req.on('close', function(){
-        if (clientRelationship) {
-            clientRelationship.properties.online = false;
-            db.rel.update(clientRelationship, function(err) {
-                clientRelationship = false;
-            });
-        }
-
         if (xsocket) {
             xsocket.disconnect();
         }
@@ -615,7 +552,6 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
     var streamID = parseInt(req.params.streamID);
     var userID = parseInt(req.params.userID);
     var roomID = streamID + '-audio';
-    var clientRelationship = false;
 
     var xhost = 'http://127.0.0.1:' + process.argv[2] + '/output';
     var xsocket = null;
@@ -634,7 +570,7 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
 
                 relationship.properties.online = true;
                 db.rel.update(relationship, function(err) {
-                    startStream(relationship);
+                    startStream();
                 });
             });
         } else {
@@ -642,33 +578,20 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
         }
     });
 
-    function startStream(relationship) {
-        clientRelationship = relationship;
+    function startStream() {
 
         xsocket = xio.connect(xhost);
         var lastSkip = 0;
-        var lastSave = Date.secNow();
 
         xsocket.on('connect', function() {
             xsocket.emit('stream', roomID);
         });
 
         xsocket.on('streamData', function(data) {
-            if (clientRelationship != false) {
-                if((Date.secNow() - data.time) < 1.0 || (Date.secNow() - lastSkip) < 15.0) {
-                    if ((Date.secNow() - lastSave) > 30) {
-                        relationship.properties.date = Date.secNow();
-                        relationship.properties.online = true;
-                        db.rel.update(relationship, function(err) {
-                            res.write(new Buffer(data.data, 'base64'));
-                        });
-                        lastSave = Date.secNow();
-                    } else {
-                        res.write(new Buffer(data.data, 'base64'));
-                    }
-                } else {
-                    lastSkip = Date.secNow();
-                }
+            if ((Date.secNow() - data.time) < 1.0 || (Date.secNow() - lastSkip) < 15.0) {
+                res.write(new Buffer(data.data, 'base64'));
+            } else {
+                lastSkip = Date.secNow();
             }
         });
     }
@@ -866,28 +789,7 @@ hostSocket.on('connection', function(socket) {
                 if (isVerified) {
                     outputSocket.to(roomID).emit('streamData', data);
                     fs.appendFileSync(recordFile, new Buffer(data.data, 'base64'));
-                    return executeCallback();
-
-                    db.read(streamID, function(err, stream) {
-                        if (!stream) return;
-                        stream.lastPacket = Date.secNow()
-                        if (data.songName) stream.songName = data.songName;
-                        if (data.songArtist) stream.songArtist = data.songArtist;
-                        if (data.songAlbum) stream.songAlbum = data.songAlbum;
-
-                        db.save(stream, function(err, stream) {
-                            if (data.poster) {
-                                isThere(posterFile, function(exists) {
-                                    if (exists) fs.unlinkSync(posterFile);
-                                    fs.closeSync(fs.openSync(posterFile, 'w'));
-                                    fs.appendFileSync(posterFile, new Buffer(data.poster, 'base64'));
-                                    executeCallback();
-                                });
-                            } else {
-                                executeCallback();
-                            }
-                        });
-                    });
+                    executeCallback();
                 }
             }
         });
