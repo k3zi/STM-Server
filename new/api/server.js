@@ -56,18 +56,6 @@ var apnConnectionDev = new apn.Connection({
 });
 
 //Authentication
-function unauthorized(res) {
-    res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-    return res.sendStatus(401);
-}
-
-function determineAuthentication(authorized, req, res, next) {
-    if (authorized) {
-        return next();
-    } else {
-        return unauthorized(res);
-    }
-}
 
 var regularAuth = function(req, res, next) {
     var auth = basicAuth(req);
@@ -77,8 +65,17 @@ var regularAuth = function(req, res, next) {
 
 var sessionAuth = function(req, res, next) {
     var auth = basicAuth(req);
-    var authorized = auth && auth.name && auth.pass && auth.name === API_AUTH_USER && auth.pass === API_AUTH_PASS && req.session.user;
-    return determineAuthentication(authorized, req, res, next);
+    var authorized = auth && auth.name && auth.pass && auth.name === API_AUTH_USER && auth.pass === API_AUTH_PASS;
+    var session = req.session.user;
+
+    if (!session && authorized && req.body.username && req.body.password) {
+        reauthenticate(req.body.username, req.body.password, function (valid) {
+            session = valid;
+            determineAuthentication(authorized, req, res, next);
+        });
+    } else {
+        determineAuthentication(authorized, req, res, next);
+    }
 };
 
 var decrypt = function(encryptedMessage, encryptionMethod, secret, iv) {
@@ -1583,4 +1580,33 @@ function sendMessageToAPNS(message, token, prod, type, related) {
 
     apnConnection.pushNotification(note, myDevice);
     apnConnectionDev.pushNotification(note, myDevice);
+}
+
+function unauthorized(res) {
+    res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
+    return res.sendStatus(401);
+}
+
+function determineAuthentication(authorized, req, res, next) {
+    if (authorized) {
+        return next();
+    } else {
+        return unauthorized(res);
+    }
+}
+
+function reauthenticate(username, password, valid) {
+    db.find({
+        'username': username,
+        'password': password
+    }, 'User', function(err, results) {
+        if (!results || results.length == 0) {
+            console.log(err);
+            return valid(false);
+        }
+
+        var user = results[0];
+        req.session.user = user;
+        return valid(true);
+    });
 }
