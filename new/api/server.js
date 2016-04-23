@@ -486,12 +486,10 @@ app.get('/live/:hashed', function(req, res) {
         });
 
         xsocket.on('streamData', function(data) {
-            if (clientRelationship != false) {
-                if((Date.secNow() - data.time) < 1.0 || (Date.secNow() - lastSkip) < 15.0) {
-                    res.write(new Buffer(data.data, 'base64'));
-                } else {
-                    lastSkip = Date.secNow();
-                }
+            if ((Date.secNow() - data.time) < 1.0 || (Date.secNow() - lastSkip) < 15.0) {
+                res.write(new Buffer(data.data, 'base64'));
+            } else {
+                lastSkip = Date.secNow();
             }
         });
     }
