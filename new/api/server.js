@@ -138,14 +138,33 @@ var db = seraph({
     pass: 'gbmpYiJq9f0KOQSjAj'
 });
 
-var mysqlDB = mysql.createConnection({
-  host: 'localhost',
-  user: 'stream_admin',
-  database: 'stream_main',
-  password: 'gbmpYiJq9f0KOQSjAj'
-});
+function connectMySQL() {
+  mysqlDB = mysql.createConnection({
+    host: 'localhost',
+    user: 'stream_admin',
+    database: 'stream_main',
+    password: 'gbmpYiJq9f0KOQSjAj'
+  });
 
-mysqlDB.connect();
+  mysqlDB.connect(function(err) {
+      if(err) {
+          console.log('error when connecting to db:', err);
+          setTimeout(connectMySQL, 2000);
+      }
+  });
+
+  mysqlDB.on('error', function(err) {
+      console.log('db error', err);
+
+      if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+          connectMySQL();
+      } else {
+          throw err;
+      }
+  });
+}
+
+connectMySQL();
 
 //Hashing
 var hasher = new Hashids(STM_CONFIG.hashSalt, STM_CONFIG.hashMinLength, STM_CONFIG.hashChars);
@@ -504,7 +523,7 @@ app.post('/v1/playStream/:streamID', sessionAuth, function(req, res) {
         'userID':  userID
     };
     db.query(cypher, params, function(err, results) {
-        if(results.length > 0) {
+        if (results.length > 0) {
             db.rel.read(results[0].id, function(err, relationship) {
                 relationship.properties.online = true;
                 relationship.properties.plays += 1;
@@ -550,6 +569,8 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
 
     var xhost = 'http://127.0.0.1:' + process.argv[2] + '/output';
     var xsocket = null;
+
+    return startStream();
 
     var cypher = "START user = node({userID}) MATCH (user)-[r:listenedTo]->(stream: Stream) WHERE id(stream) = {streamID} RETURN r LIMIT 1";
     var params = {
@@ -772,6 +793,7 @@ hostSocket.on('connection', function(socket) {
 
     var userDir = getUserDir(userID);
     var lockFile = userDir + streamAlpha + '.aac.lock';
+    var liveFile = userDir + streamAlpha + '.live';
     var posterFile = userDir + streamAlpha + '.png';
     var recordFile = userDir + streamAlpha + '.aac';
     var isVerified = false;
@@ -800,19 +822,6 @@ hostSocket.on('connection', function(socket) {
                 'bytes': data.data.length,
                 'listeners': 0
             });
-            /*
-            var cypher = "START stream = node({streamID}) MATCH (user) -[r:listenedTo]-> (stream) WHERE r.online RETURN count(r) AS count";
-            db.query(cypher, {
-                'streamID': streamID
-            }, function(err, results) {
-                if (err) console.log(err);
-
-                callback({
-                    'status': 'ok',
-                    'bytes': data.data.length,
-                    'listeners': 0
-                });
-            });*/
         }
     });
 });
