@@ -553,7 +553,7 @@ app.post('/v1/playStream/:streamID', sessionAuth, function(req, res) {
     }
 });
 
-app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
+app.get('/streamLiveToDevice/:streamID/:userID/', function(req, res) {
     res.setHeader("Content-Type", "audio/aac");
 
     req.on('close', function(){
@@ -568,49 +568,20 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
     var roomID = streamID + '-audio';
 
     var xhost = 'http://127.0.0.1:' + process.argv[2] + '/output';
-    var xsocket = null;
+    var xsocket = xio.connect(xhost);
+    var lastSkip = 0;
 
-    return startStream();
-
-    var cypher = "START user = node({userID}) MATCH (user)-[r:listenedTo]->(stream: Stream) WHERE id(stream) = {streamID} RETURN r LIMIT 1";
-    var params = {
-        'streamID': streamID,
-        'userID':  userID
-    };
-    db.query(cypher, params, function(err, results) {
-        if(results.length > 0) {
-            db.rel.read(results[0].id, function(err, relationship) {
-                if(relationship.properties.auth != auth) {
-                    return res.json(outputError('Invalid session'));
-                }
-
-                relationship.properties.online = true;
-                db.rel.update(relationship, function(err) {
-                    startStream();
-                });
-            });
-        } else {
-            res.json(outputError('Invalid session'));
-        }
+    xsocket.on('connect', function() {
+        xsocket.emit('stream', roomID);
     });
 
-    function startStream() {
-
-        xsocket = xio.connect(xhost);
-        var lastSkip = 0;
-
-        xsocket.on('connect', function() {
-            xsocket.emit('stream', roomID);
-        });
-
-        xsocket.on('streamData', function(data) {
-            if ((Date.secNow() - data.time) < 1.0 || (Date.secNow() - lastSkip) < 15.0) {
-                res.write(new Buffer(data.data, 'base64'));
-            } else {
-                lastSkip = Date.secNow();
-            }
-        });
-    }
+    xsocket.on('streamData', function(data) {
+        if ((Date.secNow() - data.time) < 1.0 || (Date.secNow() - lastSkip) < 15.0) {
+            res.write(new Buffer(data.data, 'base64'));
+        } else {
+            lastSkip = Date.secNow();
+        }
+    });
 });
 
 app.get('/streamFromBeginningToDevice/:streamID/:userID/:auth', function(req, res) {
