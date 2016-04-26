@@ -475,13 +475,15 @@ app.post('/v1/search', sessionAuth, function(req, res) {
     var q = req.body.q;
     var likeString = "'(?i).*" + q + ".*'";
 
-    var cypher = "MATCH (user: User) WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString + " RETURN user LIMIT 5";
+    var cypher = "MATCH (user: User) WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)  WHERE id(thisUser) = {userID} RETURN user, isFollowing LIMIT 5";
     var params = {
+        'userID': user.id
     };
     db.query(cypher, params, function(err, results) {
         console.log(results);
         for (var i in results) {
             results[i]['_type'] = 'STMUser';
+            results[i]['isFollowing'] = (results[i]['isFollowing'] ? true : false)
             items.push(results[i]);
         }
 
