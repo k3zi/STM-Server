@@ -483,7 +483,7 @@ app.get('/v1/unfollow/:userID', sessionAuth, function(req, res) {
     var user = req.session.user;
     var userID = parseInt(req.params.userID);
 
-    var cypher = "MATCH (fromUser: User)-[r:follows]->(toUser: User) WHERE id(fromUser) = {fromID} AND id(toUser) = {toID} DETACH r";
+    var cypher = "MATCH (fromUser: User)-[r:follows]->(toUser: User) WHERE id(fromUser) = {fromID} AND id(toUser) = {toID} DELETE r";
     var params = {
         'fromID': user.id,
         'toID': userID
