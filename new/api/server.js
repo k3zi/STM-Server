@@ -67,9 +67,9 @@ var sessionAuth = function(req, res, next) {
     var auth = basicAuth(req);
     var authorized = auth && auth.name && auth.pass && auth.name === API_AUTH_USER && auth.pass === API_AUTH_PASS;
     var session = req.session.user;
-    console.log(req.headers);
+    
     if (!session && authorized && req.body.username && req.body.password) {
-        reauthenticate(req.body.username, req.body.password, function (valid) {
+        reauthenticate(req.get('stm-username'), req.get('stm-password'), function (valid) {
             session = valid;
             determineAuthentication(authorized && session, req, res, next);
         });
