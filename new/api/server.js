@@ -469,6 +469,40 @@ app.get('/v1/dashboard', sessionAuth, function(req, res) {
     }
 });
 
+app.post('/v1/search', sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var items = [];
+    var q = req.body.q;
+
+    var cypher = "MATCH (user: User) WHERE user.displayName =~ '(?i).*{q}.*' OR user.username =~ '(?i).*{q}.*' RETURN user LIMIT 5";
+    var params = {
+        'q': q
+    };
+    db.query(cypher, params, function(err, results) {
+        for (var i in results) {
+            i['_type'] = 'STMUser';
+            items.push(i);
+        }
+
+        getFeaturedItems(items);
+    });
+
+    function searchForStreams() {
+        var cypher = "MATCH (stream: Stream) WHERE stream.name =~ '(?i).*{q}.*' OR stream.description =~ '(?i).*{q}.*' RETURN stream LIMIT 5";
+        var params = {
+            'q': q
+        };
+        db.query(cypher, params, function(err, results) {
+            for (var i in results) {
+                i['_type'] = 'STMStream';
+                items.push(i);
+            }
+
+            return res.json(outputResult(items));
+        });
+    }
+});
+
 //**********************************************************************
 //************************* Live Audio Data ****************************
 //**********************************************************************
