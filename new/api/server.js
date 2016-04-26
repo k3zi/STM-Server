@@ -479,10 +479,10 @@ app.post('/v1/search', sessionAuth, function(req, res) {
     var params = {
     };
     db.query(cypher, params, function(err, results) {
-        console.log(err);
+        console.log(results);
         for (var i in results) {
-            i['_type'] = 'STMUser';
-            items.push(i);
+            results[i]['_type'] = 'STMUser';
+            items.push(results[i]);
         }
 
         searchForStreams();
@@ -493,10 +493,10 @@ app.post('/v1/search', sessionAuth, function(req, res) {
         var params = {
         };
         db.query(cypher, params, function(err, results) {
-            console.log(err);
+            console.log(results);
             for (var i in results) {
-                i['_type'] = 'STMStream';
-                items.push(i);
+                results[i]['_type'] = 'STMStream';
+                items.push(results[i]);
             }
 
             return res.json(outputResult(items));
