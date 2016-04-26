@@ -473,10 +473,10 @@ app.post('/v1/search', sessionAuth, function(req, res) {
     var user = req.session.user;
     var items = [];
     var q = req.body.q;
+    var likeString = "'(?i).*" + q + ".*'";
 
-    var cypher = "MATCH (user: User) WHERE user.displayName =~ '(?i).*{q}.*' OR user.username =~ '(?i).*{q}.*' RETURN user LIMIT 5";
+    var cypher = "MATCH (user: User) WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString + " RETURN user LIMIT 5";
     var params = {
-        'q': q
     };
     db.query(cypher, params, function(err, results) {
         console.log(err);
@@ -489,9 +489,8 @@ app.post('/v1/search', sessionAuth, function(req, res) {
     });
 
     function searchForStreams() {
-        var cypher = "MATCH (stream: Stream) WHERE stream.name =~ '(?i).*{q}.*' OR stream.description =~ '(?i).*{q}.*' RETURN stream LIMIT 5";
+        var cypher = "MATCH (stream: Stream) WHERE stream.name =~ " + likeString + " OR stream.description =~ " + likeString + " RETURN stream LIMIT 5";
         var params = {
-            'q': q
         };
         db.query(cypher, params, function(err, results) {
             console.log(err);
