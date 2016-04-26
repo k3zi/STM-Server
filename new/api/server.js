@@ -482,9 +482,10 @@ app.post('/v1/search', sessionAuth, function(req, res) {
     db.query(cypher, params, function(err, results) {
         console.log(results);
         for (var i in results) {
-            results[i]['_type'] = 'STMUser';
-            results[i]['isFollowing'] = (results[i]['isFollowing'] ? true : false)
-            items.push(results[i]);
+            var user = results[i]['user'];
+            user['_type'] = 'STMUser';
+            user['isFollowing'] = (results[i]['isFollowing'] ? true : false)
+            items.push(user);
         }
 
         searchForStreams();
