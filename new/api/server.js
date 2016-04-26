@@ -69,7 +69,7 @@ var sessionAuth = function(req, res, next) {
     var session = req.session.user;
 
     if (!session && authorized && req.get('stm-username') && req.get('stm-password')) {
-        reauthenticate(req.get('stm-username'), req.get('stm-password'), function (valid) {
+        reauthenticate(req, req.get('stm-username'), req.get('stm-password'), function (valid) {
             session = valid;
             determineAuthentication(authorized && session, req, res, next);
         });
@@ -1643,7 +1643,7 @@ function determineAuthentication(authorized, req, res, next) {
     }
 }
 
-function reauthenticate(username, password, valid) {
+function reauthenticate(req, username, password, valid) {
     db.find({
         'username': username,
         'password': password
