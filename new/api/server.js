@@ -474,6 +474,7 @@ app.get('/v1/follow/:userID', sessionAuth, function(req, res) {
     var userID = parseInt(req.params.userID);
 
     db.relate(user, 'follows', userID, {}, function(err, relationship) {
+        console.log(err);
         res.json(outputResult({}));
     });
 });
