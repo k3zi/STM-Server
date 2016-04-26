@@ -479,12 +479,13 @@ app.post('/v1/search', sessionAuth, function(req, res) {
         'q': q
     };
     db.query(cypher, params, function(err, results) {
+        console.log(err);
         for (var i in results) {
             i['_type'] = 'STMUser';
             items.push(i);
         }
 
-        getFeaturedItems(items);
+        searchForStreams();
     });
 
     function searchForStreams() {
@@ -493,6 +494,7 @@ app.post('/v1/search', sessionAuth, function(req, res) {
             'q': q
         };
         db.query(cypher, params, function(err, results) {
+            console.log(err);
             for (var i in results) {
                 i['_type'] = 'STMStream';
                 items.push(i);
