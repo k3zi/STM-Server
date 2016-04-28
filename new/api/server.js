@@ -26,7 +26,6 @@ var session = require('express-session');
 var basicAuth = require('basic-auth');
 var bodyParser = require('body-parser');
 var helmet = require('helmet');
-var busboy = require('connect-busboy');
 
 //************** SERVER SETTINGS **************\\\
 var API_CONTENT_DIRECTORY = "/home/stream/user_content";
@@ -119,7 +118,6 @@ app.use(session({
     resave: true,
     saveUninitialized: true
 }));
-app.use(busboy());
 
 var server =  http.Server(app);
 var io = sio(server);
@@ -564,18 +562,9 @@ app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
     }
 });
 
-app.get('/v1/image/user/profilePicture', sessionAuth, function(req, res) {
-    var user = req.session.user;
-
-    req.pipe(req.busboy);
-    req.busboy.on('file', function(fieldname, file, filename) {
-        console.log("Uploading: " + filename);
-        var fstream = fs.createWriteStream(API_CONTENT_DIRECTORY + '/' + user.id + '/profilePicture.png');
-        file.pipe(fstream);
-        fstream.on('close', function() {
-            res.json(outputResult({}));
-        });
-    });
+app.get('/v1/user/:userID/profilePicture', sessionAuth, function(req, res) {
+    var userID = parseInt(req.params.userID);
+    res.sendfile(API_CONTENT_DIRECTORY + '/' + userID + '/profilePicture.png');
 });
 
 app.post('/v1/upload/user/profilePicture', sessionAuth, function(req, res) {
@@ -584,9 +573,12 @@ app.post('/v1/upload/user/profilePicture', sessionAuth, function(req, res) {
 
     var fstream = fs.createWriteStream(API_CONTENT_DIRECTORY + '/' + user.id + '/profilePicture.png');
     req.pipe(fstream);
-    fstream.on('error', function(err) { //10
+
+    fstream.on('error', function(err) {
+        console.log(err);
        res.send(500, err);
     });
+
     fstream.on('close', function() {
         res.json(outputResult({}));
     });
@@ -1032,7 +1024,7 @@ function ensureExists(path, mask, cb) {
 }
 
 function getUserDir(userID) {
-    return API_CONTENT_DIRECTORY + encodeStr(userID) + '/';
+    return API_CONTENT_DIRECTORY + '/' + encodeStr(userID) + '/';
 }
 
 function encodeStr(str) {
