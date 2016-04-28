@@ -540,7 +540,7 @@ app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
     db.query(cypher, {
         'userID': userID
     }, function(err, results) {
-        items['following'] = results[0];
+        items['following'] = results[0][0];
         getFollowers();
     });
 
@@ -549,7 +549,7 @@ app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
         db.query(cypher, {
             'userID': userID
         }, function(err, results) {
-            items['followers'] = results[0];
+            items['followers'] = results[0][0];
             getPosts();
         });
     }
@@ -559,7 +559,7 @@ app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
         db.query(cypher, {
             'userID': userID
         }, function(err, results) {
-            items['posts'] = results[0];
+            items['posts'] = results[0][0];
             res.json(outputResult(items));
         });
     }
