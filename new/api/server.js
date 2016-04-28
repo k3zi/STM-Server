@@ -426,7 +426,7 @@ app.get('/v1/stream/:streamID/comments', jsonParser, urlEncodeHandler, sessionAu
         'streamID': streamID
     };
     db.query(cypher, params, function(err, results) {
-        for(var i = 0; i < results.length; i++) {
+        for (var i = 0; i < results.length; i++) {
             results[i] = joinDictWithUser(results[i]['comment'], results[i]['user']);
         }
         return res.json(outputResult(results));
@@ -522,6 +522,23 @@ app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, 
             return res.json(outputResult(items));
         });
     }
+});
+
+app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var userID = parseInt(req.params.userID);
+
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(:User)-[:follows*0..1]->(user :User) WHERE id(user) = {userID} RETURN comment, stream, user";
+    db.query(cypher, {
+        'userID': userID
+    }, function(err, results) {
+        for(var i = 0; i < results.length; i++) {
+            results[i]['comment']['user'] = results[i]['user'];
+            results[i]['comment']['stream'] = results[i]['stream'];
+            results[i] = results[i]['comment'];
+        }
+        res.json(outputResult(results));
+    });
 });
 
 app.get('/v1/stats/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
