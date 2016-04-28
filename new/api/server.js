@@ -558,7 +558,7 @@ app.get('/v1/stats/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, fun
     }
 });
 
-app.get('/v1/user/:userID/profilePicture', jsonParser, urlEncodeHandler, function(req, res) {
+app.get('/v1/user/:userID/profilePicture', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var userID = parseInt(req.params.userID);
     res.sendfile(getUserDir(userID) + 'profilePicture.png');
 });
