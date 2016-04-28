@@ -174,7 +174,7 @@ app.post('/v1/createAccount', jsonParser, urlEncodeHandler, regularAuth, functio
         if (results.length > 0) {
             return res.json(outputError('A user is already using this email'));
         }
-        
+
         db.save({
             username: postData.username,
             password: hashPass(postData.password),
@@ -558,12 +558,12 @@ app.get('/v1/stats/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, fun
     }
 });
 
-app.get('/v1/user/:userID/profilePicture', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+app.get('/v1/user/:userID/profilePicture', jsonParser, urlEncodeHandler, function(req, res) {
     var userID = parseInt(req.params.userID);
     res.sendfile(getUserDir(userID) + 'profilePicture.png');
 });
 
-app.post('/v1/upload/user/profilePicture', sessionAuth, function(req, res) {
+app.post('/v1/upload/user/profilePicture', urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     console.log('Got upload request');
 
