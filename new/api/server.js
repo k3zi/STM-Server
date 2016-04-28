@@ -83,6 +83,13 @@ var decrypt = function(encryptedMessage, encryptionMethod, secret, iv) {
     return decryptor.update(encryptedMessage, 'base64', 'utf8') + decryptor.final('utf8');
 };
 
+var jsonParser = bodyParser.json({limit: '50mb'});
+var urlEncodeHandler = bodyParser.urlencoded({limit: '50mb', extended: true});
+
+var handleJSON = function(req, res, next) {
+    jsonParser(req, res, urlEncodeHandler(req, res, next));
+};
+
 //TODO: Handle errors
 var d = domain.create();
 d.on('error', function(err) {
@@ -104,13 +111,6 @@ app.set('trust proxy', 1);
 
 //Use Middleware
 app.use(express.static(API_CONTENT_DIRECTORY));
-app.use(bodyParser.json({
-    limit: '50mb'
-}));
-app.use(bodyParser.urlencoded({
-    limit: '50mb',
-    extended: true
-}));
 app.use(cookieParser());
 app.use(session({
     secret: 'pTb8zDt8drE69B949bHx',
@@ -171,7 +171,7 @@ var hasher = new Hashids(STM_CONFIG.hashSalt, STM_CONFIG.hashMinLength, STM_CONF
 
 //****************** REGULAR AUTH METHODS ********************\\
 
-app.post('/v1/createAccount', regularAuth, function(req, res) {
+app.post('/v1/createAccount', handleJSON, regularAuth, function(req, res) {
     var postData = req.body;
 
     function callbackAllCheckout(err, results) {
@@ -210,7 +210,7 @@ app.post('/v1/createAccount', regularAuth, function(req, res) {
 });
 
 
-app.post('/v1/signIn', regularAuth, function(req, res) {
+app.post('/v1/signIn', handleJSON, regularAuth, function(req, res) {
     var postData = req.body;
     db.find({
         username: postData.username,
@@ -232,7 +232,7 @@ app.post('/v1/signIn', regularAuth, function(req, res) {
     });
 });
 
-app.post('/v1/authenticate', regularAuth, function(req, res) {
+app.post('/v1/authenticate', handleJSON, regularAuth, function(req, res) {
     var data = req.body;
     db.find({
         username: data.username,
@@ -253,7 +253,7 @@ app.post('/v1/authenticate', regularAuth, function(req, res) {
 
 //******************** SESSION AUTH METHODS ******************\\
 
-app.post('/v1/updateAPNS', sessionAuth, function(req, res) {
+app.post('/v1/updateAPNS', handleJSON, sessionAuth, function(req, res) {
     var data = req.body;
     var token = data.token;
     var user = req.session.user;
@@ -267,7 +267,7 @@ app.post('/v1/updateAPNS', sessionAuth, function(req, res) {
     });
 });
 
-app.get('/v1/streams/user/:userID', sessionAuth, function(req, res) {
+app.get('/v1/streams/user/:userID', handleJSON, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
     var userID = parseInt(req.params.userID) < 1 ? user.id : parseInt(req.params.userID);
@@ -280,7 +280,7 @@ app.get('/v1/streams/user/:userID', sessionAuth, function(req, res) {
     });
 });
 
-app.get('/v1/delete/stream/:streamID', sessionAuth, function(req, res) {
+app.get('/v1/delete/stream/:streamID', handleJSON, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
     var userID = user.id;
@@ -295,7 +295,7 @@ app.get('/v1/delete/stream/:streamID', sessionAuth, function(req, res) {
     });
 });
 
-app.post('/v1/createStream', sessionAuth, function(req, res) {
+app.post('/v1/createStream', handleJSON, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
     var userDir = getUserDir(user.id);
@@ -307,7 +307,7 @@ app.post('/v1/createStream', sessionAuth, function(req, res) {
     };
 
     if (private) arr.passcode = data.passcode;
-    db.save(arr, 'Stream', function(err, stream) {
+    db.save(arr, 'Stream', handleJSON, function(err, stream) {
         if (err) {
             res.json(outputError('There was a database error. Oops :('));
         } else {
@@ -344,7 +344,7 @@ app.post('/v1/createStream', sessionAuth, function(req, res) {
     }
 });
 
-app.post('/v1/continueStream/:streamID', sessionAuth, function(req, res) {
+app.post('/v1/continueStream/:streamID', handleJSON, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
     var streamID = parseInt(req.params.streamID);
@@ -390,7 +390,7 @@ app.post('/v1/continueStream/:streamID', sessionAuth, function(req, res) {
 //************************ In Stream Content ***************************
 //**********************************************************************
 
-app.post('/v1/stream/:streamID/comment', sessionAuth, function(req, res) {
+app.post('/v1/stream/:streamID/comment', handleJSON, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
     var userID = user.id;
@@ -422,7 +422,7 @@ app.post('/v1/stream/:streamID/comment', sessionAuth, function(req, res) {
     }
 });
 
-app.get('/v1/stream/:streamID/comments', sessionAuth, function(req, res) {
+app.get('/v1/stream/:streamID/comments', handleJSON, sessionAuth, function(req, res) {
     var streamID = parseInt(req.params.streamID);
 
     var cypher = "START stream = node({streamID}) MATCH (comment: Comment) -[:on]-> (stream) MATCH (user: User) -[:createdComment]-> (comment) RETURN comment, user ORDER BY comment.date DESC LIMIT 50";
@@ -441,7 +441,7 @@ app.get('/v1/stream/:streamID/comments', sessionAuth, function(req, res) {
 //**************************** Dashboard *******************************
 //**********************************************************************
 
-app.get('/v1/dashboard', sessionAuth, function(req, res) {
+app.get('/v1/dashboard', handleJSON, sessionAuth, function(req, res) {
     var user = req.session.user;
     var items = [];
 
@@ -469,7 +469,7 @@ app.get('/v1/dashboard', sessionAuth, function(req, res) {
     }
 });
 
-app.get('/v1/follow/:userID', sessionAuth, function(req, res) {
+app.get('/v1/follow/:userID', handleJSON, sessionAuth, function(req, res) {
     var user = req.session.user;
     var userID = parseInt(req.params.userID);
 
@@ -478,7 +478,7 @@ app.get('/v1/follow/:userID', sessionAuth, function(req, res) {
     });
 });
 
-app.get('/v1/unfollow/:userID', sessionAuth, function(req, res) {
+app.get('/v1/unfollow/:userID', handleJSON, sessionAuth, function(req, res) {
     var user = req.session.user;
     var userID = parseInt(req.params.userID);
 
@@ -492,7 +492,7 @@ app.get('/v1/unfollow/:userID', sessionAuth, function(req, res) {
     });
 });
 
-app.post('/v1/search', sessionAuth, function(req, res) {
+app.post('/v1/search', handleJSON, sessionAuth, function(req, res) {
     var user = req.session.user;
     var items = [];
     var q = req.body.q;
@@ -528,7 +528,7 @@ app.post('/v1/search', sessionAuth, function(req, res) {
     }
 });
 
-app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
+app.get('/v1/stats/user/:userID', handleJSON, sessionAuth, function(req, res) {
     var user = req.session.user;
     var userID = parseInt(req.params.userID);
     var items = {};
@@ -562,7 +562,7 @@ app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
     }
 });
 
-app.get('/v1/user/:userID/profilePicture', sessionAuth, function(req, res) {
+app.get('/v1/user/:userID/profilePicture', handleJSON, sessionAuth, function(req, res) {
     var userID = parseInt(req.params.userID);
     res.sendfile(getUserDir(userID) + 'profilePicture.png');
 });
@@ -589,7 +589,7 @@ app.post('/v1/upload/user/profilePicture', sessionAuth, function(req, res) {
 //************************* Live Audio Data ****************************
 //**********************************************************************
 
-app.get('/live/:hashed', function(req, res) {
+app.get('/live/:hashed', handleJSON, function(req, res) {
     var hashed = req.params.hashed;
     var encryptionMethod = 'AES-256-CBC';
     var secret = "JNeKZrihw7WuMx8E5Ou9aiRh2PGDZXAI";
@@ -627,7 +627,7 @@ app.get('/live/:hashed', function(req, res) {
     }
 });
 
-app.post('/v1/playStream/:streamID', sessionAuth, function(req, res) {
+app.post('/v1/playStream/:streamID', handleJSON, sessionAuth, function(req, res) {
     var user = req.session.user;
     var hashAuth = crypto.randomBytes(64).toString('hex');
     var streamID = parseInt(req.params.streamID);
@@ -669,7 +669,7 @@ app.post('/v1/playStream/:streamID', sessionAuth, function(req, res) {
     }
 });
 
-app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
+app.get('/streamLiveToDevice/:streamID/:userID/:auth', handleJSON, function(req, res) {
     res.setHeader("Content-Type", "audio/aac");
 
     req.on('close', function(){
@@ -727,7 +727,7 @@ app.get('/streamLiveToDevice/:streamID/:userID/:auth', function(req, res) {
     }
 });
 
-app.get('/streamFromBeginningToDevice/:streamID/:userID/:auth', function(req, res) {
+app.get('/streamFromBeginningToDevice/:streamID/:userID/:auth', handleJSON, function(req, res) {
     res.setHeader("Content-Type", "audio/aac");
 
     req.on('close', function() {
