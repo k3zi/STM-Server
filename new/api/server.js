@@ -531,6 +531,40 @@ app.post('/v1/search', sessionAuth, function(req, res) {
     }
 });
 
+app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var userID = req.params.userID < 1 ? user.id : req.params.userID;
+    var items = {};
+
+    var cypher = "MATCH (user: User)-[r: follows]->(:User) WHERE id(user) = {userID} RETURN COUNT(r)";
+    db.query(cypher, {
+        'userID': userID
+    }, function(err, results) {
+        items['following'] = results[0];
+        getFollowers();
+    });
+
+    function getFollowers() {
+        var cypher = "MATCH (user: User)-[r: follows]->(:User) WHERE id(user) = {userID} RETURN COUNT(r)";
+        db.query(cypher, {
+            'userID': userID
+        }, function(err, results) {
+            items['followers'] = results[0];
+            getPosts();
+        });
+    }
+
+    function getPosts() {
+        var cypher = "MATCH (user: User)-[r: createdComment]-() WHERE id(user) = {userID} RETURN COUNT(r)";
+        db.query(cypher, {
+            'userID': userID
+        }, function(err, results) {
+            items['posts'] = results[0];
+            res.json(outputResult(items));
+        });
+    }
+});
+
 //**********************************************************************
 //************************* Live Audio Data ****************************
 //**********************************************************************
