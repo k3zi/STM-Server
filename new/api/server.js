@@ -303,7 +303,7 @@ app.post('/v1/createStream', jsonParser, urlEncodeHandler, sessionAuth, function
     };
 
     if (private) arr.passcode = data.passcode;
-    db.save(arr, 'Stream', jsonParser, urlEncodeHandler, function(err, stream) {
+    db.save(arr, 'Stream', function(err, stream) {
         if (err) {
             res.json(outputError('There was a database error. Oops :('));
         } else {
