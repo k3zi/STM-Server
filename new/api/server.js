@@ -533,7 +533,7 @@ app.post('/v1/search', sessionAuth, function(req, res) {
 
 app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
     var user = req.session.user;
-    var userID = req.params.userID < 1 ? user.id : req.params.userID;
+    var userID = req.params.userID;
     var items = {};
 
     var cypher = "MATCH (user: User)-[r: follows]->(:User) WHERE id(user) = {userID} RETURN COUNT(r) AS count";
