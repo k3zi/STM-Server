@@ -550,16 +550,16 @@ app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
             'userID': userID
         }, function(err, results) {
             items['followers'] = results[0][0];
-            getPosts();
+            getComments();
         });
     }
 
-    function getPosts() {
+    function getComments() {
         var cypher = "MATCH (user: User)-[r: createdComment]-() WHERE id(user) = {userID} RETURN COUNT(r)";
         db.query(cypher, {
             'userID': userID
         }, function(err, results) {
-            items['posts'] = results[0][0];
+            items['comments'] = results[0][0];
             res.json(outputResult(items));
         });
     }
