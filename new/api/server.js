@@ -560,12 +560,19 @@ app.get('/v1/stats/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, fun
 
 app.get('/v1/user/:userID/profilePicture', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var userID = parseInt(req.params.userID);
-    res.sendfile(getUserDir(userID) + 'profilePicture.png');
+    var file = getUserDir(userID) + 'profilePicture.png';
+    isThere(file, function(exists) {
+        if (exists) {
+            res.sendFile(file);
+        } else {
+            res.status(404);
+            res.end();
+        }
+    });
 });
 
 app.post('/v1/upload/user/profilePicture', urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
-    console.log('Got upload request');
 
     var fstream = fs.createWriteStream(getUserDir(user.id) + 'profilePicture.png');
     req.pipe(fstream);
@@ -749,7 +756,7 @@ app.get('/streamFromBeginningToDevice/:streamID/:userID/:auth', jsonParser, urlE
         'userID':  userID
     };
     db.query(cypher, params, function(err, results) {
-        if(results.length > 0) {
+        if (results.length > 0) {
             db.rel.read(results[0]['r'].id, function(err, relationship) {
                 if(relationship.properties.auth != auth) {
                     return res.json(outputError('Invalid session'));
