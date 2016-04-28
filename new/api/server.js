@@ -835,7 +835,7 @@ app.use(function(req, res) {
 
   // Handle 500
 app.use(function(error, req, res, next) {
-    console.log(error);
+    console.trace(error);
     res.status(500);
     return res.json(outputError('500: Internal Server Error' + error));
  });
