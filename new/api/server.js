@@ -474,7 +474,6 @@ app.get('/v1/follow/:userID', sessionAuth, function(req, res) {
     var userID = parseInt(req.params.userID);
 
     db.relate(user, 'follows', userID, {}, function(err, relationship) {
-        console.log(err);
         res.json(outputResult({}));
     });
 });
@@ -504,7 +503,6 @@ app.post('/v1/search', sessionAuth, function(req, res) {
         'userID': user.id
     };
     db.query(cypher, params, function(err, results) {
-        console.log(results);
         for (var i in results) {
             var user = results[i]['user'];
             user['_type'] = 'STMUser';
@@ -520,7 +518,6 @@ app.post('/v1/search', sessionAuth, function(req, res) {
         var params = {
         };
         db.query(cypher, params, function(err, results) {
-            console.log(results);
             for (var i in results) {
                 results[i]['_type'] = 'STMStream';
                 items.push(results[i]);
@@ -545,7 +542,7 @@ app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
     });
 
     function getFollowers() {
-        var cypher = "MATCH (user: User)-[r: follows]->(:User) WHERE id(user) = {userID} RETURN COUNT(r) AS count";
+        var cypher = "MATCH (:User)-[r: follows]->(user: User) WHERE id(user) = {userID} RETURN COUNT(r) AS count";
         db.query(cypher, {
             'userID': userID
         }, function(err, results) {
