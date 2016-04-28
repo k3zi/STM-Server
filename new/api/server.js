@@ -536,30 +536,30 @@ app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
     var userID = req.params.userID < 1 ? user.id : req.params.userID;
     var items = {};
 
-    var cypher = "MATCH (user: User)-[r: follows]->(:User) WHERE id(user) = {userID} RETURN COUNT(r)";
+    var cypher = "MATCH (user: User)-[r: follows]->(:User) WHERE id(user) = {userID} RETURN COUNT(r) AS count";
     db.query(cypher, {
         'userID': userID
     }, function(err, results) {
-        items['following'] = results[0][0];
+        items['following'] = results[0]['count'];
         getFollowers();
     });
 
     function getFollowers() {
-        var cypher = "MATCH (user: User)-[r: follows]->(:User) WHERE id(user) = {userID} RETURN COUNT(r)";
+        var cypher = "MATCH (user: User)-[r: follows]->(:User) WHERE id(user) = {userID} RETURN COUNT(r) AS count";
         db.query(cypher, {
             'userID': userID
         }, function(err, results) {
-            items['followers'] = results[0][0];
+            items['followers'] = results[0]['count'];
             getComments();
         });
     }
 
     function getComments() {
-        var cypher = "MATCH (user: User)-[r: createdComment]-() WHERE id(user) = {userID} RETURN COUNT(r)";
+        var cypher = "MATCH (user: User)-[r: createdComment]-() WHERE id(user) = {userID} RETURN COUNT(r) AS count";
         db.query(cypher, {
             'userID': userID
         }, function(err, results) {
-            items['comments'] = results[0][0];
+            items['comments'] = results[0]['count'];
             res.json(outputResult(items));
         });
     }
