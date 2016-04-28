@@ -564,14 +564,14 @@ app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
 
 app.get('/v1/user/:userID/profilePicture', sessionAuth, function(req, res) {
     var userID = parseInt(req.params.userID);
-    res.sendfile(API_CONTENT_DIRECTORY + '/' + userID + '/profilePicture.png');
+    res.sendfile(getUserDir(userID) + 'profilePicture.png');
 });
 
 app.post('/v1/upload/user/profilePicture', sessionAuth, function(req, res) {
     var user = req.session.user;
     console.log('Got upload request');
 
-    var fstream = fs.createWriteStream(API_CONTENT_DIRECTORY + '/' + user.id + '/profilePicture.png');
+    var fstream = fs.createWriteStream(getUserDir(user.id) + 'profilePicture.png');
     req.pipe(fstream);
 
     fstream.on('error', function(err) {
