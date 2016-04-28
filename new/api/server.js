@@ -582,14 +582,13 @@ app.post('/v1/upload/user/profilePicture', sessionAuth, function(req, res) {
     var user = req.session.user;
     console.log('Got upload request');
 
-    req.pipe(req.busboy);
-    req.busboy.on('file', function(fieldname, file, filename) {
-        console.log("Uploading: " + filename);
-        var fstream = fs.createWriteStream(API_CONTENT_DIRECTORY + '/' + user.id + '/profilePicture.png');
-        file.pipe(fstream);
-        fstream.on('close', function() {
-            res.json(outputResult({}));
-        });
+    var fstream = fs.createWriteStream(API_CONTENT_DIRECTORY + '/' + user.id + '/profilePicture.png');
+    req.pipe(fstream);
+    fstream.on('error', function(err) { //10
+       res.send(500, err);
+    });
+    fstream.on('close', function() {
+        res.json(outputResult({}));
     });
 });
 
