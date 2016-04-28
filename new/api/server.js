@@ -270,7 +270,7 @@ app.post('/v1/updateAPNS', sessionAuth, function(req, res) {
 app.get('/v1/streams/user/:userID', sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
-    var userID = req.params.userID < 1 ? user.id : req.params.userID;
+    var userID = parseInt(req.params.userID) < 1 ? user.id : parseInt(req.params.userID);
 
     var cypher = "START x = node({userID}) MATCH x -[:createdStream]->(stream) RETURN stream";
     db.query(cypher, {
@@ -533,7 +533,7 @@ app.post('/v1/search', sessionAuth, function(req, res) {
 
 app.get('/v1/stats/user/:userID', sessionAuth, function(req, res) {
     var user = req.session.user;
-    var userID = req.params.userID;
+    var userID = parseInt(req.params.userID);
     var items = {};
 
     var cypher = "MATCH (user: User)-[r: follows]->(:User) WHERE id(user) = {userID} RETURN COUNT(r) AS count";
@@ -824,8 +824,8 @@ commentSocket.on('connection', function(socket) {
     var params = socket.handshake.query;
     if (params.stmHash != "WrfN'/:_f.#8fYh(=RY(LxTDRrU") return socket.disconnect();
 
-    var streamID = params.streamID;
-    var userID = params.userID;
+    var streamID = parseInt(params.streamID);
+    var userID = parseInt(params.userID);
     var roomID = streamID + '-comments';
     var commentUser = null;
 
@@ -879,7 +879,7 @@ hostSocket.on('connection', function(socket) {
     var params = socket.handshake.query;
     if (params.stmHash != "WrfN'/:_f.#8fYh(=RY(LxTDRrU") return socket.disconnect();
 
-    var userID = params.userID;
+    var userID = parseInt(params.userID);
     var streamID = parseInt(params.streamID);
     var streamAlpha = encodeStr(streamID);
     var givenSecurityHash = params.securityHash;
