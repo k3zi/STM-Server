@@ -580,6 +580,7 @@ app.get('/v1/image/user/profilePicture', sessionAuth, function(req, res) {
 
 app.post('/v1/upload/user/profilePicture', sessionAuth, function(req, res) {
     var user = req.session.user;
+    console.log('Got upload request');
 
     req.pipe(req.busboy);
     req.busboy.on('file', function(fieldname, file, filename) {
