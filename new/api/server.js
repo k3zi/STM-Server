@@ -524,11 +524,27 @@ app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, 
     }
 });
 
+app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(commentUser: User)-[:follows*0..1]->(user :User) WHERE id(user) = {userID} RETURN comment, stream, commentUser AS user ORDER BY comment.date DESC";
+    db.query(cypher, {
+        'userID': user.id
+    }, function(err, results) {
+        for(var i = 0; i < results.length; i++) {
+            results[i]['comment']['user'] = results[i]['user'];
+            results[i]['comment']['stream'] = results[i]['stream'];
+            results[i] = results[i]['comment'];
+        }
+        res.json(outputResult(results));
+    });
+});
+
 app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var userID = parseInt(req.params.userID);
-    
-    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(:User)-[:follows*0..1]->(user :User) WHERE id(user) = {userID} RETURN comment, stream, user ORDER BY comment.date DESC";
+
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(user :User) WHERE id(user) = {userID} RETURN comment, stream, user ORDER BY comment.date DESC";
     db.query(cypher, {
         'userID': userID
     }, function(err, results) {
