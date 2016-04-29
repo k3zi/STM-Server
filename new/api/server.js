@@ -569,8 +569,9 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
 
     var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(commentUser: User)<-[:follows*0..1]-(user :User)"
     + " WHERE id(user) = {userID}"
-    + " OPTIONAL MATCH (user)-[isLiking: likes]->(comment)"
-    + " RETURN comment, isLiking, stream, commentUser AS user"
+    + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
+    + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
+    + " RETURN comment, didLike, COUNT(likes) AS likes, stream, commentUser AS user"
     + " ORDER BY comment.date DESC";
     db.query(cypher, {
         'userID': user.id
@@ -578,7 +579,8 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
         for(var i = 0; i < results.length; i++) {
             results[i]['comment']['user'] = results[i]['user'];
             results[i]['comment']['stream'] = results[i]['stream'];
-            results[i]['comment']['isLiking'] = (results[i]['isLiking'] ? true : false);
+            results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
+            results[i]['comment']['likes'] = results[i]['likes'];
             results[i] = results[i]['comment'];
         }
         res.json(outputResult(results));
@@ -591,8 +593,9 @@ app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, 
 
     var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(user :User)"
     + " WHERE id(user) = {userID}"
-    + " OPTIONAL MATCH (user)-[isLiking: likes]->(comment)"
-    + " RETURN comment, isLiking, stream, user"
+    + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
+    + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
+    + " RETURN comment, didLike, COUNT(likes) AS likes, stream, user"
     + " ORDER BY comment.date DESC";
     db.query(cypher, {
         'userID': userID
@@ -600,6 +603,8 @@ app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, 
         for(var i = 0; i < results.length; i++) {
             results[i]['comment']['user'] = results[i]['user'];
             results[i]['comment']['stream'] = results[i]['stream'];
+            results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
+            results[i]['comment']['likes'] = results[i]['likes'];
             results[i] = results[i]['comment'];
         }
         res.json(outputResult(results));
