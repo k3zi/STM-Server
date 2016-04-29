@@ -567,7 +567,7 @@ app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, 
 app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
 
-    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(commentUser: User)-[:follows*0..1]->(user :User)"
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(commentUser: User)<-[:follows*0..1]-(user :User)"
     + " WHERE id(user) = {userID}"
     + " OPTIONAL MATCH (user)-[isLiking: likes]->(comment)"
     + " RETURN comment, isLiking, stream, commentUser AS user"
