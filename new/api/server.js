@@ -488,6 +488,29 @@ app.get('/v1/unfollow/:userID', jsonParser, urlEncodeHandler, sessionAuth, funct
     });
 });
 
+app.get('/v1/comment/like/:commentID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var commentID = parseInt(req.params.commentID);
+
+    db.relate(user, 'likes', commentID, {}, function(err, relationship) {
+        res.json(outputResult({}));
+    });
+});
+
+app.get('/v1/comment/unlike/:commentID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var commentID = parseInt(req.params.commentID);
+
+    var cypher = "MATCH (fromUser: User)-[r:likes]->(comment: Comment) WHERE id(fromUser) = {fromID} AND id(comment) = {commentID} DELETE r";
+    var params = {
+        'fromID': user.id,
+        'commentID': commentID
+    };
+    db.query(cypher, params, function(err, results) {
+        res.json(outputResult({}));
+    });
+});
+
 app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var items = [];
