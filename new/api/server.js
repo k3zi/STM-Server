@@ -467,9 +467,17 @@ app.get('/v1/dashboard', jsonParser, urlEncodeHandler, sessionAuth, function(req
 
 app.get('/v1/follow/:userID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
-    var userID = parseInt(req.params.userID);
+    var toID = parseInt(req.params.userID);
 
-    db.relate(user, 'follows', userID, {}, function(err, relationship) {
+    var cypher = "MATCH (fromUser: User), (toUser: User)"
+    + " WHERE id(fromUser) = {fromID} AND id(toUser) = {toID}"
+    + " CREATE UNIQUE (fromUser)-[r: follows]->(toUser) RETURN r";
+    var params = {
+        'fromID': user.id,
+        'toID': toID
+    };
+    db.query(cypher, params, function(err, results) {
+        console.log(err);
         res.json(outputResult({}));
     });
 });
@@ -492,7 +500,14 @@ app.get('/v1/comment/like/:commentID', jsonParser, urlEncodeHandler, sessionAuth
     var user = req.session.user;
     var commentID = parseInt(req.params.commentID);
 
-    db.relate(user, 'likes', commentID, {}, function(err, relationship) {
+    var cypher = "MATCH (fromUser: User), (comment: Comment)"
+    + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
+    + " CREATE UNIQUE (fromUser)-[r: likes]->(comment) RETURN r";
+    var params = {
+        'fromID': user.id,
+        'commentID': commentID
+    };
+    db.query(cypher, params, function(err, results) {
         console.log(err);
         res.json(outputResult({}));
     });
@@ -552,7 +567,11 @@ app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, 
 app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
 
-    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(commentUser: User)-[:follows*0..1]->(user :User) WHERE id(user) = {userID} RETURN comment, stream, commentUser AS user ORDER BY comment.date DESC";
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(commentUser: User)-[:follows*0..1]->(user :User)"
+    + " OPTIONAL MATCH (user)-[isLiking: likes]->(comment)"
+    + " WHERE id(user) = {userID}"
+    + " RETURN comment, isLiking, stream, commentUser AS user"
+    + " ORDER BY comment.date DESC";
     db.query(cypher, {
         'userID': user.id
     }, function(err, results) {
@@ -569,7 +588,11 @@ app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, 
     var user = req.session.user;
     var userID = parseInt(req.params.userID);
 
-    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(user :User) WHERE id(user) = {userID} RETURN comment, stream, user ORDER BY comment.date DESC";
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(user :User)"
+    + " OPTIONAL MATCH (user)-[isLiking: likes]->(comment)"
+    + " WHERE id(user) = {userID}"
+    + " RETURN comment, isLiking, stream, user"
+    + " ORDER BY comment.date DESC";
     db.query(cypher, {
         'userID': userID
     }, function(err, results) {
