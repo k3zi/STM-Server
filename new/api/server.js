@@ -603,7 +603,9 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
     + " WHERE id(user) = {userID}"
     + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
     + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
-    + " RETURN comment, didLike, COUNT(likes) AS likes, stream, commentUser AS user"
+    + " OPTIONAL MATCH (user)-[didRepost: reposted]->(comment)"
+    + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
+    + " RETURN comment, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
     + " ORDER BY comment.date DESC";
     db.query(cypher, {
         'userID': user.id
@@ -613,6 +615,8 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
             results[i]['comment']['stream'] = results[i]['stream'];
             results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
             results[i]['comment']['likes'] = results[i]['likes'];
+            results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
+            results[i]['comment']['reposts'] = results[i]['reposts'];
             results[i] = results[i]['comment'];
         }
         res.json(outputResult(results));
@@ -626,9 +630,11 @@ app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, 
     var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(user :User)"
     + " WHERE id(user) = {userID}"
     + " OPTIONAL MATCH (sessionUser: User)-[didLike: likes]->(comment)"
+    + " OPTIONAL MATCH (sessionUser)-[didRepost: reposted]->(comment)"
     + " WHERE id(sessionUser) = {sessionUserID}"
     + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
-    + " RETURN comment, didLike, COUNT(likes) AS likes, stream, user"
+    + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
+    + " RETURN comment, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, user"
     + " ORDER BY comment.date DESC";
     db.query(cypher, {
         'userID': userID,
@@ -639,6 +645,8 @@ app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, 
             results[i]['comment']['stream'] = results[i]['stream'];
             results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
             results[i]['comment']['likes'] = results[i]['likes'];
+            results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
+            results[i]['comment']['reposts'] = results[i]['reposts'];
             results[i] = results[i]['comment'];
         }
         res.json(outputResult(results));
