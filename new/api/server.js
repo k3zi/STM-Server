@@ -578,6 +578,7 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
         for(var i = 0; i < results.length; i++) {
             results[i]['comment']['user'] = results[i]['user'];
             results[i]['comment']['stream'] = results[i]['stream'];
+            results[i]['comment']['isLiking'] = (results[i]['comment']['isLiking'] ? true : false);
             results[i] = results[i]['comment'];
         }
         res.json(outputResult(results));
