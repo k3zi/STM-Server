@@ -593,12 +593,14 @@ app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, 
 
     var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(user :User)"
     + " WHERE id(user) = {userID}"
-    + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
+    + " OPTIONAL MATCH (sessionUser: User)-[didLike: likes]->(comment)"
+    + " WHERE id(sessionUser) = {sessionUserID}"
     + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
     + " RETURN comment, didLike, COUNT(likes) AS likes, stream, user"
     + " ORDER BY comment.date DESC";
     db.query(cypher, {
-        'userID': userID
+        'userID': userID,
+        'sessionUserID': user.id
     }, function(err, results) {
         for(var i = 0; i < results.length; i++) {
             results[i]['comment']['user'] = results[i]['user'];
