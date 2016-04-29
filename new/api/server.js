@@ -568,8 +568,8 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
     var user = req.session.user;
 
     var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(commentUser: User)-[:follows*0..1]->(user :User)"
-    + " OPTIONAL MATCH (user)-[isLiking: likes]->(comment)"
     + " WHERE id(user) = {userID}"
+    + " OPTIONAL MATCH (user)-[isLiking: likes]->(comment)"
     + " RETURN comment, isLiking, stream, commentUser AS user"
     + " ORDER BY comment.date DESC";
     db.query(cypher, {
@@ -590,8 +590,8 @@ app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, 
     var userID = parseInt(req.params.userID);
 
     var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(user :User)"
-    + " OPTIONAL MATCH (user)-[isLiking: likes]->(comment)"
     + " WHERE id(user) = {userID}"
+    + " OPTIONAL MATCH (user)-[isLiking: likes]->(comment)"
     + " RETURN comment, isLiking, stream, user"
     + " ORDER BY comment.date DESC";
     db.query(cypher, {
