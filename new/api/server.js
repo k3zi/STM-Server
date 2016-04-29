@@ -493,6 +493,7 @@ app.get('/v1/comment/like/:commentID', jsonParser, urlEncodeHandler, sessionAuth
     var commentID = parseInt(req.params.commentID);
 
     db.relate(user, 'likes', commentID, {}, function(err, relationship) {
+        console.log(err);
         res.json(outputResult({}));
     });
 });
@@ -507,6 +508,7 @@ app.get('/v1/comment/unlike/:commentID', jsonParser, urlEncodeHandler, sessionAu
         'commentID': commentID
     };
     db.query(cypher, params, function(err, results) {
+        console.log(err);
         res.json(outputResult({}));
     });
 });
