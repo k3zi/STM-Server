@@ -792,6 +792,7 @@ app.post('/v1/messages/:convoID/send', jsonParser, urlEncodeHandler, sessionAuth
             res.json(outputResult({}));
         });
     }
+});
 
 app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
