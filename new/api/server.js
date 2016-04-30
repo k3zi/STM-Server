@@ -680,15 +680,16 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
     + " WHERE id(user) = {userID}"
     + " WITH DISTINCT comment, stream, user"
     + " MATCH (commentUser)-[:createdComment]->(comment)"
-    + " OPTIONAL MATCH (comment)<-[r1:reposted]-(postingUser:User)<-[:follows*0..1]-(user)"
+    + " OPTIONAL MATCH (comment)<-[r1:reposted]-(reposter:User)<-[:follows*0..1]-(user)"
+    + " WITH comment, stream, user, commentUser, HEAD(COLLECT(reposter)) AS reposter, HEAD(COLLECT(r1)) AS r1"
     + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
     + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
     + " OPTIONAL MATCH (user)-[didRepost: reposted]->(comment)"
     + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
     + " OPTIONAL MATCH (user)-[doesFollow: follows]->(commentUser)"
-    + " RETURN comment, postingUser, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
-    + ", CASE WHEN doesFollow.date IS NOT NULL THEN comment.date ELSE r1.date END AS date"
-    + " ORDER BY date DESC";
+    + " RETURN comment, reposter, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
+    + ", CASE WHEN doesFollow.date IS NOT NULL THEN comment.date ELSE r1.date END AS sortDate"
+    + " ORDER BY sortDate DESC";
     db.query(cypher, {
         'userID': user.id
     }, function(err, results) {
@@ -700,8 +701,7 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
             results[i]['comment']['likes'] = results[i]['likes'];
             results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
             results[i]['comment']['reposts'] = results[i]['reposts'];
-            results[i]['comment']['date'] = results[i]['date'];
-            results[i]['comment']['postingUser'] = results[i]['postingUser'];
+            results[i]['comment']['reposter'] = results[i]['reposter'];
             results[i] = results[i]['comment'];
         }
         res.json(outputResult(results));
