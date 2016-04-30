@@ -684,7 +684,8 @@ app.post('/v1/search/users', jsonParser, urlEncodeHandler, sessionAuth, function
     + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
     + " WHERE id(thisUser) = {userID}"
     + " RETURN user, isFollowing"
-    + " LIMIT 5";
+    + " ORDER BY isFollowing.date DESC"
+    + " LIMIT 20";
     var params = {
         'userID': user.id
     };
