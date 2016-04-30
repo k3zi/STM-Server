@@ -573,7 +573,7 @@ app.get('/v1/comment/:commentID/replys', jsonParser, urlEncodeHandler, sessionAu
     + " OPTIONAL MATCH (sessionUser)-[didRepost: reposted]->(reply)"
     + " OPTIONAL MATCH ()-[reposts: reposted]->(reply)"
     + " RETURN reply AS comment, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, user"
-    + " ORDER BY comment.date DESC";
+    + " ORDER BY comment.date ASC";
     var params = {
         'commentID': commentID,
         'sessionUserID': user.id
