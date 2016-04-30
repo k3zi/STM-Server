@@ -28,7 +28,8 @@ var bodyParser = require('body-parser');
 var helmet = require('helmet');
 
 //************** SERVER SETTINGS **************\\\
-var API_CONTENT_DIRECTORY = "/home/stream/user_content";
+var API_USER_CONTENT_DIRECTORY = "/home/stream/user_content";
+var API_STREAM_CONTENT_DIRECTORY = "/home/stream/stream_content";
 var API_AUTH_USER = 'STM-API';
 var API_AUTH_PASS = "PXsd<rhKG0r'@U.-Z`>!9V%-Z<Z";
 var STM_HASH = "Jkbtui5Czz55e2QtuMLjhrduXg0lCWBm3OkH4wyDmnXNLWC8tG";
@@ -106,7 +107,6 @@ var app = new express();
 app.set('trust proxy', 1);
 
 //Use Middleware
-app.use(express.static(API_CONTENT_DIRECTORY));
 app.use(cookieParser());
 app.use(session({
     secret: 'pTb8zDt8drE69B949bHx',
@@ -287,6 +287,36 @@ app.post('/v1/stream/:streamID/update/:property', jsonParser, urlEncodeHandler, 
         'value': value
     }, function(err, results) {
         console.log(err);
+        res.json(outputResult({}));
+    });
+});
+
+app.get('/v1/stream/:streamID/picture', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var streamID = parseInt(req.params.streamID);
+    var file = getStreamDir(streamID) + 'picture.png';
+    isThere(file, function(exists) {
+        if (exists) {
+            res.sendFile(file);
+        } else {
+            res.status(404);
+            res.end();
+        }
+    });
+});
+
+app.post('/v1/upload/stream/:streamID/picture', urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var streamID = parseInt(req.params.streamID);
+
+    var fstream = fs.createWriteStream(getStreamDir(streamID) + 'picture.png');
+    req.pipe(fstream);
+
+    fstream.on('error', function(err) {
+        console.log(err);
+       res.send(500, err);
+    });
+
+    fstream.on('close', function() {
         res.json(outputResult({}));
     });
 });
@@ -1423,7 +1453,11 @@ function ensureExists(path, mask, cb) {
 }
 
 function getUserDir(userID) {
-    return API_CONTENT_DIRECTORY + '/' + encodeStr(userID) + '/';
+    return API_USER_CONTENT_DIRECTORY + '/' + encodeStr(userID) + '/';
+}
+
+function getStreamDir(streamID) {
+    return API_STREAM_CONTENT_DIRECTORY + '/' + encodeStr(streamID) + '/';
 }
 
 function encodeStr(str) {
