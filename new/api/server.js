@@ -783,6 +783,26 @@ app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function
     });
 });
 
+app.get('/v1/messages/:convoID/list', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var convoID = parseInt(req.params.convoID);
+
+    var cypher = "MATCH (convo: Conversation)<-[:on]-(message: Message)<-[:createdMessage]-(user: User)"
+    + " WHERE id(convo) = {convoID}"
+    + " RETURN message, user"
+    + " ORDER BY message.date ASC";
+    db.query(cypher, {
+        'convoID': convoID
+    }, function(err, results) {
+        console.log(err);
+        for (var i in results) {
+            results[i]['message']['user'] = results[i]['user'];
+            results[i] = results[i]['message'];
+        }
+        res.json(outputResult(results));
+    });
+});
+
 app.post('/v1/messages/:convoID/send', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var convoID = parseInt(req.params.convoID);
