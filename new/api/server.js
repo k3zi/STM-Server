@@ -406,7 +406,7 @@ app.post('/v1/stream/:streamID/comment', jsonParser, urlEncodeHandler, sessionAu
     });
 
     function relateUserToComment(comment) {
-        db.relate(user, 'createdComment', comment, {}, function(err, relationship) {
+        db.relate(user, 'createdComment', comment, {'date': Date.secNow()}, function(err, relationship) {
             relateCommentToStream(comment, streamID);
         });
     }
@@ -502,10 +502,11 @@ app.get('/v1/comment/like/:commentID', jsonParser, urlEncodeHandler, sessionAuth
 
     var cypher = "MATCH (fromUser: User), (comment: Comment)"
     + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
-    + " CREATE UNIQUE (fromUser)-[r: likes]->(comment) RETURN r";
+    + " CREATE UNIQUE (fromUser)-[r: likes {date: {date}]->(comment) RETURN r";
     var params = {
         'fromID': user.id,
-        'commentID': commentID
+        'commentID': commentID,
+        'date': Date.secNow()
     };
     db.query(cypher, params, function(err, results) {
         console.log(err);
@@ -534,10 +535,11 @@ app.get('/v1/comment/repost/:commentID', jsonParser, urlEncodeHandler, sessionAu
 
     var cypher = "MATCH (fromUser: User), (comment: Comment)"
     + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
-    + " CREATE UNIQUE (fromUser)-[r: reposted]->(comment) RETURN r";
+    + " CREATE UNIQUE (fromUser)-[r: reposted {date: {date}}]->(comment) RETURN r";
     var params = {
         'fromID': user.id,
-        'commentID': commentID
+        'commentID': commentID,
+        'date': Date.secNow()
     };
     db.query(cypher, params, function(err, results) {
         console.log(err);
@@ -613,7 +615,7 @@ app.post('/v1/comment/:commentID/reply', jsonParser, urlEncodeHandler, sessionAu
     });
 
     function relateUserToComment(comment) {
-        db.relate(user, 'createdComment', comment, {}, function(err, relationship) {
+        db.relate(user, 'createdComment', comment, {'date': Date.secNow()}, function(err, relationship) {
             if(err)console.log(err);
             relateCommentToStream(comment, streamID);
         });
@@ -673,13 +675,13 @@ app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, 
 app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
 
-    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(commentUser: User)<-[:follows*0..1]-(user :User)"
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[r1:createdComment|reposted]-(commentUser: User)<-[:follows*0..1]-(user :User)"
     + " WHERE id(user) = {userID}"
     + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
     + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
     + " OPTIONAL MATCH (user)-[didRepost: reposted]->(comment)"
     + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
-    + " RETURN comment, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
+    + " RETURN comment, r1.date AS date, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
     + " ORDER BY comment.date DESC";
     db.query(cypher, {
         'userID': user.id
@@ -691,6 +693,7 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
             results[i]['comment']['likes'] = results[i]['likes'];
             results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
             results[i]['comment']['reposts'] = results[i]['reposts'];
+            results[i]['comment']['date'] = results[i]['date'];
             results[i] = results[i]['comment'];
         }
         res.json(outputResult(results));
@@ -1086,7 +1089,7 @@ commentSocket.on('connection', function(socket) {
         });
 
         function relateUserToComment(comment) {
-            db.relate(commentUser, 'createdComment', comment, {}, function(err, relationship) {
+            db.relate(commentUser, 'createdComment', comment, {'date': Date.secNow()}, function(err, relationship) {
                 if(err)console.log(err);
                 relateCommentToStream(comment, streamID);
             });
