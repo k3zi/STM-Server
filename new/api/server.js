@@ -264,15 +264,30 @@ app.post('/v1/updateAPNS', jsonParser, urlEncodeHandler, sessionAuth, function(r
 });
 
 app.get('/v1/streams/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
-    var data = req.body;
     var user = req.session.user;
     var userID = parseInt(req.params.userID) < 1 ? user.id : parseInt(req.params.userID);
 
-    var cypher = "START x = node({userID}) MATCH x -[:createdStream]->(stream) RETURN stream";
+    var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
     db.query(cypher, {
         'userID': userID
     }, function(err, results) {
         res.json(outputResult(results));
+    });
+});
+
+app.post('/v1/stream/:streamID/update/:property', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var streamID = parseInt(req.body.streamID);
+    var property = req.params.property;
+    var value = req.body.value;
+
+    var cypher = "START x = node({userID}) SET x." + property + " = {value} RETURN x";
+    db.query(cypher, {
+        'streamID': streamID,
+        'value': value
+    }, function(err, results) {
+        console.log(err);
+        res.json(outputResult({}));
     });
 });
 
