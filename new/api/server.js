@@ -673,16 +673,16 @@ app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, 
     }
 });
 
-app.post('/v1/search/users', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+app.post('/v1/search/followers', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var items = [];
     var q = req.body.q;
     var likeString = "'(?i).*" + q + ".*'";
 
-    var cypher = "MATCH (user: User)"
-    + " WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString
-    + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
+    var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
     + " WHERE id(thisUser) = {userID}"
+    + " AND user.displayName =~ " + likeString + " OR user.username =~ " + likeString
+    + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
     + " RETURN user, isFollowing"
     + " ORDER BY isFollowing.date DESC"
     + " LIMIT 20";
