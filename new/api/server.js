@@ -564,7 +564,7 @@ app.get('/v1/comment/:commentID/replys', jsonParser, urlEncodeHandler, sessionAu
     var user = req.session.user;
     var commentID = parseInt(req.params.commentID);
 
-    var cypher = "MATCH (user: User)-[r1:createdComment]->(reply: Comment)-[r2:replyTo]->(comment: Comment)"
+    var cypher = "MATCH (user: User)-[:createdComment]->(reply: Comment)-[:replyTo]->(comment: Comment)-[:on]->(stream: Stream)"
     + " WHERE id(comment) = {commentID}"
     + " OPTIONAL MATCH (sessionUser)"
     + " WHERE id(sessionUser) = {sessionUserID}"
