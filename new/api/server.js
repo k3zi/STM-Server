@@ -679,7 +679,7 @@ app.post('/v1/search/followers', jsonParser, urlEncodeHandler, sessionAuth, func
     var q = req.body.q;
     var likeString = "'(?i).*" + q + ".*'";
 
-    var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
+    var cypher = "MATCH (user: User)-[:follows*1]->(thisUser: User)"
     + " WHERE id(thisUser) = {userID}"
     + " AND user.displayName =~ " + likeString + " OR user.username =~ " + likeString
     + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
@@ -696,6 +696,10 @@ app.post('/v1/search/followers', jsonParser, urlEncodeHandler, sessionAuth, func
         }
         res.json(outputResult(results));
     });
+});
+
+app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
 });
 
 app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
