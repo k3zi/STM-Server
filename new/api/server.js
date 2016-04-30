@@ -277,7 +277,7 @@ app.get('/v1/streams/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, f
 
 app.post('/v1/stream/:streamID/update/:property', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
-    var streamID = parseInt(req.body.streamID);
+    var streamID = parseInt(req.params.streamID);
     var property = req.params.property;
     var value = req.body.value;
 
