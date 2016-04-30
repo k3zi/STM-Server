@@ -675,14 +675,19 @@ app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, 
 app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
 
-    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[r1:createdComment|reposted]-(commentUser: User)<-[:follows*0..1]-(user :User)"
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment|reposted]-(postingUser:User)<-[:follows*0..1]-(user :User)"
     + " WHERE id(user) = {userID}"
+    + " WITH DISTINCT comment, stream, user"
+    + " MATCH (commentUser)-[:createdComment]->(comment)"
+    + " OPTIONAL MATCH (comment)<-[r1:reposted]-(postingUser:User)<-[:follows*0..1]-(user)"
     + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
     + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
     + " OPTIONAL MATCH (user)-[didRepost: reposted]->(comment)"
     + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
-    + " RETURN comment, r1.date AS date, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
-    + " ORDER BY comment.date DESC";
+    + " OPTIONAL MATCH (user)-[doesFollow: follows]->(commentUser)"
+    + " RETURN comment, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
+    + ", CASE WHEN doesFollow = true THEN r1.date ELSE comment.date END AS date"
+    + " ORDER BY date DESC";
     db.query(cypher, {
         'userID': user.id
     }, function(err, results) {
@@ -704,7 +709,7 @@ app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, 
     var user = req.session.user;
     var userID = parseInt(req.params.userID);
 
-    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment]-(user :User)"
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment|reposted]-(user :User)"
     + " WHERE id(user) = {userID}"
     + " OPTIONAL MATCH (sessionUser)"
     + " WHERE id(sessionUser) = {sessionUserID}"
