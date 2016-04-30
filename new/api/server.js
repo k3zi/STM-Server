@@ -503,7 +503,7 @@ app.get('/v1/comment/like/:commentID', jsonParser, urlEncodeHandler, sessionAuth
 
     var cypher = "MATCH (fromUser: User), (comment: Comment)"
     + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
-    + " CREATE UNIQUE (fromUser)-[r: likes {date: {date}]->(comment) RETURN r";
+    + " CREATE UNIQUE (fromUser)-[r: likes {date: {date}}]->(comment) RETURN r";
     var params = {
         'fromID': user.id,
         'commentID': commentID,
