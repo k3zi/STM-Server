@@ -726,13 +726,11 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
         + " WHERE id(convo) = {convoID} AND id(user) = {userID}"
         + " CREATE UNIQUE (user)-[r: joined {read: 0}]->(convo)"
         + " WITH convo, user";
-        + " OPTIONAL MATCH (otherUsers: User)-[:joined]->(convo)"
-        + " WHERE id(otherUsers) != {currentUserID}"
-        + " RETURN convo, COLLECT(otherUsers) AS otherUsers"
+        + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
+        + " RETURN convo, COLLECT(users) AS users"
         var params = {
             'convoID': convo.id,
-            'userID': userID,
-            'currentUserID': user.id
+            'userID': userID
         };
         db.query(cypher, params, function(err, results) {
             console.log(err);
@@ -741,7 +739,7 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
                 connectToConvo(convo, nextItem);
             } else {
                 for (var i = 0; i < results.length; i++) {
-                    result[i]['convo']['otherUsers'] = results[i]['otherUsers'];
+                    result[i]['convo']['users'] = results[i]['users'];
                     results[i]['convo']['lastMessage'] = null;
                     results[i] = results[i]['convo'];
                 }
@@ -757,16 +755,15 @@ app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function
     var cypher = "MATCH (user: User)-[:joined]->(convo: Conversation)<-[:on]-(lastMessage: Message)"
     + " WHERE id(user) = {userID}"
     + " WITH DISTINCT convo, user, HEAD(COLLECT(lastMessage)) AS lastMessage"
-    + " OPTIONAL MATCH (otherUsers: User)-[:joined]->(convo)"
-    + " WHERE id(otherUsers) != id(user)"
-    + " RETURN convo, lastMessage, COLLECT(otherUsers) AS otherUsers"
+    + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
+    + " RETURN convo, lastMessage, COLLECT(users) AS users"
     + " ORDER BY lastMessage.date DESC";
     db.query(cypher, {
         'userID': user.id
     }, function(err, results) {
         console.log(err);
         for (var i = 0; i < results.length; i++) {
-            results[i]['convo']['otherUsers'] = results[i]['otherUsers'];
+            results[i]['convo']['users'] = results[i]['users'];
             results[i]['convo']['lastMessage'] = results[i]['lastMessage'];
             results[i] = results[i]['convo'];
         }
