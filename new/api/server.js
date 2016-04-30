@@ -716,7 +716,7 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
             if (nextItem) {
                 connectToConvo(result, nextItem);
             } else {
-                res.json(outputResult({}));
+                fetchConversation(convo);
             }
         }
     });
@@ -724,18 +724,34 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
     function connectToConvo(convo, userID) {
         var cypher = "MATCH (convo: Conversation), (user: User)"
         + " WHERE id(convo) = {convoID} AND id(user) = {userID}"
-        + " CREATE UNIQUE (user)-[r: joined {read: 0}]->(convo)"
-        + " WITH convo, user";
-        + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
-        + " RETURN convo, COLLECT(users) AS users"
+        + " CREATE UNIQUE (user)-[r: joined {read: 0}]->(convo) RETURN r";
         var params = {
             'convoID': convo.id,
             'userID': userID
         };
         db.query(cypher, params, function(err, results) {
             console.log(err);
-            var nextItem = userList.pop();
-            if (nextItem) {
+            if (userList.length > 0) {
+                var nextItem = userList.pop();
+                connectToConvo(convo, nextItem);
+            } else {
+                fetchConversation(convo);
+            }
+        });
+    }
+
+    function fetchConversation(convo) {
+        var cypher = "MATCH (convo: Conversation)"
+        + " WHERE id(convo) = {convoID}"
+        + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
+        + " RETURN convo, COLLECT(users) AS users"
+        var params = {
+            'convoID': convo.id
+        };
+        db.query(cypher, params, function(err, results) {
+            console.log(err);
+            if (userList.length > 0) {
+                var nextItem = userList.pop();
                 connectToConvo(convo, nextItem);
             } else {
                 for (var i = 0; i < results.length; i++) {
@@ -743,7 +759,7 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
                     results[i]['convo']['lastMessage'] = null;
                     results[i] = results[i]['convo'];
                 }
-                res.json(outputResult(result[0]));
+                res.json(outputResult(results[0]));
             }
         });
     }
