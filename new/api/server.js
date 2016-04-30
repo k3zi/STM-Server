@@ -682,7 +682,7 @@ app.post('/v1/search/followers', jsonParser, urlEncodeHandler, sessionAuth, func
     var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
     + " WHERE id(thisUser) = {userID}"
     + " WITH user, thisUser"
-    + " AND user.displayName =~ " + likeString + " OR user.username =~ " + likeString
+    + " WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString
     + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
     + " RETURN user, isFollowing"
     + " ORDER BY isFollowing.date DESC"
@@ -691,6 +691,7 @@ app.post('/v1/search/followers', jsonParser, urlEncodeHandler, sessionAuth, func
         'userID': user.id
     };
     db.query(cypher, params, function(err, results) {
+        console.log(err);
         for (var i in results) {
             results[i]['user']['isFollowing'] = (results[i]['isFollowing'] ? true : false);
             results[i] = results[i]['user'];
