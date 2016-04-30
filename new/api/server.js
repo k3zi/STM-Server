@@ -686,8 +686,8 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
     + " OPTIONAL MATCH (user)-[didRepost: reposted]->(comment)"
     + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
     + " OPTIONAL MATCH (user)-[doesFollow: follows]->(commentUser)"
-    + " RETURN comment, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
-    + ", CASE WHEN doesFollow.date IS NULL THEN comment.date ELSE r1.date END AS date"
+    + " RETURN comment, postingUser, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
+    + ", CASE WHEN doesFollow.date IS NOT NULL THEN comment.date ELSE r1.date END AS date"
     + " ORDER BY date DESC";
     db.query(cypher, {
         'userID': user.id
@@ -701,6 +701,7 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
             results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
             results[i]['comment']['reposts'] = results[i]['reposts'];
             results[i]['comment']['date'] = results[i]['date'];
+            results[i]['comment']['postingUser'] = results[i]['postingUser'];
             results[i] = results[i]['comment'];
         }
         res.json(outputResult(results));
