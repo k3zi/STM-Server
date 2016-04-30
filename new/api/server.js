@@ -681,6 +681,7 @@ app.post('/v1/search/followers', jsonParser, urlEncodeHandler, sessionAuth, func
 
     var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
     + " WHERE id(thisUser) = {userID}"
+    + " WITH user, thisUser"
     + " AND user.displayName =~ " + likeString + " OR user.username =~ " + likeString
     + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
     + " RETURN user, isFollowing"
