@@ -471,10 +471,11 @@ app.get('/v1/follow/:userID', jsonParser, urlEncodeHandler, sessionAuth, functio
 
     var cypher = "MATCH (fromUser: User), (toUser: User)"
     + " WHERE id(fromUser) = {fromID} AND id(toUser) = {toID}"
-    + " CREATE UNIQUE (fromUser)-[r: follows]->(toUser) RETURN r";
+    + " CREATE UNIQUE (fromUser)-[r: follows {date: {date}]->(toUser) RETURN r";
     var params = {
         'fromID': user.id,
-        'toID': toID
+        'toID': toID,
+        'date': Date.secNow()
     };
     db.query(cypher, params, function(err, results) {
         console.log(err);
@@ -686,7 +687,7 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
     + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
     + " OPTIONAL MATCH (user)-[doesFollow: follows]->(commentUser)"
     + " RETURN comment, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
-    + ", CASE WHEN doesFollow IS NULL THEN comment.date ELSE r1.date END AS date"
+    + ", CASE WHEN doesFollow.date IS NULL THEN comment.date ELSE r1.date END AS date"
     + " ORDER BY date DESC";
     db.query(cypher, {
         'userID': user.id
