@@ -560,6 +560,80 @@ app.get('/v1/comment/unrepost/:commentID', jsonParser, urlEncodeHandler, session
     });
 });
 
+app.get('/v1/comment/:commentID/replys', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var commentID = parseInt(req.params.commentID);
+
+    var cypher = "MATCH (user: User)-[r:createdComment]->(reply: Comment)-[r:replyTo]->(comment: Comment)"
+    + " WHERE id(comment) = {commentID}"
+    + " OPTIONAL MATCH (sessionUser)"
+    + " WHERE id(sessionUser) = {sessionUserID}"
+    + " OPTIONAL MATCH (sessionUser)-[didLike: likes]->(reply)"
+    + " OPTIONAL MATCH ()-[likes: likes]->(reply)"
+    + " OPTIONAL MATCH (sessionUser)-[didRepost: reposted]->(reply)"
+    + " OPTIONAL MATCH ()-[reposts: reposted]->(reply)"
+    + " RETURN reply AS comment, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, user"
+    + " ORDER BY comment.date DESC";
+    var params = {
+        'commentID': commentID,
+        'sessionUserID': user.id
+    };
+    db.query(cypher, params, function(err, results) {
+        console.log(err);
+        for(var i = 0; i < results.length; i++) {
+            results[i]['comment']['user'] = results[i]['user'];
+            results[i]['comment']['stream'] = results[i]['stream'];
+            results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
+            results[i]['comment']['likes'] = results[i]['likes'];
+            results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
+            results[i]['comment']['reposts'] = results[i]['reposts'];
+            results[i] = results[i]['comment'];
+        }
+        res.json(outputResult(results));
+    });
+});
+
+app.post('/v1/comment/:commentID/reply', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var commentID = parseInt(req.params.commentID);
+    var streamID = parseInt(req.body.streamID);
+    var roomID = streamID + '-comments';
+    var arr = {
+        'text': req.body.text,
+        'date': Date.secNow()
+    };
+
+    db.save(arr, 'Comment', function(err, comment) {
+        if (err) {
+            res.json(outputError('There was a database error. Oops :('));
+        } else {
+            commentSocket.to(roomID).volatile.emit('newComment', joinDictWithUser(comment, user));
+            relateUserToComment(comment);
+        }
+    });
+
+    function relateUserToComment(comment) {
+        db.relate(user, 'createdComment', comment, {}, function(err, relationship) {
+            if(err)console.log(err);
+            relateCommentToStream(comment, streamID);
+        });
+    }
+
+    function relateCommentToStream(comment, stream) {
+        db.relate(comment, 'on', stream, {}, function(err, relationship) {
+            if(err)console.log(err);
+            relateCommentToComment(comment);
+        });
+    }
+
+    function relateCommentToComment(comment) {
+        db.relate(comment, 'replyTo', commentID, {}, function(err, relationship) {
+            if(err)console.log(err);
+            res.json(outputResult({}));
+        });
+    }
+});
+
 app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var items = [];
