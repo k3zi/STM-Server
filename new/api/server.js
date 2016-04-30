@@ -1052,7 +1052,7 @@ app.post('/v1/playStream/:streamID', jsonParser, urlEncodeHandler, sessionAuth, 
     }
 });
 
-app.get('/streamLiveToDevice/:streamID/:userID/:auth', jsonParser, urlEncodeHandler, function(req, res) {
+app.get('/v1/streamLiveToDevice/:streamID/:userID/:auth', jsonParser, urlEncodeHandler, function(req, res) {
     res.setHeader("Content-Type", "audio/aac");
 
     req.on('close', function(){
