@@ -471,7 +471,7 @@ app.get('/v1/follow/:userID', jsonParser, urlEncodeHandler, sessionAuth, functio
 
     var cypher = "MATCH (fromUser: User), (toUser: User)"
     + " WHERE id(fromUser) = {fromID} AND id(toUser) = {toID}"
-    + " CREATE UNIQUE (fromUser)-[r: follows {date: {date}]->(toUser) RETURN r";
+    + " CREATE UNIQUE (fromUser)-[r: follows {date: {date}}]->(toUser) RETURN r";
     var params = {
         'fromID': user.id,
         'toID': toID,
