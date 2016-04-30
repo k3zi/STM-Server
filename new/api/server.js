@@ -681,7 +681,6 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
     + " WITH DISTINCT comment, stream, user"
     + " MATCH (commentUser)-[:createdComment]->(comment)"
     + " OPTIONAL MATCH (comment)<-[r1:reposted]-(reposter:User)<-[:follows*0..1]-(user)"
-    + " ORDER BY r1.date ASC"
     + " WITH comment, stream, user, commentUser, HEAD(COLLECT(reposter)) AS reposter, HEAD(COLLECT(r1)) AS r1"
     + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
     + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
