@@ -583,7 +583,7 @@ app.get('/v1/comment/:commentID/replys', jsonParser, urlEncodeHandler, sessionAu
     };
     db.query(cypher, params, function(err, results) {
         console.log(err);
-        for(var i = 0; i < results.length; i++) {
+        for (var i = 0; i < results.length; i++) {
             results[i]['comment']['user'] = results[i]['user'];
             results[i]['comment']['stream'] = results[i]['stream'];
             results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
@@ -671,6 +671,30 @@ app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, 
             return res.json(outputResult(items));
         });
     }
+});
+
+app.post('/v1/search/users', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var items = [];
+    var q = req.body.q;
+    var likeString = "'(?i).*" + q + ".*'";
+
+    var cypher = "MATCH (user: User)"
+    + " WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString
+    + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
+    + " WHERE id(thisUser) = {userID}"
+    + " RETURN user, isFollowing"
+    + " LIMIT 5";
+    var params = {
+        'userID': user.id
+    };
+    db.query(cypher, params, function(err, results) {
+        for (var i in results {
+            results[i]['user']['isFollowing'] = (results[i]['isFollowing'] ? true : false);
+            results[i] = results[i]['user'];
+        }
+        res.json(outputResult(results));
+    });
 });
 
 app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
