@@ -755,7 +755,7 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
                 connectToConvo(convo, nextItem);
             } else {
                 for (var i = 0; i < results.length; i++) {
-                    result[i]['convo']['users'] = results[i]['users'];
+                    results[i]['convo']['users'] = results[i]['users'];
                     results[i]['convo']['lastMessage'] = null;
                     results[i] = results[i]['convo'];
                 }
