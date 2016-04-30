@@ -307,17 +307,18 @@ app.get('/v1/stream/:streamID/picture', jsonParser, urlEncodeHandler, sessionAut
 app.post('/v1/upload/stream/:streamID/picture', urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var streamID = parseInt(req.params.streamID);
+    ensureExists(getStreamDir(streamID), function(err) {
+        var fstream = fs.createWriteStream(getStreamDir(streamID) + 'picture.png');
+        req.pipe(fstream);
 
-    var fstream = fs.createWriteStream(getStreamDir(streamID) + 'picture.png');
-    req.pipe(fstream);
+        fstream.on('error', function(err) {
+            console.log(err);
+           res.send(500, err);
+        });
 
-    fstream.on('error', function(err) {
-        console.log(err);
-       res.send(500, err);
-    });
-
-    fstream.on('close', function() {
-        res.json(outputResult({}));
+        fstream.on('close', function() {
+            res.json(outputResult({}));
+        });
     });
 });
 
