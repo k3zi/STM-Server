@@ -691,6 +691,7 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
     db.query(cypher, {
         'userID': user.id
     }, function(err, results) {
+        console.log(err);
         for(var i = 0; i < results.length; i++) {
             results[i]['comment']['user'] = results[i]['user'];
             results[i]['comment']['stream'] = results[i]['stream'];
