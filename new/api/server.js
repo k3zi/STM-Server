@@ -281,7 +281,7 @@ app.post('/v1/stream/:streamID/update/:property', jsonParser, urlEncodeHandler, 
     var property = req.params.property;
     var value = req.body.value;
 
-    var cypher = "START x = node({userID}) SET x." + property + " = {value} RETURN x";
+    var cypher = "START x = node({streamID}) SET x." + property + " = {value} RETURN x";
     db.query(cypher, {
         'streamID': streamID,
         'value': value
