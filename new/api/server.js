@@ -724,10 +724,15 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
     function connectToConvo(convo, userID) {
         var cypher = "MATCH (convo: Conversation), (user: User)"
         + " WHERE id(convo) = {convoID} AND id(user) = {userID}"
-        + " CREATE UNIQUE (user)-[r: joined {read: 0}]->(convo) RETURN r";
+        + " CREATE UNIQUE (user)-[r: joined {read: 0}]->(convo)"
+        + " WITH convo, user";
+        + " OPTIONAL MATCH (otherUsers: User)-[:joined]->(convo)"
+        + " WHERE id(otherUsers) != {currentUserID}"
+        + " RETURN convo, COLLECT(otherUsers) AS otherUsers"
         var params = {
             'convoID': convo.id,
-            'userID': userID
+            'userID': userID,
+            'currentUserID': user.id
         };
         db.query(cypher, params, function(err, results) {
             console.log(err);
@@ -735,7 +740,12 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
             if (nextItem) {
                 connectToConvo(convo, nextItem);
             } else {
-                res.json(outputResult({}));
+                for (var i = 0; i < results.length; i++) {
+                    result[i]['convo']['otherUsers'] = results[i]['otherUsers'];
+                    results[i]['convo']['lastMessage'] = null;
+                    results[i] = results[i]['convo'];
+                }
+                res.json(outputResult(result[0]));
             }
         });
     }
@@ -755,7 +765,7 @@ app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function
         'userID': user.id
     }, function(err, results) {
         console.log(err);
-        for(var i = 0; i < results.length; i++) {
+        for (var i = 0; i < results.length; i++) {
             results[i]['convo']['otherUsers'] = results[i]['otherUsers'];
             results[i]['convo']['lastMessage'] = results[i]['lastMessage'];
             results[i] = results[i]['convo'];
