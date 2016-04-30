@@ -722,7 +722,8 @@ app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, 
     + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
     + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
     + " RETURN comment, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
-    + " ORDER BY comment.date DESC";
+    + ", CASE WHEN didRepost.date IS NULL THEN comment.date ELSE didRepost.date END AS sortDate"
+    + " ORDER BY sortDate DESC";
     db.query(cypher, {
         'userID': userID,
         'sessionUserID': user.id
