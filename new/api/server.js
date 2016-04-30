@@ -689,7 +689,7 @@ app.post('/v1/search/users', jsonParser, urlEncodeHandler, sessionAuth, function
         'userID': user.id
     };
     db.query(cypher, params, function(err, results) {
-        for (var i in results {
+        for (var i in results) {
             results[i]['user']['isFollowing'] = (results[i]['isFollowing'] ? true : false);
             results[i] = results[i]['user'];
         }
