@@ -680,14 +680,15 @@ app.post('/v1/search/followers', jsonParser, urlEncodeHandler, sessionAuth, func
     var likeString = "'(?i).*" + q + ".*'";
 
     var cypher = "MATCH (user: User)-[:follows*1]->(thisUser: User)"
-    + " WHERE id(thisUser) = {userID}"
+    + " WHERE id(thisUser) = {userID1} AND id(user) != {userID2}"
     + " AND user.displayName =~ " + likeString + " OR user.username =~ " + likeString
     + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
     + " RETURN user, isFollowing"
     + " ORDER BY isFollowing.date DESC"
     + " LIMIT 20";
     var params = {
-        'userID': user.id
+        'userID1': user.id,
+        'userID2': user.id
     };
     db.query(cypher, params, function(err, results) {
         for (var i in results) {
