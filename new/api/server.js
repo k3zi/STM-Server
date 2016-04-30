@@ -679,16 +679,15 @@ app.post('/v1/search/followers', jsonParser, urlEncodeHandler, sessionAuth, func
     var q = req.body.q;
     var likeString = "'(?i).*" + q + ".*'";
 
-    var cypher = "MATCH (user: User)-[:follows*1]->(thisUser: User)"
-    + " WHERE id(thisUser) = {userID1} AND id(user) != {userID2}"
+    var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
+    + " WHERE id(thisUser) = {userID}"
     + " AND user.displayName =~ " + likeString + " OR user.username =~ " + likeString
     + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
     + " RETURN user, isFollowing"
     + " ORDER BY isFollowing.date DESC"
     + " LIMIT 20";
     var params = {
-        'userID1': user.id,
-        'userID2': user.id
+        'userID': user.id
     };
     db.query(cypher, params, function(err, results) {
         for (var i in results) {
@@ -701,7 +700,98 @@ app.post('/v1/search/followers', jsonParser, urlEncodeHandler, sessionAuth, func
 
 app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
+    var userList = req.body.users;
+
+    if (userList.indexOf(user.id) == -1) {
+        userList.push(user.id);
+    }
+
+    db.save({ name: '' }, 'Conversation', function(err, result) {
+        if (err) {
+            res.json(outputError('There was a database error. Oops :('));
+        } else {
+            var nextItem = userList.pop();
+            if (nextItem) {
+                connectToConvo(result, nextItem);
+            } else {
+                res.json(outputResult({}));
+            }
+        }
+    });
+
+    function connectToConvo(convo, userID) {
+        var cypher = "MATCH (convo: Conversation), (user: User)"
+        + " WHERE id(convo) = {convoID} AND id(user) = {userID}"
+        + " CREATE UNIQUE (user)-[r: joined {read: 0}]->(convo) RETURN r";
+        var params = {
+            'convoID': convo.id,
+            'userID': userID
+        };
+        db.query(cypher, params, function(err, results) {
+            console.log(err);
+            var nextItem = userList.pop();
+            if (nextItem) {
+                connectToConvo(convo, nextItem);
+            } else {
+                res.json(outputResult({}));
+            }
+        });
+    }
 });
+
+app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+
+    var cypher = "MATCH (user: User)-[:joined]->(convo: Conversation)"
+    + " WHERE id(user) = {userID}"
+    + " WITH DISTINCT convo, user"
+    + " OPTIONAL MATCH (otherUsers: User)-[:joined]->(convo)"
+    + " WHERE id(otherUsers) != id(user)"
+    + " OPTIONAL MATCH (lastMessage: Message)-[:on]->(convo)"
+    + " RETURN convo, HEAD(COLLECT(lastMessage)) AS lastMessage, COLLECT(otherUsers) AS otherUsers"
+    + " ORDER BY lastMessage.date DESC";
+    db.query(cypher, {
+        'userID': user.id
+    }, function(err, results) {
+        console.log(err);
+        for(var i = 0; i < results.length; i++) {
+            results[i]['convo']['otherUsers'] = results[i]['otherUsers'];
+            results[i]['convo']['lastMessage'] = results[i]['lastMessage'];
+            results[i] = results[i]['convo'];
+        }
+        res.json(outputResult(results));
+    });
+});
+
+app.post('/v1/messages/:convoID/send', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var convoID = parseInt(req.params.convoID);
+    var arr = {
+        'text': req.body.text,
+        'date': Date.secNow()
+    };
+
+    db.save(arr, 'Message', function(err, message) {
+        if (err) {
+            res.json(outputError('There was a database error. Oops :('));
+        } else {
+            relateUserToMessage(message);
+        }
+    });
+
+    function relateUserToMessage(message) {
+        db.relate(user, 'createdMessage', message, {'date': Date.secNow()}, function(err, relationship) {
+            if(err)console.log(err);
+            relateCommentToConvo(message);
+        });
+    }
+
+    function relateCommentToConvo(message) {
+        db.relate(message, 'on', convoID, {}, function(err, relationship) {
+            if(err)console.log(err);
+            res.json(outputResult({}));
+        });
+    }
 
 app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
