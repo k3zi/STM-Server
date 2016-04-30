@@ -712,8 +712,8 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
         if (err) {
             res.json(outputError('There was a database error. Oops :('));
         } else {
-            var nextItem = userList.pop();
-            if (nextItem) {
+            if (userList.length > 0) {
+                var nextItem = userList.pop();
                 connectToConvo(result, nextItem);
             } else {
                 fetchConversation(convo);
@@ -750,17 +750,13 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
         };
         db.query(cypher, params, function(err, results) {
             console.log(err);
-            if (userList.length > 0) {
-                var nextItem = userList.pop();
-                connectToConvo(convo, nextItem);
-            } else {
-                for (var i = 0; i < results.length; i++) {
-                    results[i]['convo']['users'] = results[i]['users'];
-                    results[i]['convo']['lastMessage'] = null;
-                    results[i] = results[i]['convo'];
-                }
-                res.json(outputResult(results[0]));
+            console.log(results);
+            for (var i = 0; i < results.length; i++) {
+                results[i]['convo']['users'] = results[i]['users'];
+                results[i]['convo']['lastMessage'] = null;
+                results[i] = results[i]['convo'];
             }
+            res.json(outputResult(results[0]));
         });
     }
 });
