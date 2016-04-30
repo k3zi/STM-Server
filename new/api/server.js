@@ -686,7 +686,7 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
     + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
     + " OPTIONAL MATCH (user)-[doesFollow: follows]->(commentUser)"
     + " RETURN comment, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, commentUser AS user"
-    + ", CASE WHEN doesFollow = true THEN r1.date ELSE comment.date END AS date"
+    + ", CASE WHEN doesFollow IS NULL THEN comment.date ELSE r1.date END AS date"
     + " ORDER BY date DESC";
     db.query(cypher, {
         'userID': user.id
