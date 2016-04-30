@@ -706,6 +706,8 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
         userList.push(user.id);
     }
 
+    console.log(userList);
+
     db.save({ name: '' }, 'Conversation', function(err, result) {
         if (err) {
             res.json(outputError('There was a database error. Oops :('));
