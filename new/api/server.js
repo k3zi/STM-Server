@@ -1139,7 +1139,7 @@ app.get('/v1/user/:userID/comments', jsonParser, urlEncodeHandler, sessionAuth, 
     });
 });
 
-app.get('/v1/stats/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+app.get('/v1/user/:userID/info/', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var userID = parseInt(req.params.userID);
     var items = {};
