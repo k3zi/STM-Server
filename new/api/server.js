@@ -361,6 +361,24 @@ app.get('/v1/stream/:streamID/isOnline', jsonParser, urlEncodeHandler, sessionAu
     });
 });
 
+app.get('/v1/stream/:streamID/meta', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var streamID = parseInt(req.params.streamID);
+
+    var streamAlpha = encodeStr(streamID);
+    var streamDir = getStreamDir(streamID);
+    var metaFile = streamDir + streamAlpha + '.meta';
+
+    fs.readFile(metaFile, 'utf8', function(err, contents) {
+        if (err) {
+            res.json(outputResult({}));
+        } else {
+            var json = JSON.parse(contents);
+            res.json(outputResult(json));
+        }
+    });
+});
+
 app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
@@ -1446,13 +1464,21 @@ hostSocket.on('connection', function(socket) {
     var streamAlpha = encodeStr(streamID);
     var givenSecurityHash = params.securityHash;
     var roomID = streamID + '-audio';
+    var commentRoomID = streamID + '-comments';
 
     var streamDir = getStreamDir(streamID);
     var lockFile = streamDir + streamAlpha + '.aac.lock';
     var liveFile = streamDir + streamAlpha + '.live';
-    var posterFile = streamDir + streamAlpha + '.png';
+    var metaFile = streamDir + streamAlpha + '.meta';
     var recordFile = streamDir + streamAlpha + '.aac';
     var isVerified = false;
+
+    socket.on('updateMeta', function(data, callback) {
+        var wstream = fs.createWriteStream(metaFile);
+        wstream.write(JSON.stringify(data));
+        wstream.end();
+        commentSocket.to(commentRoomID).volatile.emit('didUpdateMetadata', {});
+    });
 
     //Hosting
     socket.on('dataForStream', function(data, callback) {
