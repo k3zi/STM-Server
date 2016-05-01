@@ -446,7 +446,7 @@ app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, functio
             db.query(cypher, params, function(err, results) {
                 console.log(err);
                 for (var i in results) {
-                    var toUser = result[i];
+                    var toUser = results[i];
                     if (toUser.apnsToken && toUser.apnsToken.length == 64) {
                         sendMessageToAPNS('(@' + user.username + ') created a stream called: ' + stream.name, toUser.apnsToken);
                     }
@@ -508,7 +508,7 @@ app.post('/v1/stream/:streamID/continue', jsonParser, urlEncodeHandler, sessionA
                 db.query(cypher, params, function(err, results) {
                     console.log(err);
                     for (var i in results) {
-                        var toUser = result[i];
+                        var toUser = results[i];
                         if (toUser.apnsToken && toUser.apnsToken.length == 64) {
                             sendMessageToAPNS('(@' + user.username + ') continued streaming: ' + stream.name, toUser.apnsToken);
                         }
