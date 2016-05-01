@@ -1424,7 +1424,7 @@ hostSocket.on('connection', function(socket) {
                     outputSocket.to(roomID).emit('streamData', data);
                     fs.appendFileSync(recordFile, new Buffer(data.data, 'base64'));
                     var wstream = fs.createWriteStream(liveFile);
-                    wstream.write(Date.secNow());
+                    wstream.write(Date.secNow().toString());
                     wstream.end();
                     executeCallback();
                 }
