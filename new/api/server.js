@@ -382,14 +382,12 @@ app.get('/v1/stream/:streamID/meta', jsonParser, urlEncodeHandler, sessionAuth, 
 app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
-    var private = data.passcode.length > 0;
     var arr = {
         'name': data.name,
-        'private': private,
+        'type': data.type,
         'description': data.description
     };
 
-    if (private) arr.passcode = data.passcode;
     db.save(arr, 'Stream', function(err, stream) {
         if (err) {
             res.json(outputError('There was a database error. Oops :('));
