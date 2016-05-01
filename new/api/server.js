@@ -658,7 +658,9 @@ app.get('/v1/follow/:userID', jsonParser, urlEncodeHandler, sessionAuth, functio
 
     var cypher = "MATCH (fromUser: User), (toUser: User)"
     + " WHERE id(fromUser) = {fromID} AND id(toUser) = {toID}"
-    + " CREATE UNIQUE (fromUser)-[r: follows {date: {date}}]->(toUser) RETURN toUser";
+    + " CREATE UNIQUE (fromUser)-[r: follows]->(toUser)"
+    + " SET r.date = {date}"
+    + " RETURN toUser";
     var params = {
         'fromID': user.id,
         'toID': toID,
@@ -698,7 +700,9 @@ app.get('/v1/comment/like/:commentID', jsonParser, urlEncodeHandler, sessionAuth
 
     var cypher = "MATCH (fromUser: User), (comment: Comment)"
     + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
-    + " CREATE UNIQUE (fromUser)-[r: likes {date: {date}}]->(comment) RETURN r";
+    + " CREATE UNIQUE (fromUser)-[r: likes]->(comment)"
+    + " SET r.date = {date}"
+    + " RETURN r";
     var params = {
         'fromID': user.id,
         'commentID': commentID,
@@ -731,7 +735,9 @@ app.get('/v1/comment/repost/:commentID', jsonParser, urlEncodeHandler, sessionAu
 
     var cypher = "MATCH (fromUser: User), (comment: Comment)"
     + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
-    + " CREATE UNIQUE (fromUser)-[r: reposted {date: {date}}]->(comment) RETURN r";
+    + " CREATE UNIQUE (fromUser)-[r: reposted]->(comment)"
+    + " SET r.date = {date}"
+    + " RETURN r";
     var params = {
         'fromID': user.id,
         'commentID': commentID,
