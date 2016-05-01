@@ -167,7 +167,7 @@ var hasher = new Hashids(STM_CONFIG.hashSalt, STM_CONFIG.hashMinLength, STM_CONF
 
 //****************** REGULAR AUTH METHODS ********************\\
 
-app.post('/v1/createAccount', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
+app.post('/v1/user/create', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
     var postData = req.body;
 
     function callbackAllCheckout(err, results) {
@@ -206,7 +206,7 @@ app.post('/v1/createAccount', jsonParser, urlEncodeHandler, regularAuth, functio
 });
 
 
-app.post('/v1/signIn', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
+app.post('/v1/user/signIn', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
     var postData = req.body;
     db.find({
         username: postData.username,
@@ -228,7 +228,7 @@ app.post('/v1/signIn', jsonParser, urlEncodeHandler, regularAuth, function(req, 
     });
 });
 
-app.post('/v1/authenticate', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
+app.post('/v1/user/authenticate', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
     var data = req.body;
     db.find({
         username: data.username,
@@ -249,7 +249,7 @@ app.post('/v1/authenticate', jsonParser, urlEncodeHandler, regularAuth, function
 
 //******************** SESSION AUTH METHODS ******************\\
 
-app.post('/v1/updateAPNS', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+app.post('/v1/user/updateAPNS', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var data = req.body;
     var token = data.token;
     var user = req.session.user;
@@ -340,7 +340,6 @@ app.get('/v1/stream/:streamID/delete', jsonParser, urlEncodeHandler, sessionAuth
 app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
-    var userDir = getUserDir(user.id);
     var private = data.passcode.length > 0;
     var arr = {
         'name': data.name,
@@ -353,7 +352,9 @@ app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, functio
         if (err) {
             res.json(outputError('There was a database error. Oops :('));
         } else {
-            relateUserToStream(stream);
+            ensureExists(getStreamDir(stream.id), function(err) {
+                relateUserToStream(stream);
+            });
         }
     });
 
@@ -367,7 +368,9 @@ app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, functio
 
     function setupStream(stream) {
         var streamAlphaID = encodeStr(stream.id);
-        var lockFile = userDir + streamAlphaID + '.aac.lock';
+        var streamDir = getStreamDir(stream.id);
+        var lockFile = streamDir + streamAlphaID + '.aac.lock';
+
         isThere(lockFile, function(exists) {
             if (exists) fs.unlinkSync(lockFile);
 
@@ -391,10 +394,6 @@ app.post('/v1/stream/:streamID/continue', jsonParser, urlEncodeHandler, sessionA
     var user = req.session.user;
     var streamID = parseInt(req.params.streamID);
     var streamAlpha = encodeStr(streamID);
-    var userDir = getUserDir(user.id);
-
-    var recordFile = userDir + streamAlpha + '.aac';
-    var lockFile = userDir + streamAlpha + '.aac.lock';
 
     var cypher = "START x = node({userID}) MATCH x -[:createdStream]->(stream) WHERE id(stream) = {streamID} RETURN stream";
     var params = {
@@ -407,6 +406,16 @@ app.post('/v1/stream/:streamID/continue', jsonParser, urlEncodeHandler, sessionA
         }
 
         var stream = results[0];
+        var streamDir = getStreamDir(stream.id);
+        ensureExists(streamDir, function(err) {
+            setupStream(stream, streamDir);
+        });
+
+    });
+
+    function setupStream(stream, streamDir) {
+        var recordFile = streamDir + streamAlpha + '.aac';
+        var lockFile = streamDir + streamAlpha + '.aac.lock';
 
         isThere(recordFile, function(exists) {
             if (exists)fs.unlinkSync(recordFile);
@@ -425,7 +434,8 @@ app.post('/v1/stream/:streamID/continue', jsonParser, urlEncodeHandler, sessionA
                 });
             });
         });
-    });
+    }
+
 });
 
 //**********************************************************************
@@ -1369,11 +1379,11 @@ hostSocket.on('connection', function(socket) {
     var givenSecurityHash = params.securityHash;
     var roomID = streamID + '-audio';
 
-    var userDir = getUserDir(userID);
-    var lockFile = userDir + streamAlpha + '.aac.lock';
-    var liveFile = userDir + streamAlpha + '.live';
-    var posterFile = userDir + streamAlpha + '.png';
-    var recordFile = userDir + streamAlpha + '.aac';
+    var streamDir = getStreamDir(streamID);
+    var lockFile = streamDir + streamAlpha + '.aac.lock';
+    var liveFile = streamDir + streamAlpha + '.live';
+    var posterFile = streamDir + streamAlpha + '.png';
+    var recordFile = streamDir + streamAlpha + '.aac';
     var isVerified = false;
 
     //Hosting
@@ -1497,14 +1507,6 @@ function getStreamDir(streamID) {
 
 function encodeStr(str) {
     return hasher.encode(parseInt(str));
-}
-
-function userPicsDir(username) {
-    return '/home/stream/api/pics_acd9f82099bcae0b0333bee07cac6715/_' + username + '_' + md5(username) + '/';
-}
-
-function userDir(username) {
-    return '/home/stream/api/uploads_ddecebdea58b5f264d27f1f7909bab74/_' + username + '_' + md5(username) + '/';
 }
 
 function sendMessageToAPNS(message, token, prod, type, related) {
