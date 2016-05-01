@@ -930,7 +930,7 @@ app.get('/v1/user/:userID/likes', jsonParser, urlEncodeHandler, sessionAuth, fun
     + " OPTIONAL MATCH (sessionUser)-[didRepost: reposted]->(comment)"
     + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
     + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
-    + " RETURN comment, didLike, COUNT(DISTINCT likes) AS likes, COUNT(DISTINCT reposts) AS reposts, didRepost, stream, commentUser AS user"
+    + " RETURN comment, didLike, like, COUNT(DISTINCT likes) AS likes, COUNT(DISTINCT reposts) AS reposts, didRepost, stream, commentUser AS user"
     + " ORDER BY like.date DESC";
     db.query(cypher, {
         'userID': userID,
