@@ -1162,8 +1162,8 @@ app.get('/v1/user/:userID/info/', jsonParser, urlEncodeHandler, sessionAuth, fun
             'userID': userID,
             'currentUserID': user.id
         }, function(err, results) {
-            items['followers'] = results[0]['count'];
-            items['isFollowing'] = (results[0]['isFollowing'] ? true : false);
+            items['followers'] = results[0] ? results[0]['count'] : 0;
+            items['isFollowing'] = results[0] ? (results[0]['isFollowing'] ? true : false) : false;
             getComments();
         });
     }
