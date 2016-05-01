@@ -284,9 +284,9 @@ app.post('/v1/user/update/:property', jsonParser, urlEncodeHandler, sessionAuth,
     db.query(cypher, {
         'userID': user.id,
         'value': value
-    }, function(err, results) {
+    }, function(err, result) {
         console.log(err);
-        res.json(outputResult({}));
+        res.json(outputResult(result));
     });
 });
 
