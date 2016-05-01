@@ -263,9 +263,9 @@ app.post('/v1/updateAPNS', jsonParser, urlEncodeHandler, sessionAuth, function(r
     });
 });
 
-app.get('/v1/streams/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+app.get('/v1/user/:userID/streams', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
-    var userID = parseInt(req.params.userID) < 1 ? user.id : parseInt(req.params.userID);
+    var userID = parseInt(req.params.userID);
 
     var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
     db.query(cypher, {
@@ -322,7 +322,7 @@ app.post('/v1/upload/stream/:streamID/picture', urlEncodeHandler, sessionAuth, f
     });
 });
 
-app.get('/v1/delete/stream/:streamID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+app.get('/v1/stream/:streamID/delete', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
     var userID = user.id;
@@ -337,7 +337,7 @@ app.get('/v1/delete/stream/:streamID', jsonParser, urlEncodeHandler, sessionAuth
     });
 });
 
-app.post('/v1/createStream', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
     var userDir = getUserDir(user.id);
@@ -386,7 +386,7 @@ app.post('/v1/createStream', jsonParser, urlEncodeHandler, sessionAuth, function
     }
 });
 
-app.post('/v1/continueStream/:streamID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+app.post('/v1/stream/:streamID/continue', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var data = req.body;
     var user = req.session.user;
     var streamID = parseInt(req.params.streamID);
@@ -917,7 +917,40 @@ app.get('/v1/dashboard/comments', jsonParser, urlEncodeHandler, sessionAuth, fun
     });
 });
 
-app.get('/v1/comments/user/:userID', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+app.get('/v1/user/:userID/likes', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var userID = parseInt(req.params.userID);
+
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[like:likes]-(user :User)"
+    + " WHERE id(user) = {userID}"
+    + " MATCH (commentUser)-[:createdComment]->(comment)"
+    + " OPTIONAL MATCH (sessionUser)"
+    + " WHERE id(sessionUser) = {sessionUserID}"
+    + " OPTIONAL MATCH (sessionUser)-[didLike: likes]->(comment)"
+    + " OPTIONAL MATCH (sessionUser)-[didRepost: reposted]->(comment)"
+    + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
+    + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
+    + " RETURN comment, didLike, COUNT(DISTINCT likes) AS likes, COUNT(DISTINCT reposts) AS reposts, didRepost, stream, commentUser AS user"
+    + " ORDER BY like.date DESC";
+    db.query(cypher, {
+        'userID': userID,
+        'sessionUserID': user.id
+    }, function(err, results) {
+        for(var i = 0; i < results.length; i++) {
+            results[i]['comment']['user'] = results[i]['user'];
+            results[i]['comment']['stream'] = results[i]['stream'];
+            results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
+            results[i]['comment']['likes'] = results[i]['likes'];
+            results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
+            results[i]['comment']['reposts'] = results[i]['reposts'];
+            results[i] = results[i]['comment'];
+        }
+        res.json(outputResult(results));
+    });
+});
+
+
+app.get('/v1/user/:userID/comments', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var userID = parseInt(req.params.userID);
 
