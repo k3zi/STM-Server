@@ -532,9 +532,9 @@ app.get('/v1/dashboard', jsonParser, urlEncodeHandler, sessionAuth, function(req
         console.log(err);
         if (results.length > 0) {
             parseLiveStream(results, results.pop());
+        } else {
+            getFeaturedItems(items);
         }
-
-        getFeaturedItems(items);
     });
 
     function parseLiveStream(results, item) {
