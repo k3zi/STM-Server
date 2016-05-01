@@ -334,7 +334,7 @@ app.post('/v1/upload/stream/:streamID/picture', urlEncodeHandler, sessionAuth, f
            res.send(500, err);
         });
 
-        fstream.on('close', function() {
+        fstream.on('finish', function() {
             res.json(outputResult({}));
         });
     });
@@ -1153,11 +1153,17 @@ app.get('/v1/user/:userID/info/', jsonParser, urlEncodeHandler, sessionAuth, fun
     });
 
     function getFollowers() {
-        var cypher = "MATCH (:User)-[r: follows]->(user: User) WHERE id(user) = {userID} RETURN COUNT(r) AS count";
+        var cypher = "MATCH (:User)-[r1: follows]->(user: User)"
+        + " WHERE id(user) = {userID}"
+        + " OPTIONAL MATCH (currentUser: User)-[r2: follows]->(user)"
+        + " WHERE id(currentUser) = {currentUserID}"
+        + " RETURN COUNT(r1) AS count, r2 AS isFollowing";
         db.query(cypher, {
-            'userID': userID
+            'userID': userID,
+            'currentUserID': user.id
         }, function(err, results) {
             items['followers'] = results[0]['count'];
+            items['isFollowing'] = (results[0]['isFollowing'] ? true : false);
             getComments();
         });
     }
