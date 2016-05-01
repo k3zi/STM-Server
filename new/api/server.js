@@ -208,7 +208,6 @@ app.post('/v1/user/create', jsonParser, urlEncodeHandler, regularAuth, function(
     }, 'User', callbackCheckUsermame);
 });
 
-
 app.post('/v1/user/signIn', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
     var postData = req.body;
     db.find({
