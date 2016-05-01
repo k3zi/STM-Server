@@ -359,7 +359,7 @@ app.get('/v1/stream/:streamID/isOnline', jsonParser, urlEncodeHandler, sessionAu
             }
         }
     });
-    
+});
 
 app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var data = req.body;
