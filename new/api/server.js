@@ -172,7 +172,7 @@ app.post('/v1/user/create', jsonParser, urlEncodeHandler, regularAuth, function(
 
     function callbackAllCheckout(err, results) {
         if (results.length > 0) {
-            return res.json(outputError('A user is already using this email'));
+            return res.json(outputError('A user is already using this username'));
         }
 
         db.save({
@@ -184,7 +184,10 @@ app.post('/v1/user/create', jsonParser, urlEncodeHandler, regularAuth, function(
             if (err) {
                 res.json(outputError('There was a database error. Oops :('));
             } else {
-                res.json(outputResult({}));
+                ensureExists(getUserDir(result.id), function(err) {
+                    req.session.user = result;
+                    res.json(outputResult(result));
+                });
             }
         });
     }
