@@ -434,12 +434,26 @@ app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, functio
             fs.closeSync(fs.openSync(lockFile, 'w'));
             fs.appendFileSync(lockFile, securityHash);
 
-            //Tell Followers
-            //sendMessageToAPNS(userInfo['name'] + ' created a stream called ' + stream['name'], followers[i]['token']); //Token length 64
-            stream.streamAlphaID = streamAlphaID;
-            stream.securityHash = securityHash;
-            db.save(stream, function(err, stream) {
-                res.json(outputResult(stream));
+            var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
+            + " WHERE id(thisUser) = {userID}"
+            + " RETURN user";
+            var params = {
+                'userID': user.id
+            };
+            db.query(cypher, params, function(err, results) {
+                console.log(err);
+                for (var i in results) {
+                    var toUser = result[i];
+                    if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                        sendMessageToAPNS('(@' + user.username + ') created a stream called: ' + stream.name, toUser.apnsToken);
+                    }
+                }
+
+                stream.streamAlphaID = streamAlphaID;
+                stream.securityHash = securityHash;
+                db.save(stream, function(err, stream) {
+                    res.json(outputResult(stream));
+                });
             });
         });
     }
@@ -482,11 +496,25 @@ app.post('/v1/stream/:streamID/continue', jsonParser, urlEncodeHandler, sessionA
                 fs.closeSync(fs.openSync(lockFile, 'w'));
                 fs.appendFileSync(lockFile, securityHash);
 
-                //Tell Followers
-                //sendMessageToAPNS(userInfo['name'] + ' created a stream called ' + stream['name'], followers[i]['token']); //Token length 64
-                stream.securityHash = securityHash;
-                db.save(stream, function(err, stream) {
-                    res.json(outputResult(stream));
+                var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
+                + " WHERE id(thisUser) = {userID}"
+                + " RETURN user";
+                var params = {
+                    'userID': user.id
+                };
+                db.query(cypher, params, function(err, results) {
+                    console.log(err);
+                    for (var i in results) {
+                        var toUser = result[i];
+                        if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                            sendMessageToAPNS('(@' + user.username + ') continued streaming: ' + stream.name, toUser.apnsToken);
+                        }
+                    }
+
+                    stream.securityHash = securityHash;
+                    db.save(stream, function(err, stream) {
+                        res.json(outputResult(stream));
+                    });
                 });
             });
         });
@@ -627,14 +655,22 @@ app.get('/v1/follow/:userID', jsonParser, urlEncodeHandler, sessionAuth, functio
 
     var cypher = "MATCH (fromUser: User), (toUser: User)"
     + " WHERE id(fromUser) = {fromID} AND id(toUser) = {toID}"
-    + " CREATE UNIQUE (fromUser)-[r: follows {date: {date}}]->(toUser) RETURN r";
+    + " CREATE UNIQUE (fromUser)-[r: follows {date: {date}}]->(toUser) RETURN toUser";
     var params = {
         'fromID': user.id,
         'toID': toID,
         'date': Date.secNow()
     };
     db.query(cypher, params, function(err, results) {
-        console.log(err);
+        if (err) {
+            console.log(err);
+        } else {
+            var toUser = results[0];
+            if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                sendMessageToAPNS(user.displayName + ' (@' + user.username + ') is now following you', toUser.apnsToken);
+            }
+        }
+
         res.json(outputResult({}));
     });
 });
