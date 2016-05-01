@@ -532,7 +532,6 @@ app.get('/v1/dashboard', jsonParser, urlEncodeHandler, sessionAuth, function(req
         console.log(err);
         if (results.length > 0) {
             parseLiveStream(results, results.pop());
-            items.push({'name': 'Active Streams (You Follow)', 'items': results});
         }
 
         getFeaturedItems(items);
@@ -557,6 +556,14 @@ app.get('/v1/dashboard', jsonParser, urlEncodeHandler, sessionAuth, function(req
                 if (results.length > 0) {
                     parseLiveStream(results, results.pop());
                 } else {
+                    items.push({'name': 'Active Streams (You Follow)', 'items': activeStreams});
+                    getFeaturedItems();
+                }
+            } else {
+                if (results.length > 0) {
+                    parseLiveStream(results, results.pop());
+                } else {
+                    items.push({'name': 'Active Streams (You Follow)', 'items': activeStreams});
                     getFeaturedItems();
                 }
             }
@@ -564,13 +571,19 @@ app.get('/v1/dashboard', jsonParser, urlEncodeHandler, sessionAuth, function(req
     }
 
     function getFeaturedItems() {
-        var cypher = "MATCH (stream: Stream) RETURN stream LIMIT 10";
+        var cypher = "MATCH (stream: Stream {featured: true})<-[:createdStream]-(user: User) RETURN stream, user LIMIT 10";
         var params = {
         };
         db.query(cypher, params, function(err, results) {
             if (results.length > 0) {
+                for (var i = 0; i < results.length; i++) {
+                    results[i]['stream']['user'] = results[i]['user'];
+                    results[i] = results[i]['stream'];
+                }
+
                 items.push({'name': 'Featured Streams', 'items': results});
             }
+
             return res.json(outputResult(items));
         });
     }
