@@ -275,6 +275,21 @@ app.get('/v1/user/:userID/streams', jsonParser, urlEncodeHandler, sessionAuth, f
     });
 });
 
+app.post('/v1/user/update/:property', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var property = req.params.property;
+    var value = req.body.value;
+
+    var cypher = "START x = node({userID}) SET x." + property + " = {value} RETURN x";
+    db.query(cypher, {
+        'userID': user.id,
+        'value': value
+    }, function(err, results) {
+        console.log(err);
+        res.json(outputResult({}));
+    });
+});
+
 app.post('/v1/stream/:streamID/update/:property', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var streamID = parseInt(req.params.streamID);
@@ -385,7 +400,8 @@ app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, functio
     var arr = {
         'name': data.name,
         'type': data.type,
-        'description': data.description
+        'description': data.description,
+        'private': false
     };
 
     db.save(arr, 'Stream', function(err, stream) {
