@@ -1478,6 +1478,7 @@ hostSocket.on('connection', function(socket) {
         wstream.write(JSON.stringify(data));
         wstream.end();
         commentSocket.to(commentRoomID).volatile.emit('didUpdateMetadata', {});
+        callback({});
     });
 
     //Hosting
