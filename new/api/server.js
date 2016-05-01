@@ -323,19 +323,43 @@ app.post('/v1/upload/stream/:streamID/picture', urlEncodeHandler, sessionAuth, f
 });
 
 app.get('/v1/stream/:streamID/delete', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
-    var data = req.body;
     var user = req.session.user;
-    var userID = user.id;
     var streamID = parseInt(req.params.streamID);
 
     var cypher = "START x = node({userID}) MATCH x -[:createdStream]-> (stream) WHERE id(stream) = {streamID} DETACH DELETE stream";
     db.query(cypher, {
-        'userID': userID,
+        'userID': user.id,
         'streamID': streamID
     }, function(err, results) {
         res.json(outputResult({}));
     });
 });
+
+app.get('/v1/stream/:streamID/isOnline', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var streamID = parseInt(req.params.streamID);
+
+    var streamAlpha = encodeStr(streamID);
+    var streamDir = getStreamDir(streamID);
+    var liveFile = streamDir + streamAlpha + '.live';
+
+    fs.readFile(liveFile, 'utf8', function(err, contents) {
+        if (err) {
+            res.json(outputResult({'online': 0}));
+        } else {
+            var date = parseInt(contents);
+            var diff = Date.secNow() - date;
+
+            if (diff < 10) {
+                res.json(outputResult({'online': 1}));
+            } else if (diff < 45) {
+                res.json(outputResult({'online': 2}));
+            } else {
+                res.json(outputResult({'online': 0}));
+            }
+        }
+    });
+    
 
 app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var data = req.body;
@@ -1399,6 +1423,9 @@ hostSocket.on('connection', function(socket) {
                 if (isVerified) {
                     outputSocket.to(roomID).emit('streamData', data);
                     fs.appendFileSync(recordFile, new Buffer(data.data, 'base64'));
+                    var wstream = fs.createWriteStream(liveFile);
+                    wstream.write(Date.secNow());
+                    wstream.end();
                     executeCallback();
                 }
             }
