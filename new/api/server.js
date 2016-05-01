@@ -520,19 +520,50 @@ app.get('/v1/stream/:streamID/comments', jsonParser, urlEncodeHandler, sessionAu
 app.get('/v1/dashboard', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
     var items = [];
+    var activeStreams = [];
 
-    var cypher = "MATCH (stream: Stream) RETURN stream LIMIT 10";
+    var cypher = "MATCH (stream: Stream)<-[:createdStream]-(owner: User)<-[:follows]-(user)"
+    + " WHERE id(user) = {userID}"
+    + " RETURN stream, owner AS user";
     var params = {
+        'userID': user.id
     };
     db.query(cypher, params, function(err, results) {
+        console.log(err);
         if (results.length > 0) {
+            parseLiveStream(results, results.pop());
             items.push({'name': 'Active Streams (You Follow)', 'items': results});
         }
 
         getFeaturedItems(items);
     });
 
-    function getFeaturedItems(items) {
+    function parseLiveStream(results, item) {
+        var stream = item['stream'];
+        var streamAlpha = encodeStr(stream.id);
+        var streamDir = getStreamDir(stream.id);
+        var liveFile = streamDir + streamAlpha + '.live';
+
+        fs.readFile(liveFile, 'utf8', function(err, contents) {
+            if (!err) {
+                var date = parseInt(contents);
+                var diff = Date.secNow() - date;
+
+                if (diff < 30) {
+                    stream['user'] = item['user'];
+                    activeStreams.push(stream);
+                }
+
+                if (results.length > 0) {
+                    parseLiveStream(results, results.pop());
+                } else {
+                    getFeaturedItems();
+                }
+            }
+        });
+    }
+
+    function getFeaturedItems() {
         var cypher = "MATCH (stream: Stream) RETURN stream LIMIT 10";
         var params = {
         };
