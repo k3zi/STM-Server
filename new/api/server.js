@@ -448,7 +448,7 @@ app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, functio
                 for (var i in results) {
                     var toUser = results[i];
                     if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                        sendMessageToAPNS('(@' + user.username + ') created a stream called: ' + stream.name, toUser.apnsToken);
+                        sendMessageToAPNS('@' + user.username + ' created a stream called: ' + stream.name, toUser.apnsToken);
                     }
                 }
 
@@ -510,7 +510,7 @@ app.post('/v1/stream/:streamID/continue', jsonParser, urlEncodeHandler, sessionA
                     for (var i in results) {
                         var toUser = results[i];
                         if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                            sendMessageToAPNS('(@' + user.username + ') continued streaming: ' + stream.name, toUser.apnsToken);
+                            sendMessageToAPNS('@' + user.username + ' continued streaming: ' + stream.name, toUser.apnsToken);
                         }
                     }
 
