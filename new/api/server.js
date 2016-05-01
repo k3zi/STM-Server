@@ -1191,7 +1191,7 @@ app.post('/v1/upload/user/profilePicture', urlEncodeHandler, sessionAuth, functi
        res.send(500, err);
     });
 
-    fstream.on('close', function() {
+    req.on('end',function(){
         res.json(outputResult({}));
     });
 });
