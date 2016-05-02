@@ -22,7 +22,7 @@ define('DB_NAME', 'stream_wp');
 define('DB_USER', 'stream_admin');
 
 /** MySQL database password */
-define('DB_PASSWORD', 'PWr82T9BaDKwZW6u1L');
+define('DB_PASSWORD', 'gbmpYiJq9f0KOQSjAj');
 
 /** MySQL hostname */
 define('DB_HOST', 'localhost');
