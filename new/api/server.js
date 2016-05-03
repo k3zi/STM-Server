@@ -180,7 +180,8 @@ app.post('/v1/user/create', jsonParser, urlEncodeHandler, regularAuth, function(
             username: postData.username,
             password: hashPass(postData.password),
             unverifiedEmail: postData.email,
-            displayName: postData.displayName
+            displayName: postData.displayName,
+            badge: 0
         }, 'User', function(err, result) {
             if (err) {
                 res.json(outputError('There was a database error. Oops :('));
@@ -440,6 +441,7 @@ app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, functio
 
             var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
             + " WHERE id(thisUser) = {userID}"
+            + " SET user.badge = user.badge + 1"
             + " RETURN user";
             var params = {
                 'userID': user.id
@@ -449,7 +451,7 @@ app.post('/v1/stream/create', jsonParser, urlEncodeHandler, sessionAuth, functio
                 for (var i in results) {
                     var toUser = results[i];
                     if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                        sendMessageToAPNS('@' + user.username + ' created a stream called: ' + stream.name, toUser.apnsToken);
+                        sendMessageToAPNS('@' + user.username + ' created a stream called: ' + stream.name, toUser.apnsToken, toUser.badge);
                     }
                 }
 
@@ -502,6 +504,7 @@ app.post('/v1/stream/:streamID/continue', jsonParser, urlEncodeHandler, sessionA
 
                 var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
                 + " WHERE id(thisUser) = {userID}"
+                + " SET user.badge = user.badge + 1"
                 + " RETURN user";
                 var params = {
                     'userID': user.id
@@ -511,7 +514,7 @@ app.post('/v1/stream/:streamID/continue', jsonParser, urlEncodeHandler, sessionA
                     for (var i in results) {
                         var toUser = results[i];
                         if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                            sendMessageToAPNS('@' + user.username + ' continued streaming: ' + stream.name, toUser.apnsToken);
+                            sendMessageToAPNS('@' + user.username + ' continued streaming: ' + stream.name, toUser.apnsToken, toUser.badge);
                         }
                     }
 
@@ -565,17 +568,19 @@ app.post('/v1/stream/:streamID/comment', jsonParser, urlEncodeHandler, sessionAu
                 }
             }
 
-            var cypher = "MATCH (n: User) WHERE n.username IN {filteredMentions} RETURN n";
+            var cypher = "MATCH (n: User)"
+            + " WHERE n.username IN {filteredMentions} AND id(n) != {userID}"
+            + " SET n.badge = n.badge + 1"
+            + " RETURN n";
             var params = {
-                'filteredMentions': filteredMentions
+                'filteredMentions': filteredMentions,
+                'userID': user.id
             };
             db.query(cypher, params, function(err, results) {
                 for (var i in results) {
                     var toUser = results[i];
-                    if (toUser.id != user.id) {
-                        if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                            sendMessageToAPNS('Mentioned by @' + user.username + ': "' + comment.text + '"', toUser.apnsToken);
-                        }
+                    if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                        sendMessageToAPNS('Mentioned by @' + user.username + ': "' + comment.text + '"', toUser.apnsToken, toUser.badge);
                     }
                 }
 
@@ -683,7 +688,7 @@ app.get('/v1/follow/:userID', jsonParser, urlEncodeHandler, sessionAuth, functio
     var cypher = "MATCH (fromUser: User), (toUser: User)"
     + " WHERE id(fromUser) = {fromID} AND id(toUser) = {toID}"
     + " CREATE UNIQUE (fromUser)-[r: follows]->(toUser)"
-    + " SET r.date = {date}"
+    + " SET r.date = {date}, toUser.badge = toUser.badge + 1"
     + " RETURN toUser";
     var params = {
         'fromID': user.id,
@@ -696,7 +701,7 @@ app.get('/v1/follow/:userID', jsonParser, urlEncodeHandler, sessionAuth, functio
         } else if (results.length > 0) {
             var toUser = results[0];
             if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                sendMessageToAPNS(user.displayName + ' (@' + user.username + ') is now following you', toUser.apnsToken);
+                sendMessageToAPNS(user.displayName + ' (@' + user.username + ') is now following you', toUser.apnsToken, toUser.badge);
             }
         }
 
@@ -857,17 +862,19 @@ app.post('/v1/comment/:commentID/reply', jsonParser, urlEncodeHandler, sessionAu
                 }
             }
 
-            var cypher = "MATCH (n: User) WHERE n.username IN {filteredMentions} RETURN n";
+            var cypher = "MATCH (n: User)"
+            + "WHERE n.username IN {filteredMentions} AND id(toUser) != {userID}"
+            + " SET n.badge = n.badge + 1"
+            + " RETURN n";
             var params = {
-                'filteredMentions': filteredMentions
+                'filteredMentions': filteredMentions,
+                'userID': user.id
             };
             db.query(cypher, params, function(err, results) {
                 for (var i in results) {
                     var toUser = results[i];
-                    if (toUser.id != user.id) {
-                        if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                            sendMessageToAPNS('Mentioned by @' + user.username + ': "' + comment.text + '"', toUser.apnsToken);
-                        }
+                    if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                        sendMessageToAPNS('Mentioned by @' + user.username + ': "' + comment.text + '"', toUser.apnsToken, toUser.badge);
                     }
                 }
 
@@ -1085,19 +1092,19 @@ app.post('/v1/messages/:convoID/send', jsonParser, urlEncodeHandler, sessionAuth
             if(err)console.log(err);
 
             var cypher = "MATCH (user: User)-[:joined]->(convo: Conversation)"
-            + " WHERE id(convo) = {convoID}"
+            + " WHERE id(convo) = {convoID} AND id(user) != {userID}"
+            + " SET user.badge = user.badge + 1"
             + " RETURN user";
             var params = {
-                'convoID': convoID
+                'convoID': convoID,
+                'userID': user.id
             };
             db.query(cypher, params, function(err, results) {
                 console.log(err);
                 for (var i in results) {
                     var toUser = results[i];
-                    if (toUser.id != user.id) {
-                        if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                            sendMessageToAPNS('@' + user.username + ': ' + message.text, toUser.apnsToken);
-                        }
+                    if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                        sendMessageToAPNS('@' + user.username + ': ' + message.text, toUser.apnsToken, toUser.badge);
                     }
                 }
 
@@ -1589,18 +1596,20 @@ commentSocket.on('connection', function(socket) {
                     }
                 }
 
-                var cypher = "MATCH (n: User) WHERE n.username IN {filteredMentions} RETURN n";
+                var cypher = "MATCH (n: User)"
+                + " WHERE n.username IN {filteredMentions} AND id(n) != {userID}"
+                + " SET n.badge = n.badge + 1"
+                + " RETURN n";
                 var params = {
-                    'filteredMentions': filteredMentions
+                    'filteredMentions': filteredMentions,
+                    'userID': commentUser.id
                 };
                 db.query(cypher, params, function(err, results) {
                     console.log(err);
                     for (var i in results) {
                         var toUser = results[i];
-                        if (toUser.id != commentUser.id) {
-                            if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                                sendMessageToAPNS('Mentioned by @' + commentUser.username + ': "' + comment.text + '"', toUser.apnsToken);
-                            }
+                        if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                            sendMessageToAPNS('Mentioned by @' + commentUser.username + ': "' + comment.text + '"', toUser.apnsToken, toUser.badge);
                         }
                     }
 
@@ -1765,12 +1774,12 @@ function encodeStr(str) {
     return hasher.encode(parseInt(str));
 }
 
-function sendMessageToAPNS(message, token, prod, type, related) {
+function sendMessageToAPNS(message, token, badge) {
     var myDevice = new apn.Device(token);
     var note = new apn.Notification();
 
     note.expiry = Math.floor(Date.now() / 1000) + 3600;
-    note.badge = 1;
+    note.badge = badge ? badge : 1;
     note.sound = "default";
     note.alert = message;
 
