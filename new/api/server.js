@@ -1032,7 +1032,26 @@ app.post('/v1/messages/:convoID/send', jsonParser, urlEncodeHandler, sessionAuth
     function relateCommentToConvo(message) {
         db.relate(message, 'on', convoID, {}, function(err, relationship) {
             if(err)console.log(err);
-            res.json(outputResult({}));
+
+            var cypher = "MATCH (user: User)-[:joined]->(convo: Conversation)"
+            + " WHERE id(convo) = {convoID}"
+            + " RETURN user";
+            var params = {
+                'convoID': convoID
+            };
+            db.query(cypher, params, function(err, results) {
+                console.log(err);
+                for (var i in results) {
+                    var toUser = results[i];
+                    if (toUser.id != user.id) {
+                        if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                            sendMessageToAPNS('@' + user.username + ': ' + comment.text, toUser.apnsToken);
+                        }
+                    }
+                }
+
+                res.json(outputResult({}));
+            });
         });
     }
 });
