@@ -563,7 +563,7 @@ app.post('/v1/stream/:streamID/comment', jsonParser, urlEncodeHandler, sessionAu
                 filteredMentions.push(mentions[i].substr(1));
             }
 
-            var cypher = "MATCH (n: User) WHERE user.username IN {filteredMentions}";
+            var cypher = "MATCH (n: User) WHERE user.username IN {filteredMentions} RETURN n";
             var params = {
                 'filteredMentions': filteredMentions
             };
@@ -853,7 +853,7 @@ app.post('/v1/comment/:commentID/reply', jsonParser, urlEncodeHandler, sessionAu
                 filteredMentions.push(mentions[i].substr(1));
             }
 
-            var cypher = "MATCH (n: User) WHERE user.username IN {filteredMentions}";
+            var cypher = "MATCH (n: User) WHERE user.username IN {filteredMentions} RETURN n";
             var params = {
                 'filteredMentions': filteredMentions
             };
@@ -1576,7 +1576,7 @@ commentSocket.on('connection', function(socket) {
                     filteredMentions.push(mentions[i].substr(1));
                 }
 
-                var cypher = "MATCH (n: User) WHERE user.username IN {filteredMentions}";
+                var cypher = "MATCH (n: User) WHERE user.username IN {filteredMentions} RETURN n";
                 var params = {
                     'filteredMentions': filteredMentions
                 };
