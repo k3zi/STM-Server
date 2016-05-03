@@ -1014,9 +1014,11 @@ app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function
     var cypher = "MATCH (user: User)-[joinInfo:joined]->(convo: Conversation)<-[:on]-(messages: Message)"
     + " WHERE id(user) = {userID}"
     + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
-    + " WITH DISTINCT convo, user, users, messages, joinInfo"
+    + " OPTIONAL MATCH (convo)<-[:on]-(unreadMessages: Message)"
+    + " WHERE unreadMessages.date > joinInfo.read"
+    + " WITH DISTINCT convo, user, users, messages, COUNT(unreadMessages) AS unreadCount"
     + " ORDER BY messages.date DESC"
-    + " RETURN convo, HEAD(COLLECT(messages)) AS lastMessage, COLLECT(DISTINCT users) AS users, joinInfo.read AS lastRead"
+    + " RETURN convo, HEAD(COLLECT(messages)) AS lastMessage, COLLECT(DISTINCT users) AS users, unreadCount"
     + " ORDER BY lastMessage.date DESC";
     db.query(cypher, {
         'userID': user.id
@@ -1025,7 +1027,7 @@ app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function
         for (var i = 0; i < results.length; i++) {
             results[i]['convo']['users'] = results[i]['users'];
             results[i]['convo']['lastMessage'] = results[i]['lastMessage'];
-            results[i]['convo']['read'] = (results[i]['lastMessage'] ? (parseInt(results[i]['lastMessage'].date) < parseInt(results[i]['lastRead'])) : false);
+            results[i]['convo']['unreadCount'] = results[i]['unreadCount'];
             results[i] = results[i]['convo'];
         }
         res.json(outputResult(results));
