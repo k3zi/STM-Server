@@ -1013,10 +1013,10 @@ app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function
 
     var cypher = "MATCH (user: User)-[:joined]->(convo: Conversation)<-[:on]-(lastMessage: Message)"
     + " WHERE id(user) = {userID}"
-    + " ORDER BY lastMessage.date DESC"
-    + " WITH DISTINCT convo, user, LAST(COLLECT(lastMessage)) AS lastMessage"
+    + " WITH DISTINCT convo, user, lastMessage"
     + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
-    + " RETURN convo, lastMessage, COLLECT(users) AS users"
+    + " ORDER BY lastMessage.date DESC"
+    + " RETURN convo, HEAD(COLLECT(lastMessage)) AS lastMessage, COLLECT(users) AS users"
     + " ORDER BY lastMessage.date DESC";
     db.query(cypher, {
         'userID': user.id
