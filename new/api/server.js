@@ -1581,6 +1581,7 @@ commentSocket.on('connection', function(socket) {
                     'filteredMentions': filteredMentions
                 };
                 db.query(cypher, params, function(err, results) {
+                    console.log(err);
                     for (var i in results) {
                         var toUser = results[i];
                         if (toUser.id != user.id) {
