@@ -1011,12 +1011,12 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
 app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
     var user = req.session.user;
 
-    var cypher = "MATCH (user: User)-[:joined]->(convo: Conversation)<-[:on]-(lastMessage: Message)"
+    var cypher = "MATCH (user: User)-[:joined]->(convo: Conversation)<-[:on]-(messages: Message)"
     + " WHERE id(user) = {userID}"
-    + " WITH DISTINCT convo, user, lastMessage"
     + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
-    + " ORDER BY lastMessage.date DESC"
-    + " RETURN convo, HEAD(COLLECT(lastMessage)) AS lastMessage, COLLECT(users) AS users"
+    + " WITH DISTINCT convo, user, users, messages"
+    + " ORDER BY messages.date DESC"
+    + " RETURN convo, HEAD(COLLECT(messages)) AS lastMessage, COLLECT(users) AS users"
     + " ORDER BY lastMessage.date DESC";
     db.query(cypher, {
         'userID': user.id
