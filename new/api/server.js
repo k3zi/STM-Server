@@ -559,8 +559,10 @@ app.post('/v1/stream/:streamID/comment', jsonParser, urlEncodeHandler, sessionAu
         db.relate(comment, 'on', stream, {}, function(err, relationship) {
             var mentions = comment.text.match(STM_CONFIG.mentionRegex);
             var filteredMentions = [];
-            for (var i = 0; i < mentions.length; i++) {
-                filteredMentions.push(mentions[i].substr(1));
+            if (mentions) {
+                for (var i = 0; i < mentions.length; i++) {
+                    filteredMentions.push(mentions[i].substr(1));
+                }
             }
 
             var cypher = "MATCH (n: User) WHERE n.username IN {filteredMentions} RETURN n";
@@ -849,8 +851,10 @@ app.post('/v1/comment/:commentID/reply', jsonParser, urlEncodeHandler, sessionAu
         db.relate(comment, 'on', stream, {}, function(err, relationship) {
             var mentions = comment.text.match(STM_CONFIG.mentionRegex);
             var filteredMentions = [];
-            for (var i = 0; i < mentions.length; i++) {
-                filteredMentions.push(mentions[i].substr(1));
+            if (mentions) {
+                for (var i = 0; i < mentions.length; i++) {
+                    filteredMentions.push(mentions[i].substr(1));
+                }
             }
 
             var cypher = "MATCH (n: User) WHERE n.username IN {filteredMentions} RETURN n";
@@ -1572,8 +1576,10 @@ commentSocket.on('connection', function(socket) {
             db.relate(comment, 'on', stream, {}, function(err, relationship) {
                 var mentions = comment.text.match(STM_CONFIG.mentionRegex);
                 var filteredMentions = [];
-                for (var i = 0; i < mentions.length; i++) {
-                    filteredMentions.push(mentions[i].substr(1));
+                if (mentions) {
+                    for (var i = 0; i < mentions.length; i++) {
+                        filteredMentions.push(mentions[i].substr(1));
+                    }
                 }
 
                 var cypher = "MATCH (n: User) WHERE n.username IN {filteredMentions} RETURN n";
