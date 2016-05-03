@@ -1586,7 +1586,7 @@ commentSocket.on('connection', function(socket) {
                         var toUser = results[i];
                         if (toUser.id != commentUser.id) {
                             if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                                sendMessageToAPNS('Mentioned by @' + user.username + ': ' + comment.text, toUser.apnsToken);
+                                sendMessageToAPNS('Mentioned by @' + commentUser.username + ': ' + comment.text, toUser.apnsToken);
                             }
                         }
                     }
