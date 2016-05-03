@@ -1045,7 +1045,7 @@ app.post('/v1/messages/:convoID/send', jsonParser, urlEncodeHandler, sessionAuth
                     var toUser = results[i];
                     if (toUser.id != user.id) {
                         if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                            sendMessageToAPNS('@' + user.username + ': ' + comment.text, toUser.apnsToken);
+                            sendMessageToAPNS('@' + user.username + ': ' + message.text, toUser.apnsToken);
                         }
                     }
                 }
