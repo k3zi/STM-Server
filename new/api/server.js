@@ -1025,7 +1025,7 @@ app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function
         for (var i = 0; i < results.length; i++) {
             results[i]['convo']['users'] = results[i]['users'];
             results[i]['convo']['lastMessage'] = results[i]['lastMessage'];
-            results[i]['convo']['read'] = (results[i]['lastMessage'] ? (parseInt(results[i]['lastMessage'].date) < parseInt(results[i]['lastRead']) : false);
+            results[i]['convo']['read'] = (results[i]['lastMessage'] ? (parseInt(results[i]['lastMessage'].date) < parseInt(results[i]['lastRead'])) : false);
             results[i] = results[i]['convo'];
         }
         res.json(outputResult(results));
