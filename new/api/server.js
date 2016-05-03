@@ -1014,7 +1014,7 @@ app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function
     var cypher = "MATCH (user: User)-[joinInfo:joined]->(convo: Conversation)<-[:on]-(messages: Message)"
     + " WHERE id(user) = {userID}"
     + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
-    + " WITH DISTINCT convo, user, users, messages"
+    + " WITH DISTINCT convo, user, users, messages, joinInfo"
     + " ORDER BY messages.date DESC"
     + " RETURN convo, HEAD(COLLECT(messages)) AS lastMessage, COLLECT(DISTINCT users) AS users, joinInfo.read AS lastRead"
     + " ORDER BY lastMessage.date DESC";
