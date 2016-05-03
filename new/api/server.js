@@ -572,7 +572,7 @@ app.post('/v1/stream/:streamID/comment', jsonParser, urlEncodeHandler, sessionAu
                     var toUser = results[i];
                     if (toUser.id != user.id) {
                         if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                            sendMessageToAPNS('Mentioned by @' + user.username + ': ' + comment.text, toUser.apnsToken);
+                            sendMessageToAPNS('Mentioned by @' + user.username + ': "' + comment.text + '"', toUser.apnsToken);
                         }
                     }
                 }
@@ -862,7 +862,7 @@ app.post('/v1/comment/:commentID/reply', jsonParser, urlEncodeHandler, sessionAu
                     var toUser = results[i];
                     if (toUser.id != user.id) {
                         if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                            sendMessageToAPNS('Mentioned by @' + user.username + ': ' + comment.text, toUser.apnsToken);
+                            sendMessageToAPNS('Mentioned by @' + user.username + ': "' + comment.text + '"', toUser.apnsToken);
                         }
                     }
                 }
@@ -1586,7 +1586,7 @@ commentSocket.on('connection', function(socket) {
                         var toUser = results[i];
                         if (toUser.id != commentUser.id) {
                             if (toUser.apnsToken && toUser.apnsToken.length == 64) {
-                                sendMessageToAPNS('Mentioned by @' + commentUser.username + ': ' + comment.text, toUser.apnsToken);
+                                sendMessageToAPNS('Mentioned by @' + commentUser.username + ': "' + comment.text + '"', toUser.apnsToken);
                             }
                         }
                     }
