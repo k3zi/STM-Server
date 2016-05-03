@@ -1038,12 +1038,15 @@ app.get('/v1/messages/:convoID/list', jsonParser, urlEncodeHandler, sessionAuth,
     var user = req.session.user;
     var convoID = parseInt(req.params.convoID);
 
-    var cypher = "MATCH (convo: Conversation)<-[:on]-(message: Message)<-[:createdMessage]-(user: User)"
-    + " WHERE id(convo) = {convoID}"
+    var cypher = "MATCH (currentUser: User)-[joinInfo:joined]->(convo: Conversation)<-[:on]-(message: Message)<-[:createdMessage]-(user: User)"
+    + " WHERE id(convo) = {convoID} AND id(currentUser) = {userID}"
+    + " SET joinInfo.read = {date}"
     + " RETURN message, user"
     + " ORDER BY message.date ASC";
     db.query(cypher, {
-        'convoID': convoID
+        'convoID': convoID,
+        'userID': user.id,
+        'date': Date.secNow()
     }, function(err, results) {
         console.log(err);
         for (var i in results) {
