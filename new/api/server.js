@@ -41,7 +41,8 @@ var STM_STREAM_SETTINGS = {
 var STM_CONFIG = {
     'hashSalt': 'pepper',
     'hashMinLength': '4',
-    'hashChars': 'abcdefghijkmnpqrstuxyACDEFGHKMNPQRSTUQY23456789'
+    'hashChars': 'abcdefghijkmnpqrstuxyACDEFGHKMNPQRSTUQY23456789',
+    'mentionRegex': /\B@[a-z0-9_-]+/gi
 }
 
 //************** Apple Push Notifications **************\\\
@@ -556,7 +557,28 @@ app.post('/v1/stream/:streamID/comment', jsonParser, urlEncodeHandler, sessionAu
 
     function relateCommentToStream(comment, stream) {
         db.relate(comment, 'on', stream, {}, function(err, relationship) {
-            res.json(outputResult({}));
+            var mentions = comment.text.match(STM_CONFIG.mentionRegex);
+            var filteredMentions = [];
+            for (var i = 0; i < mentions.length; i++) {
+                filteredMentions.push(mentions[i].substr(1));
+            }
+
+            var cypher = "MATCH (n: User) WHERE user.username IN {filteredMentions}";
+            var params = {
+                'filteredMentions': filteredMentions
+            };
+            db.query(cypher, params, function(err, results) {
+                for (var i in results) {
+                    var toUser = results[i];
+                    if (toUser.id != user.id) {
+                        if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                            sendMessageToAPNS('Mentioned by @' + user.username + ': ' + comment.text, toUser.apnsToken);
+                        }
+                    }
+                }
+
+                return res.json(outputResult({}));
+            });
         });
     }
 });
@@ -669,7 +691,7 @@ app.get('/v1/follow/:userID', jsonParser, urlEncodeHandler, sessionAuth, functio
     db.query(cypher, params, function(err, results) {
         if (err) {
             console.log(err);
-        } else {
+        } else if (results.length > 0) {
             var toUser = results[0];
             if (toUser.apnsToken && toUser.apnsToken.length == 64) {
                 sendMessageToAPNS(user.displayName + ' (@' + user.username + ') is now following you', toUser.apnsToken);
@@ -825,8 +847,28 @@ app.post('/v1/comment/:commentID/reply', jsonParser, urlEncodeHandler, sessionAu
 
     function relateCommentToStream(comment, stream) {
         db.relate(comment, 'on', stream, {}, function(err, relationship) {
-            if(err)console.log(err);
-            relateCommentToComment(comment);
+            var mentions = comment.text.match(STM_CONFIG.mentionRegex);
+            var filteredMentions = [];
+            for (var i = 0; i < mentions.length; i++) {
+                filteredMentions.push(mentions[i].substr(1));
+            }
+
+            var cypher = "MATCH (n: User) WHERE user.username IN {filteredMentions}";
+            var params = {
+                'filteredMentions': filteredMentions
+            };
+            db.query(cypher, params, function(err, results) {
+                for (var i in results) {
+                    var toUser = results[i];
+                    if (toUser.id != user.id) {
+                        if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                            sendMessageToAPNS('Mentioned by @' + user.username + ': ' + comment.text, toUser.apnsToken);
+                        }
+                    }
+                }
+
+                relateCommentToComment(comment);
+            });
         });
     }
 
@@ -908,8 +950,6 @@ app.post('/v1/messages/create', jsonParser, urlEncodeHandler, sessionAuth, funct
     if (userList.indexOf(user.id) == -1) {
         userList.push(user.id);
     }
-
-    console.log(userList);
 
     db.save({ name: '' }, 'Conversation', function(err, result) {
         if (err) {
@@ -1530,8 +1570,28 @@ commentSocket.on('connection', function(socket) {
 
         function relateCommentToStream(comment, stream) {
             db.relate(comment, 'on', stream, {}, function(err, relationship) {
-                if(err)console.log(err);
-                callback({});
+                var mentions = comment.text.match(STM_CONFIG.mentionRegex);
+                var filteredMentions = [];
+                for (var i = 0; i < mentions.length; i++) {
+                    filteredMentions.push(mentions[i].substr(1));
+                }
+
+                var cypher = "MATCH (n: User) WHERE user.username IN {filteredMentions}";
+                var params = {
+                    'filteredMentions': filteredMentions
+                };
+                db.query(cypher, params, function(err, results) {
+                    for (var i in results) {
+                        var toUser = results[i];
+                        if (toUser.id != user.id) {
+                            if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                                sendMessageToAPNS('Mentioned by @' + user.username + ': ' + comment.text, toUser.apnsToken);
+                            }
+                        }
+                    }
+
+                    callback({});
+                });
             });
         }
     });
