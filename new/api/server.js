@@ -569,7 +569,7 @@ app.post('/v1/stream/:streamID/comment', jsonParser, urlEncodeHandler, sessionAu
             }
 
             var cypher = "MATCH (n: User)"
-            + " WHERE n.username IN {filteredMentions} AND id(n) != {userID}"
+            + " WHERE n.username IN {filteredMentions} AND id(n) <> {userID}"
             + " SET n.badge = n.badge + 1"
             + " RETURN n";
             var params = {
@@ -863,7 +863,7 @@ app.post('/v1/comment/:commentID/reply', jsonParser, urlEncodeHandler, sessionAu
             }
 
             var cypher = "MATCH (n: User)"
-            + "WHERE n.username IN {filteredMentions} AND id(toUser) != {userID}"
+            + "WHERE n.username IN {filteredMentions} AND id(toUser) <> {userID}"
             + " SET n.badge = n.badge + 1"
             + " RETURN n";
             var params = {
@@ -1092,7 +1092,7 @@ app.post('/v1/messages/:convoID/send', jsonParser, urlEncodeHandler, sessionAuth
             if(err)console.log(err);
 
             var cypher = "MATCH (user: User)-[:joined]->(convo: Conversation)"
-            + " WHERE id(convo) = {convoID} AND id(user) != {userID}"
+            + " WHERE id(convo) = {convoID} AND id(user) <> {userID}"
             + " SET user.badge = user.badge + 1"
             + " RETURN user";
             var params = {
@@ -1597,7 +1597,7 @@ commentSocket.on('connection', function(socket) {
                 }
 
                 var cypher = "MATCH (n: User)"
-                + " WHERE n.username IN {filteredMentions} AND id(n) != {userID}"
+                + " WHERE n.username IN {filteredMentions} AND id(n) <> {userID}"
                 + " SET n.badge = n.badge + 1"
                 + " RETURN n";
                 var params = {
