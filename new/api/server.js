@@ -1016,7 +1016,7 @@ app.get('/v1/messages/list', jsonParser, urlEncodeHandler, sessionAuth, function
     + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
     + " WITH DISTINCT convo, user, users, messages"
     + " ORDER BY messages.date DESC"
-    + " RETURN convo, HEAD(COLLECT(messages)) AS lastMessage, COLLECT(users) AS users"
+    + " RETURN convo, HEAD(COLLECT(messages)) AS lastMessage, COLLECT(DISTINCT users) AS users"
     + " ORDER BY lastMessage.date DESC";
     db.query(cypher, {
         'userID': user.id
