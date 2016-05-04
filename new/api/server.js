@@ -727,11 +727,12 @@ app.get('/v1/comment/like/:commentID', jsonParser, urlEncodeHandler, sessionAuth
     var user = req.session.user;
     var commentID = parseInt(req.params.commentID);
 
-    var cypher = "MATCH (fromUser: User), (comment: Comment)"
+    var cypher = "MATCH (fromUser: User), (comment: Comment)<-[:createdComment]-(user: User)"
     + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
     + " CREATE UNIQUE (fromUser)-[r: likes]->(comment)"
     + " SET r.date = {date}"
-    + " RETURN r";
+    + " SET user.badge = user.badge + 1"
+    + " RETURN user, comment";
     var params = {
         'fromID': user.id,
         'commentID': commentID,
@@ -739,6 +740,14 @@ app.get('/v1/comment/like/:commentID', jsonParser, urlEncodeHandler, sessionAuth
     };
     db.query(cypher, params, function(err, results) {
         console.log(err);
+        if (results || results.length > 0) {
+            var toUser = results[0]['user'];
+            var comment = results[0]['comment'];
+            if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                sendMessageToAPNS('@' + user.username + ' liked: ' + comment.text, toUser.apnsToken, toUser.badge);
+            }
+        }
+
         res.json(outputResult({}));
     });
 });
@@ -762,11 +771,12 @@ app.get('/v1/comment/repost/:commentID', jsonParser, urlEncodeHandler, sessionAu
     var user = req.session.user;
     var commentID = parseInt(req.params.commentID);
 
-    var cypher = "MATCH (fromUser: User), (comment: Comment)"
+    var cypher = "MATCH (fromUser: User), (comment: Comment)<-[:createdComment]-(user: User)"
     + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
     + " CREATE UNIQUE (fromUser)-[r: reposted]->(comment)"
     + " SET r.date = {date}"
-    + " RETURN r";
+    + " SET user.badge = user.badge + 1"
+    + " RETURN user, comment";
     var params = {
         'fromID': user.id,
         'commentID': commentID,
@@ -774,6 +784,14 @@ app.get('/v1/comment/repost/:commentID', jsonParser, urlEncodeHandler, sessionAu
     };
     db.query(cypher, params, function(err, results) {
         console.log(err);
+        if (results || results.length > 0) {
+            var toUser = results[0]['user'];
+            var comment = results[0]['comment'];
+            if (toUser.apnsToken && toUser.apnsToken.length == 64) {
+                sendMessageToAPNS('@' + user.username + ' reposted: ' + comment.text, toUser.apnsToken, toUser.badge);
+            }
+        }
+
         res.json(outputResult({}));
     });
 });
