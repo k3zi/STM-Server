@@ -261,8 +261,8 @@ app.post('/v1/user/updateAPNS', jsonParser, urlEncodeHandler, sessionAuth, funct
 
     var cypher = "START x = node({userID})"
     + " OPTIONAL MATCH (user: User {apnsToken: {token1}})"
-    + " WHERE id(user) != id(x)"
-    + " SET x.apnsToken = {token2}, SET user.apnsToken = ''"
+    + " WHERE id(user) <> id(x)"
+    + " SET x.apnsToken = {token2}, user.apnsToken = ''"
     + " RETURN x";
     db.query(cypher, {
         'userID': user,
