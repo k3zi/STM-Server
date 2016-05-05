@@ -259,12 +259,20 @@ app.post('/v1/user/updateAPNS', jsonParser, urlEncodeHandler, sessionAuth, funct
     var token = data.token;
     var user = req.session.user;
 
-    user.apnsToken = token;
-    db.save(user, function(err, user) {
-        if (err) throw err;
+    var cypher = "START x = node({userID})"
+    + " OPTIONAL MATCH (user: User {apnsToken: {token1}})"
+    + " WHERE id(user) != id(x)"
+    + " SET x.apnsToken = {token2}, SET user.apnsToken = ''"
+    + " RETURN x";
+    db.query(cypher, {
+        'userID': user,
+        'token1': token,
+        'token2': token
+    }, function(err, results) {
+        console.log(err);
 
-        req.session.user = user;
-        res.json(outputResult(user));
+        req.session.user.apnsToken = token;
+        res.json(outputResult({}));
     });
 });
 
