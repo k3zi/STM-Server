@@ -915,7 +915,12 @@ app.post('/v1/search', jsonParser, urlEncodeHandler, sessionAuth, function(req, 
     var q = req.body.q;
     var likeString = "'(?i).*" + q + ".*'";
 
-    var cypher = "MATCH (user: User) WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)  WHERE id(thisUser) = {userID} RETURN user, isFollowing LIMIT 5";
+    var cypher = "MATCH (user: User)"
+    + " WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString
+    + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
+    + " WHERE id(thisUser) = {userID}"
+    + " RETURN user, isFollowing"
+    + " LIMIT 5";
     var params = {
         'userID': user.id
     };
@@ -1272,6 +1277,54 @@ app.get('/v1/user/:userID/info/', jsonParser, urlEncodeHandler, sessionAuth, fun
             res.json(outputResult(items));
         });
     }
+});
+
+app.get('/v1/user/:userID/followers/', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var userID = parseInt(req.params.userID);
+    var items = {};
+
+    var cypher = "MATCH (users: User)-[:follows]->(user: User)"
+    + " WHERE id(user) = {userID}"
+    + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(users)"
+    + " WHERE id(thisUser) = {currentUserID}"
+    + " RETURN users, isFollowing";
+    var params = {
+        'userID': userID,
+        'currentUserID': user.id
+    };
+    db.query(cypher, params, function(err, results) {
+        for (var i in results) {
+            var user = results[i]['users'];
+            user['isFollowing'] = (results[i]['isFollowing'] ? true : false)
+            results[i] = user;
+        }
+        res.json(outputResult(results));
+    });
+});
+
+app.get('/v1/user/:userID/following/', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
+    var user = req.session.user;
+    var userID = parseInt(req.params.userID);
+    var items = {};
+
+    var cypher = "MATCH (user: User)-[:follows]->(users: User)"
+    + " WHERE id(user) = {userID}"
+    + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(users)"
+    + " WHERE id(thisUser) = {currentUserID}"
+    + " RETURN users, isFollowing";
+    var params = {
+        'userID': userID,
+        'currentUserID': user.id
+    };
+    db.query(cypher, params, function(err, results) {
+        for (var i in results) {
+            var user = results[i]['users'];
+            user['isFollowing'] = (results[i]['isFollowing'] ? true : false)
+            results[i] = user;
+        }
+        res.json(outputResult(results));
+    });
 });
 
 app.get('/v1/user/:userID/profilePicture', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
