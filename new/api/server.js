@@ -265,7 +265,7 @@ app.post('/v1/user/updateAPNS', jsonParser, urlEncodeHandler, sessionAuth, funct
     + " SET x.apnsToken = {token2}, user.apnsToken = ''"
     + " RETURN x";
     db.query(cypher, {
-        'userID': user,
+        'userID': user.id,
         'token1': token,
         'token2': token
     }, function(err, results) {
