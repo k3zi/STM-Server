@@ -1727,6 +1727,11 @@ hostSocket.on('connection', function(socket) {
         callback({});
     });
 
+    socket.on('updateHex', function(data, callback) {
+        commentSocket.to(commentRoomID).volatile.emit('didUpdateHex', data);
+        callback({});
+    });
+
     //Hosting
     socket.on('dataForStream', function(data, callback) {
         isThere(lockFile, function(exists) {
