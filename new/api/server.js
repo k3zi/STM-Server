@@ -252,6 +252,24 @@ app.post('/v1/user/authenticate', jsonParser, urlEncodeHandler, regularAuth, fun
     });
 });
 
+app.post('/v1/user/twitter/authenticate', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
+    var data = req.body;
+    db.find({
+        twitterAuthToken: data.twitterAuthToken
+    }, 'User', function(err, results) {
+        if (!results || results.length == 0) {
+            console.log(err);
+            return res.json(outputResult({}));
+        }
+
+        var user = results[0];
+        req.session.user = user;
+        ensureExists(getUserDir(user.id), function(err) {
+            res.json(outputResult(user));
+        });
+    });
+});
+
 //******************** SESSION AUTH METHODS ******************\\
 
 app.post('/v1/user/updateAPNS', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
