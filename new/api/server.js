@@ -269,13 +269,13 @@ app.post('/v1/user/twitter/authenticate', jsonParser, urlEncodeHandler, regularA
                     return res.json(outputResult({'usernameAvailable': false}));
                 }
             });
+        } else {
+            var user = results[0];
+            req.session.user = user;
+            ensureExists(getUserDir(user.id), function(err) {
+                res.json(outputResult(user));
+            });
         }
-
-        var user = results[0];
-        req.session.user = user;
-        ensureExists(getUserDir(user.id), function(err) {
-            res.json(outputResult(user));
-        });
     });
 });
 
