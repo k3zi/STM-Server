@@ -254,12 +254,21 @@ app.post('/v1/user/authenticate', jsonParser, urlEncodeHandler, regularAuth, fun
 
 app.post('/v1/user/twitter/authenticate', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
     var data = req.body;
+
     db.find({
         twitterAuthToken: data.twitterAuthToken
     }, 'User', function(err, results) {
         if (!results || results.length == 0) {
             console.log(err);
-            return res.json(outputResult({}));
+            db.find({
+                username: data.username
+            }, 'User', function(err, results) {
+                if (!results || results.length == 0) {
+                    return res.json(outputResult({'usernameAvailable': true}));
+                } else {
+                    return res.json(outputResult({'usernameAvailable': false}));
+                }
+            });
         }
 
         var user = results[0];
