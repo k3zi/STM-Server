@@ -4,6 +4,7 @@ config.versions = [];
 config.versions.push('/v1');
 
 config.directory = {};
+config.directory.api = "/home/stream/api";
 config.directory.user_content = "/home/stream/user_content";
 config.directory.stream_content = "/home/stream/stream_content";
 

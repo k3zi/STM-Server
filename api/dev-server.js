@@ -19,13 +19,6 @@ var isThere = require("is-there");
 var domain = require('domain');
 var Promise = require('promise');
 
-//Middleware
-var cookieParser = require('cookie-parser');
-var session = require('express-session');
-var basicAuth = require('basic-auth');
-var bodyParser = require('body-parser');
-var helmet = require('helmet');
-
 var config = require('config');
 var db = require('./data/db');
 
@@ -36,15 +29,6 @@ console.log('Running Fork on Port: %d', process.argv[3]);
 
 var app = new express();
 app.set('trust proxy', 1);
-
-//Use Middleware
-app.use(cookieParser());
-app.use(session({
-    secret: 'pTb8zDt8drE69B949bHx',
-    expires: new Date(Date.now() + 3600000 * 24),
-    resave: true,
-    saveUninitialized: true
-}));
 
 var server =  http.Server(app);
 var io = sio(server);

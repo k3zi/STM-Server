@@ -1,8 +1,10 @@
 var express = require('express');
 var router = express.Router();
-var User = require('../../models/user');
+var config = require('config');
+var User = require(config.directory.api + '/models/user');
+var middlewares = require(config.directory.api + '/middlewares');
 
-router.post('/authenticate', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
+router.post('/authenticate', middlewares.auth, function(req, res) {
     var data = req.body;
     db.find({
         username: data.username,
