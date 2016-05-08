@@ -1,5 +1,5 @@
 var express = require('express');
-var helpers = require('helpers');
+var helpers = require('../../helpers');
 
 var router = express.Router();
 router.use('/user', require('./user'));
