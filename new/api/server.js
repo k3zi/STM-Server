@@ -292,7 +292,7 @@ app.post('/v1/user/twitter/create', jsonParser, urlEncodeHandler, regularAuth, f
             password: hashPass(data.password),
             displayName: data.displayName,
             twitterAuthToken: data.twitterAuthToken,
-            twitterAuthTokenSecret: data.twitterAuthTokenSecret
+            twitterAuthTokenSecret: data.twitterAuthTokenSecret,
             badge: 0
         }, 'User', function(err, result) {
             if (err) {
