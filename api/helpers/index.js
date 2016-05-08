@@ -6,3 +6,17 @@ var hasher = new Hashids(config.hash.salt, config.hash.minLength, config.hash.ch
 export.encodeStr = function(str) {
     return hasher.encode(parseInt(str));
 }
+
+export.outputError = function(error) {
+    return {
+        'success': false,
+        'error': error
+    };
+}
+
+export.outputResult = function(result) {
+    return {
+        'success': true,
+        'result': result
+    };
+}

@@ -1,5 +1,8 @@
 var config = {};
 
+config.versions = {};
+config.versions.push('/v1');
+
 config.directory = {};
 config.directory.user_content = "/home/stream/user_content";
 config.directory.stream_content = "/home/stream/stream_content";
@@ -26,5 +29,10 @@ config.apn = {};
 config.apn.cert = '/home/stream/keychain/development_com.stormedgeapps.streamtome.pem';
 config.apn.key = '/home/stream/keychain/development_com.stormedgeapps.streamtome.pkey';
 config.apn.production = false;
+
+config.db = {};
+config.db.server = 'http://69.4.80.29:7474';
+config.db.user = 'neo4j';
+config.db.pass = 'gbmpYiJq9f0KOQSjAj';
 
 module.exports = config;

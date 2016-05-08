@@ -1,4 +1,4 @@
-var db = require('../db');
+var db = require('../data/db');
 var fs = require('fs-promise');
 var helpers = require('helpers');
 var Promise = require('promise');
