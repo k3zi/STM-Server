@@ -1,6 +1,6 @@
 var config = {};
 
-config.versions = {};
+config.versions = [];
 config.versions.push('/v1');
 
 config.directory = {};
