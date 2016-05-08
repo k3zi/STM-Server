@@ -1,8 +1,9 @@
-var db = require('../data/db');
 var fs = require('fs-promise');
-var helpers = require('helpers');
 var Promise = require('promise');
-var config = require(process.argv[2] == 'dev' ? '../config/dev' : '../config/prod');
+var config = require('config');
+
+var helpers = require('../helpers');
+var db = require('../data/db');
 
 getUserDir = function(userID) {
     return config.directory.user_content + '/' + helpers.encodeStr(userID) + '/';
