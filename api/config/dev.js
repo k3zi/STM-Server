@@ -23,8 +23,8 @@ config.regex = {};
 config.regex.mentionRegex = /\B@[a-z0-9_-]+/gi;
 
 config.apn = {};
-confiig.apn.cert = '/home/stream/keychain/development_com.stormedgeapps.streamtome.pem';
-confiig.apn.key = '/home/stream/keychain/development_com.stormedgeapps.streamtome.pkey';
-confiig.apn.production = false;
+config.apn.cert = '/home/stream/keychain/development_com.stormedgeapps.streamtome.pem';
+config.apn.key = '/home/stream/keychain/development_com.stormedgeapps.streamtome.pkey';
+config.apn.production = false;
 
 module.exports = config;
