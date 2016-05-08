@@ -4,14 +4,6 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var serverAuth = require('./auth');
 
-app.use(cookieParser());
-app.use(session({
-    secret: 'pTb8zDt8drE69B949bHx',
-    expires: new Date(Date.now() + 3600000 * 24),
-    resave: true,
-    saveUninitialized: true
-}));
-
 exports.cookieParser = cookieParser();
 exports.expressSession = expressSession({
     secret: 'pTb8zDt8drE69B949bHx',
