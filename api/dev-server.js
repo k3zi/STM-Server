@@ -31,7 +31,7 @@ var helmet = require('helmet');
 var config = require(process.argv[2] == 'dev' ? './config/dev' : './config/prod');
 
 var hasher = new Hashids(config.hash.salt, config.hash.minLength, config.hash.characters);
-var apnConnection = new apn.Connection(confiig.apn);
+var apnConnection = new apn.Connection(config.apn);
 
 //Authentication
 
