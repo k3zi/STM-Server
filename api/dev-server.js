@@ -70,6 +70,8 @@ function connectMySQL() {
 
 connectMySQL();
 
+app.use(require('express-json-promise')());
+
 for (var k in config.versions) {
     app.use(config.versions[k], require('./routes' + config.versions[k]));
 }
