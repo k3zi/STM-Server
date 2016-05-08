@@ -27,6 +27,7 @@ public_html/*/error_log
 !server
 !bower_components/
 !new
+!api/
 !node_modules
 
 public_html/_cgi-bin
