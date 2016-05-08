@@ -279,6 +279,38 @@ app.post('/v1/user/twitter/authenticate', jsonParser, urlEncodeHandler, regularA
     });
 });
 
+app.post('/v1/user/twitter/create', jsonParser, urlEncodeHandler, regularAuth, function(req, res) {
+    var data = req.body;
+
+    function callbackAllCheckout(err, results) {
+        if (results.length > 0) {
+            return res.json(outputError('A user is already using this username'));
+        }
+
+        db.save({
+            username: data.username,
+            password: hashPass(data.password),
+            displayName: data.displayName,
+            twitterAuthToken: data.twitterAuthToken,
+            twitterAuthTokenSecret: data.twitterAuthTokenSecret
+            badge: 0
+        }, 'User', function(err, result) {
+            if (err) {
+                res.json(outputError('There was a database error. Oops :('));
+            } else {
+                ensureExists(getUserDir(result.id), function(err) {
+                    req.session.user = result;
+                    res.json(outputResult(result));
+                });
+            }
+        });
+    }
+
+    db.find({
+        username: data.username
+    }, 'User', callbackAllCheckout);
+});
+
 //******************** SESSION AUTH METHODS ******************\\
 
 app.post('/v1/user/updateAPNS', jsonParser, urlEncodeHandler, sessionAuth, function(req, res) {
