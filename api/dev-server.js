@@ -7,7 +7,6 @@ var xio = require('socket.io-client');
 var redis = require('socket.io-redis');
 
 var mysql = require('mysql');
-var Hashids = require("hashids");
 var fs = require("fs");
 
 //Cryptography
@@ -30,7 +29,6 @@ var helmet = require('helmet');
 var config = require('config');
 var db = require('./data/db');
 
-var hasher = new Hashids(config.hash.salt, config.hash.minLength, config.hash.characters);
 var apnConnection = new apn.Connection(config.apn);
 
 //************** Let's Connect Everything! **************\\\
