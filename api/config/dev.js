@@ -48,10 +48,8 @@ config.test.session = {
     'id': 90,
     'displayName': 'Test User',
     'password': 'b0f812d4ae09a4835a5a8de5bb7889ace5ac2b69'
-    'unverifiedEmail':
-    'test@stm.io',
-    'description':
-    'The only thing is that you have can you please make a it up with me my money on it and then it will would have to be do you have no idea clue how I feel bad like so' ,
+    'unverifiedEmail': 'test@stm.io',
+    'description': 'My cool description!!',
     'apnsToken': '',
     'badge': 3,
     'username': 'test'
