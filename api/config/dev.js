@@ -1,3 +1,4 @@
+var winston = require('winston');
 var config = {};
 
 config.baseURL = 'https://api-dev.stm.io';
@@ -12,8 +13,20 @@ config.directory.user_content = config.directory.home + "/user_content";
 config.directory.stream_content = config.directory.home + "/stream_content";
 
 config.log = {};
+config.log.level = 'debug';
 config.log.exception = config.directory.home + "/api.exception.log";
 config.log.api = config.directory.home + "/api.log";
+
+winston.add(winston.transports.File, {
+  filename: config.log.api
+});
+
+winston.handleExceptions(new winston.transports.File({
+	filename: config.log.exception
+}));
+
+winston.level = config.log.level;
+config.log.logger = winston;
 
 config.auth = {};
 config.auth.username = 'STM-DEV-API';

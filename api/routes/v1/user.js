@@ -3,13 +3,11 @@ var router = express.Router();
 var config = require('config');
 var userModel = require(config.directory.api + '/models/user');
 var middlewares = require(config.directory.api + '/middlewares');
-var winston = require('winston');
-
-winston.level = 'debug';
+var logger = config.winstom;
 
 router.post('/authenticate', middlewares.auth, function(req, res) {
     var data = req.body;
-    winston.debug('Login request received: ' + data.username);
+    logger.debug('Login request received: ' + data.username);
 
     userModel.find({username: data.username, password: data.password}).then(function(results) {
         return new Promise(function (fulfill, reject) {

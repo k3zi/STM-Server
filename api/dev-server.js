@@ -21,20 +21,12 @@ var Promise = require('promise');
 
 var config = require('config');
 var db = require('./data/db');
-var winston = require('winston');
+var logger = config.log.logger;
 
 var apnConnection = new apn.Connection(config.apn);
 
-winston.add(winston.transports.File, {
-  filename: config.log.api
-});
-// We will log all uncaught exceptions into exceptions.log
-winston.handleExceptions(new winston.transports.File({
-	filename: config.log.exception
-}));
-
 //************** Let's Connect Everything! **************\\\
-winston.log('Running Fork on Port: %d', process.argv[3]);
+logger.log('Running Fork on Port: %d', process.argv[3]);
 
 var app = new express();
 app.set('trust proxy', 1);
@@ -61,13 +53,13 @@ function connectMySQL() {
 
   mysqlDB.connect(function(err) {
       if(err) {
-          winston.log('error when connecting to db:', err);
+          logger.log('error when connecting to db:', err);
           setTimeout(connectMySQL, 2000);
       }
   });
 
   mysqlDB.on('error', function(err) {
-      winston.log('db error', err);
+      logger.log('db error', err);
 
       if (err.code === 'PROTOCOL_CONNECTION_LOST') {
           connectMySQL();
