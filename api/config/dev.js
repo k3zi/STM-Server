@@ -47,7 +47,7 @@ config.test = {};
 config.test.session = {
     'id': 90,
     'displayName': 'Test User',
-    'password': 'b0f812d4ae09a4835a5a8de5bb7889ace5ac2b69'
+    'password': 'b0f812d4ae09a4835a5a8de5bb7889ace5ac2b69',
     'unverifiedEmail': 'test@stm.io',
     'description': 'My cool description!!',
     'apnsToken': '',
