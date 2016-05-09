@@ -5,9 +5,10 @@ var userModel = require(config.directory.api + '/models/user');
 var middlewares = require(config.directory.api + '/middlewares');
 var winston = require('winston');
 
+winston.level = 'debug';
+
 router.post('/authenticate', middlewares.auth, function(req, res) {
     var data = req.body;
-    console.log('login');
     winston.debug('Login request received: ' + data.username);
 
     userModel.find({username: data.username, password: data.password}).then(function(results) {
