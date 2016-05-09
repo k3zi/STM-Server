@@ -1,16 +1,23 @@
 var config = {};
 
+config.baseURL = 'https://api-dev.stm.io';
+
 config.versions = [];
 config.versions.push('/v1');
 
 config.directory = {};
-config.directory.api = "/home/stream/api";
-config.directory.user_content = "/home/stream/user_content";
-config.directory.stream_content = "/home/stream/stream_content";
+config.directory.home = "/home/stream";
+config.directory.api = config.directory.home + "/api";
+config.directory.user_content = config.directory.home + "/user_content";
+config.directory.stream_content = config.directory.home + "/stream_content";
+
+config.log = {};
+config.log.exception = config.directory.home + "/api.exception.log";
+config.log.api = config.directory.home + "/api.log";
 
 config.auth = {};
 config.auth.username = 'STM-API';
-config.auth.password = "PXsd<rhKG0r'@U.-Z`>!9V%-Z<Z";
+config.auth.password = "C/=}SU,nv)A**9cX.L&ML56";
 
 config.app = {};
 config.app.stream = {};
@@ -27,8 +34,8 @@ config.regex = {};
 config.regex.mentionRegex = /\B@[a-z0-9_-]+/gi;
 
 config.apn = {};
-config.apn.cert = '/home/stream/keychain/development_com.stormedgeapps.streamtome.pem';
-config.apn.key = '/home/stream/keychain/development_com.stormedgeapps.streamtome.pkey';
+config.apn.cert = config.directory.home + '/keychain/development_com.stormedgeapps.streamtome.pem';
+config.apn.key = config.directory.home + '/keychain/development_com.stormedgeapps.streamtome.pkey';
 config.apn.production = false;
 
 config.db = {};

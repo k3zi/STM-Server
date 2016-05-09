@@ -21,8 +21,17 @@ var Promise = require('promise');
 
 var config = require('config');
 var db = require('./data/db');
+var winston = require('winston');
 
 var apnConnection = new apn.Connection(config.apn);
+
+winston.add(winston.transports.File, {
+  filename: config.log.api
+});
+// We will log all uncaught exceptions into exceptions.log
+winston.handleExceptions(new winston.transports.File({
+	filename: config.log.exception
+}));
 
 //************** Let's Connect Everything! **************\\\
 console.log('Running Fork on Port: %d', process.argv[3]);
