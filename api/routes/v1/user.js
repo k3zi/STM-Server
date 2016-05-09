@@ -8,10 +8,8 @@ var logger = config.log.logger;
 
 router.post('/authenticate', middlewares.auth, function(req, res) {
     var data = req.body;
-    logger.debug('Login request received: ' + data.username);
 
     var promise = userModel.find({username: data.username, password: data.password}).then(function(results) {
-        logger.debug('Found users: ' + results);
         return new Promise(function (fulfill, reject) {
             if (!results || results.length == 0) {
                 return reject('Invalid username/password');
@@ -24,9 +22,8 @@ router.post('/authenticate', middlewares.auth, function(req, res) {
 
     promise.then(function(user) {
         req.session.user = user;
-        ensureExists(getUserDir(user.id), function(err) {
-            res.json(helpers.outputResult(user));
-        });
+        logger.log(user);
+        res.json(helpers.outputResult(user));
     }).catch(function(err) {
     	res.json(helpers.outputError(err));
     });
