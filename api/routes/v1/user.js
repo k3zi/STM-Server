@@ -3,13 +3,14 @@ var router = express.Router();
 var config = require('config');
 var userModel = require(config.directory.api + '/models/user');
 var middlewares = require(config.directory.api + '/middlewares');
+var helpers = require(config.directory.api + '/helpers');
 var logger = config.log.logger;
 
 router.post('/authenticate', middlewares.auth, function(req, res) {
     var data = req.body;
     logger.debug('Login request received: ' + data.username);
 
-    userModel.find({username: data.username, password: data.password}).then(function(results) {
+    var promise = userModel.find({username: data.username, password: data.password}).then(function(results) {
         logger.debug('Found users: ' + results);
         return new Promise(function (fulfill, reject) {
             if (!results || results.length == 0) {
@@ -17,12 +18,19 @@ router.post('/authenticate', middlewares.auth, function(req, res) {
             }
 
             var user = results[0];
-            req.session.user = user;
-            ensureExists(getUserDir(user.id), function(err) {
-                res.json(outputResult(user));
-            });
+            fulfill(user);
         });
     });
+
+    promise.then(function(user) {
+        req.session.user = user;
+        ensureExists(getUserDir(user.id), function(err) {
+            res.json(helpers.outputResult(user));
+        });
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+
 });
 
 module.exports = router;
