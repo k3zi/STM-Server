@@ -16,7 +16,7 @@ config.log.exception = config.directory.home + "/api.exception.log";
 config.log.api = config.directory.home + "/api.log";
 
 config.auth = {};
-config.auth.username = 'STM-API';
+config.auth.username = 'STM-DEV-API';
 config.auth.password = "C/=}SU,nv)A**9cX.L&ML56";
 
 config.app = {};
