@@ -7,6 +7,7 @@ var winston = require('winston');
 
 router.post('/authenticate', middlewares.auth, function(req, res) {
     var data = req.body;
+    console.log('login');
     winston.debug('Login request received: ' + data.username);
 
     userModel.find({username: data.username, password: data.password}).then(function(results) {

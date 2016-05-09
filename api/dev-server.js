@@ -34,7 +34,7 @@ winston.handleExceptions(new winston.transports.File({
 }));
 
 //************** Let's Connect Everything! **************\\\
-console.log('Running Fork on Port: %d', process.argv[3]);
+winston.log('Running Fork on Port: %d', process.argv[3]);
 
 var app = new express();
 app.set('trust proxy', 1);
@@ -61,13 +61,13 @@ function connectMySQL() {
 
   mysqlDB.connect(function(err) {
       if(err) {
-          console.log('error when connecting to db:', err);
+          winston.log('error when connecting to db:', err);
           setTimeout(connectMySQL, 2000);
       }
   });
 
   mysqlDB.on('error', function(err) {
-      console.log('db error', err);
+      winston.log('db error', err);
 
       if (err.code === 'PROTOCOL_CONNECTION_LOST') {
           connectMySQL();
