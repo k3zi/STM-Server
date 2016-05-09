@@ -29,3 +29,13 @@ exports.create = function(username, password, password, unverifiedEmail, display
 
     return db.save(user, 'User').then(createUserDirectory);
 }
+
+exports.find = function(params) {
+    return new Promise(function (fulfill, reject) {
+        if (params.length == 0) reject('no paramaters sent');
+
+        fulfill(params);
+    }).then(function(params) {
+        return db.find(params, 'User');
+    });
+}
