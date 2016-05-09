@@ -2,6 +2,7 @@ var fs = require('fs-promise');
 var Promise = require('promise');
 var config = require('config');
 
+var logger = config.log.logger;
 var helpers = require('../helpers');
 var db = require('../data/db');
 
