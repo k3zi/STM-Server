@@ -17,12 +17,11 @@ function importTest(name, path) {
 describe(version, function () {
 
     describe('/status', function () {
-
         it('should return 200 OK', function done() {
             request.get('/status').expect('Content-Type', /json/).expect(200, done);
         });
     });
 
-    importTest('/user', 'routes.userSpec.js');
+    importTest('/user', './routes.userSpec.js');
 
 });
