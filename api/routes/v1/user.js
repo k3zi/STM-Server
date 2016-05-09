@@ -5,8 +5,6 @@ var userModel = require(config.directory.api + '/models/user');
 var middlewares = require(config.directory.api + '/middlewares');
 var winston = require('winston');
 
-winston.level = 'debug';
-
 router.post('/authenticate', middlewares.auth, function(req, res) {
     var data = req.body;
     winston.debug('Login request received: ' + data.username);
