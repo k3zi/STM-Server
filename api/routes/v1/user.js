@@ -10,6 +10,7 @@ router.post('/authenticate', middlewares.auth, function(req, res) {
     logger.debug('Login request received: ' + data.username);
 
     userModel.find({username: data.username, password: data.password}).then(function(results) {
+        logger.debug('Found users: ' + results);
         return new Promise(function (fulfill, reject) {
             if (!results || results.length == 0) {
                 return reject('Invalid username/password');

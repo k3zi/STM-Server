@@ -36,6 +36,7 @@ exports.find = function(params) {
 
         fulfill(params);
     }).then(function(params) {
+        logger.debug('Params checked out: ' + params);
         return db.find(params, 'User');
     });
 }
