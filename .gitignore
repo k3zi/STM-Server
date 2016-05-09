@@ -16,6 +16,7 @@ public_html/*/error_log
 !bower.config
 !bower_components
 !.travis.yml
+!circle.yml
 !dist
 !package.json
 !start.sh

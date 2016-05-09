@@ -2,7 +2,7 @@ var should = require('should');
 var assert = require('assert');
 var request = require('supertest');
 var winston = require('winston');
-var config = require('./config/dev');
+var config = require('../config/dev');
 
 var version = config.versions[config.versions.length - 1];
 var url = config.baseURL + version;
