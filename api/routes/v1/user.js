@@ -3,7 +3,7 @@ var router = express.Router();
 var config = require('config');
 var userModel = require(config.directory.api + '/models/user');
 var middlewares = require(config.directory.api + '/middlewares');
-var logger = config.winstom;
+var logger = config.log.logger;
 
 router.post('/authenticate', middlewares.auth, function(req, res) {
     var data = req.body;
