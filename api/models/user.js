@@ -20,15 +20,23 @@ ensureUserDirectoryExists = function(user) {
 }
 
 exports.create = function(username, password, password, unverifiedEmail, displayName) {
-    var user = {
-        username: username,
-        password: password,
-        unverifiedEmail: unverifiedEmail,
-        displayName: displayName,
-        badge: 0
-    }
+    return new Promise(function (fulfill, reject) {
+        if (username.length == 0 || password.length == 0 || unverifiedEmail.length == 0 || displayName.length == 0) {
+            return reject('Missing Paramater');
+        }
 
-    return db.save(user, 'User').then(createUserDirectory);
+        var user = {
+            username: username,
+            password: password,
+            unverifiedEmail: unverifiedEmail,
+            displayName: displayName,
+            badge: 0
+        }
+
+        fulfill(user);
+    }).then(function(user) {
+        return db.save(user, 'User');
+    }).then(ensureUserDirectoryExists);
 }
 
 exports.find = function(params) {

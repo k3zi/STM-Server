@@ -9,9 +9,9 @@ var url = config.baseURL + version + '/user';
 request = request(url);
 
 describe('/authenticate', function () {
-    it('should return the logged in user', function(done) {
-        request.post('/authenticate').send(config.test.login)
+    it('should return error when provided nothing', function(done) {
+        request.post('/authenticate').send({})
             .expect('Content-Type', /json/)
-            .expect(200, {username: 'test', password: 'TOBI'}, done);
+            .expect(200, {status: false}, done);
     });
 });

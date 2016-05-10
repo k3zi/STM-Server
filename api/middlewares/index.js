@@ -12,8 +12,10 @@ exports.expressSession = expressSession({
     saveUninitialized: true
 });
 exports.serverAuth = serverAuth.requireAuth;
+exports.sessionAuth = serverAuth.requireLogin;
 exports.jsonParser = bodyParser.json({limit: '50mb'});
 exports.urlEncodeHandler = bodyParser.urlencoded({limit: '50mb', extended: true});
 
 exports.normal = [exports.cookieParser, exports.expressSession, exports.jsonParser, exports.urlEncodeHandler];
-exports.auth = [exports.cookieParser, exports.expressSession, exports.serverAuth, exports.jsonParser, exports.urlEncodeHandler]
+exports.auth = [exports.cookieParser, exports.expressSession, exports.serverAuth, exports.jsonParser, exports.urlEncodeHandler];
+exports.session = [exports.cookieParser, exports.expressSession, exports.serverAuth, exports.sessionAuth, exports.jsonParser, exports.urlEncodeHandler];
