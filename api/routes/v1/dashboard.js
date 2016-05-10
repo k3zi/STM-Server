@@ -12,12 +12,14 @@ router.get('/', middlewares.session, function(req, res) {
     var items = [];
 
     streamModel.fetchActiveFollowed(user.id).then(function(activeStreams) {
-        logger.info('Retrieved Active Streems: ' + activeStreams);
+        logger.debug('Retrieved Active Streams: ' + activeStreams);
         items.push({'name': 'Active Streams (You Follow)', 'items': activeStreams});
     }).then(streamModel.getFeaturedItems).then(function(featuredStreams) {
-        items.push({'name': 'Featured Streams', 'items': results});
+        logger.debug('Retrieved Featured Streams: ' + featuredStreams);
+        items.push({'name': 'Featured Streams', 'items': featuredStreams});
         res.json(helpers.outputResult(items));
     }).catch(function(err) {
+        logger.error(err);
     	res.json(helpers.outputError(err));
     });
 });
