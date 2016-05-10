@@ -2,6 +2,8 @@ var basicAuth = require('basic-auth');
 var config = require('config');
 var helpers = require(config.directory.api + '/helpers');
 
+var userModel = require(config.directory.api + '/models/user');
+
 
 unauthorized = function(res) {
     res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
