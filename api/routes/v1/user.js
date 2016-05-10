@@ -8,6 +8,12 @@ var logger = config.log.logger;
 
 router.post('/authenticate', middlewares.auth, function(req, res) {
     var data = req.body;
+    var username = data.username || '';
+    var password = data.password || '';
+
+    if (username.length == 0 || password.length == 0) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
 
     var promise = userModel.find({username: data.username, password: data.password}).then(function(results) {
         return new Promise(function (fulfill, reject) {
