@@ -7,10 +7,10 @@ var middlewares = require(config.directory.api + '/middlewares');
 var helpers = require(config.directory.api + '/helpers');
 var logger = config.log.logger;
 
-router.post('/', middlewares.session, function(req, res) {
+router.get('/', middlewares.session, function(req, res) {
     var user = req.session.user;
     var items = [];
-    
+
     streamModel.fetchActiveFollowed(user.id).then(function(activeStreams) {
         items.push({'name': 'Active Streams (You Follow)', 'items': activeStreams});
     }).then(streamModel.getFeaturedItems).then(function(featuredStreams) {
