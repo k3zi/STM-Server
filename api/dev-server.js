@@ -26,7 +26,7 @@ var logger = config.log.logger;
 var apnConnection = new apn.Connection(config.apn);
 
 //************** Let's Connect Everything! **************\\\
-logger.log('Running Fork on Port: %d', process.argv[3]);
+logger.info('Running Fork on Port: %d', process.argv[3]);
 
 var app = new express();
 app.set('trust proxy', 1);
@@ -50,16 +50,16 @@ function connectMySQL() {
     database: 'stream_main',
     password: 'gbmpYiJq9f0KOQSjAj'
   });
-
+  
   mysqlDB.connect(function(err) {
       if(err) {
-          logger.log('error when connecting to db:', err);
+          logger.error('error when connecting to db:', err);
           setTimeout(connectMySQL, 2000);
       }
   });
 
   mysqlDB.on('error', function(err) {
-      logger.log('db error', err);
+      logger.error('db error', err);
 
       if (err.code === 'PROTOCOL_CONNECTION_LOST') {
           connectMySQL();

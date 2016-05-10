@@ -12,6 +12,7 @@ router.get('/', middlewares.session, function(req, res) {
     var items = [];
 
     streamModel.fetchActiveFollowed(user.id).then(function(activeStreams) {
+        logger.info('Retrieved Active Streems: ' + activeStreams);
         items.push({'name': 'Active Streams (You Follow)', 'items': activeStreams});
     }).then(streamModel.getFeaturedItems).then(function(featuredStreams) {
         items.push({'name': 'Featured Streams', 'items': results});
