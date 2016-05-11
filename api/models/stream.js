@@ -83,6 +83,7 @@ exports.fetchStreamsForUserID = function(userID) {
     logger.debug('received user id: ' + userID);
     return new Promise(function (fulfill, reject) {
         var userID = parseInt(userID) || -1;
+        logger.debug('parsed user id: ' + userID);
         if (userID == -1) return reject('Invalid user ID');
         fulfill(userID);
     }).then(function(userID) {
