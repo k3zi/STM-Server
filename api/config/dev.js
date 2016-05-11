@@ -72,11 +72,11 @@ config.test.login = {
     'password': 'zx$Peb{A3='
 };
 config.test.authRequest = function(request) {
-    return request(url).auth(config.auth.username, config.auth.password);
+    return request.auth(config.auth.username, config.auth.password);
 }
 
 config.test.loginRequest = function(request) {
-    return request(url).auth(config.auth.username, config.auth.password).set('STM-USERNAME', 'test');
+    return request.auth(config.auth.username, config.auth.password).set('STM-USERNAME', 'test');
 }
 
 module.exports = config;
