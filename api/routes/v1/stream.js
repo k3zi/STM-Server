@@ -18,6 +18,7 @@ router.get('/:streamID/isOnline', middlewares.auth, function(req, res) {
     }
 
     helpers.checkID(streamID).then(streamModel.streamLastOnline).then(function(lastOnline) {
+        logger.debug('last online: ' + lastOnline);
         if (lastOnline == -1) {
             res.json(outputResult({'online': 0}));
         } else if (lastOnline < 10) {

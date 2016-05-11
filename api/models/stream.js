@@ -25,6 +25,8 @@ streamLastOnline = function(streamID) {
     var streamDir = getStreamDir(streamID);
     var liveFile = streamDir + streamAlpha + '.live';
 
+    logger.debug('check if live: ' + liveFile);
+
     return new Promise(function (fulfill, reject) {
         fs.readFile(liveFile, 'utf8', function(err, contents) {
             if (!err) {
