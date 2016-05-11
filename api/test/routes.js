@@ -31,6 +31,6 @@ describe(version, function() {
     });
 
     importTest('/user', './routes.user.js');
-    //importTest('/dashboard', './routes.dashboard.js');
+    importTest('/dashboard', './routes.dashboard.js');
 
 });
