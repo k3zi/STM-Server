@@ -5,6 +5,7 @@ var chaiHttp = require('chai-http');
 var winston = require('winston');
 var config = require('../config/dev');
 
+require('ssl-root-cas').inject();
 chai.use(chaiHttp);
 
 var version = config.versions[config.versions.length - 1];
