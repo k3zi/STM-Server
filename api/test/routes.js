@@ -1,5 +1,6 @@
 var chai = require('chai');
 var should = chai.should();
+var expect = chai.expect;
 var chaiHttp = require('chai-http');
 var winston = require('winston');
 var config = require('../config/dev');
@@ -16,13 +17,13 @@ function importTest(name, path) {
 }
 
 describe(version, function() {
-
+    
     describe('GET /status', function() {
         it('should return 200 OK', function done() {
             chai.request(url).get('/status').end(function(err, res) {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.success.should.equal(1);
+                expect(res).should.have.status(200);
+                expect(res).should.be.json;
+                expect(res.body.success).should.equal(1);
                 done();
             });
         });
