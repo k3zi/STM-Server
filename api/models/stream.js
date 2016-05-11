@@ -56,6 +56,16 @@ exports.fetchActiveFollowed = function(userID) {
     });
 }
 
+exports.find = function(params) {
+    return new Promise(function (fulfill, reject) {
+        if (params.length == 0) reject('no paramaters sent');
+
+        fulfill(params);
+    }).then(function(params) {
+        return db.find(params, 'User');
+    }).then(ensureUserDirectoryExists);
+}
+
 exports.getFeaturedItems = function() {
     var cypher = "MATCH (stream: Stream {featured: true})<-[:createdStream]-(user: User) RETURN stream, user LIMIT 10";
 
@@ -69,12 +79,13 @@ exports.getFeaturedItems = function() {
     });
 }
 
-exports.find = function(params) {
+exports.fetchStreamsForUserID = function(userID) {
     return new Promise(function (fulfill, reject) {
-        if (params.length == 0) reject('no paramaters sent');
-
-        fulfill(params);
-    }).then(function(params) {
-        return db.find(params, 'User');
-    }).then(ensureUserDirectoryExists);
+        var userID = parseInt(userID) || -1;
+        if (userID = -1) return reject('Invalid user ID');
+        fulfill(userID);
+    }).then(function(userID) {
+        var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
+        return db.query(cypher, {'userID': userID});
+    });
 }

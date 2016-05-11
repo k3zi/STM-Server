@@ -28,12 +28,24 @@ router.post('/authenticate', middlewares.auth, function(req, res) {
 
     promise.then(function(user) {
         req.session.user = user;
-        logger.log(user);
         res.json(helpers.outputResult(user));
     }).catch(function(err) {
     	res.json(helpers.outputError(err));
     });
 
+});
+
+router.get('/:userID/streams', middlewares.auth, function(req, res) {
+    var userID = req.params.userID;
+    if (!userID) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    streamModel.fetchStreamsForUserID(userID).then(function(results) {
+        res.json(helpers.outputResult(results));
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
 });
 
 module.exports = router;

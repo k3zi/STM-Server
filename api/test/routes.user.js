@@ -32,3 +32,25 @@ describe('POST /authenticate', function() {
         });
     });
 });
+
+describe('GET /:userID/streams', function() {
+    it('should return a user object', function(done) {
+        return config.test.authRequest(chai.request(url).post('/' + config.test.session.id + '/streams').send(config.test.session)).end(function(err, res) {
+            should.equal(err, null);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(true);
+            done();
+        });
+    });
+
+    it('should return an error when provided a bogus user ID', function(done) {
+        return config.test.authRequest(chai.request(url).post('/chcgcgh/streams')).end(function(err, res) {
+            should.equal(err, null);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(false);
+            done();
+        });
+    });
+});

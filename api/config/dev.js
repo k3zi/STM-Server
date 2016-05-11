@@ -58,7 +58,7 @@ config.db.pass = 'gbmpYiJq9f0KOQSjAj';
 
 config.test = {};
 config.test.session = {
-    'id': 90,
+    'id': 311,
     'displayName': 'API Test',
     'password': '5ce66553e9b178f7e94d4953e206391e2b887118',
     'unverifiedEmail': 'apitest@stm.io',
