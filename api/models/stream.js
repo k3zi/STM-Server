@@ -35,7 +35,7 @@ streamLastOnline = function(streamID) {
 
                 return fulfill(diff);
             } else {
-                return fulfill(-1);
+                return fulfill(_.now());
             }
         });
     });
@@ -43,7 +43,7 @@ streamLastOnline = function(streamID) {
 
 parseLiveStream = function(item) {
     return streamLastOnline(item['stream'].id).then(function(lastOnline) {
-        if (lastOnline < 30 && lastOnline != -1) {
+        if (lastOnline < 30) {
             stream['user'] = item['user'];
             return stream;
         } else {
