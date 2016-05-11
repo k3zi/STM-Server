@@ -1,11 +1,14 @@
 var express = require('express');
-var router = express.Router();
 var config = require('config');
-var userModel = require(config.directory.api + '/models/user');
-var streamModel = require(config.directory.api + '/models/stream');
+
 var middlewares = require(config.directory.api + '/middlewares');
 var helpers = require(config.directory.api + '/helpers');
 var logger = config.log.logger;
+
+var userModel = require(config.directory.api + '/models/user');
+var streamModel = require(config.directory.api + '/models/stream');
+
+var router = express.Router();
 
 router.get('/items', middlewares.session, function(req, res) {
     var user = req.session.user;

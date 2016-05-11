@@ -3,6 +3,7 @@ var config = require('config');
 var helpers = require(config.directory.api + '/helpers');
 
 var router = express.Router();
+
 router.use('/user', require('./user'));
 router.use('/dashboard', require('./dashboard'));
 
