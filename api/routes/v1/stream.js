@@ -13,7 +13,7 @@ var router = express.Router();
 router.get('/:streamID/isOnline', middlewares.auth, function(req, res) {
     var streamID = req.params.streamID;
 
-    if (!userID) {
+    if (!streamID) {
         return res.json(helpers.outputError('Missing Paramater'));
     }
 
