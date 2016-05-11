@@ -21,7 +21,7 @@ describe(version, function() {
     describe('GET /status', function() {
         it('should return 200 OK', function(done) {
             return chai.request(url).get('/status').end(function(err, res) {
-                should.equal(err, null); 
+                should.equal(err, null);
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.success.should.equal(1);
@@ -30,7 +30,7 @@ describe(version, function() {
         });
     });
 
-    importTest('/user', './routes.user.js');
-    importTest('/dashboard', './routes.dashboard.js');
+    //importTest('/user', './routes.user.js');
+    //importTest('/dashboard', './routes.dashboard.js');
 
 });
