@@ -6,6 +6,7 @@ var router = express.Router();
 
 router.use('/user', require('./user'));
 router.use('/dashboard', require('./dashboard'));
+router.use('/conversation', require('./conversation'));
 
 router.get('/status', function(req, res) {
     var result = helpers.outputResult('The server is doing fine.');

@@ -84,7 +84,7 @@ exports.fetchStreamsForUserID = function(userID) {
         if (typeof userID == 'string') {
             userID = parseInt(userID);
         }
-        
+
         if (userID < 0 || isNaN(userID)) return reject('Invalid user ID');
         fulfill(userID);
     }).then(function(userID) {
