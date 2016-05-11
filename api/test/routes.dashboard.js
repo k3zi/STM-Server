@@ -1,5 +1,5 @@
-var should = require('should');
-var assert = require('assert');
+var should = require('chai').should();
+var expect = require('chai').expect();
 var request = require('supertest');
 var winston = require('winston');
 var config = require('../config/dev');
@@ -10,10 +10,13 @@ request = request(url);
 
 describe('GET /', function () {
     it('should have the an arry of the dashboards contents', function(done) {
-        config.test.loginRequest(request.post('/')).end(function(err, res) {
-            assert.equal(res.body.success, 1);
-            assert(res.body.result.constructor === Array);
-            done();
+        config.test.loginRequest(request.get('/'))
+            .excpect(200)
+            .end(function(err, res) {
+                if(err) return done(err);
+                expect(res.body.success).to.equal(1);
+                expect(res.body.result.constructor).to.equal(Array);
+                done();
         });
     });
 });
