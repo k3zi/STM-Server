@@ -19,12 +19,11 @@ function importTest(name, path) {
 describe(version, function() {
 
     describe('GET /status', function() {
-        it('should return 200 OK', function(done) {
-            chai.request(url).get('/status').end(function(err, res) {
+        it('should return 200 OK', function() {
+            return chai.request(url).get('/status').end(function(err, res) {
                 expect(res).should.have.status(200);
                 expect(res).should.be.json;
                 expect(res.body.success).should.equal(1);
-                done();
             });
         });
     });
