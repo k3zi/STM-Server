@@ -10,7 +10,7 @@ var streamModel = require(config.directory.api + '/models/stream');
 
 var router = express.Router();
 
-router.post('/:streamID/isOnline', middlewares.auth, function(req, res) {
+router.get('/:streamID/isOnline', middlewares.auth, function(req, res) {
     var streamID = req.params.streamID;
 
     if (!userID) {
