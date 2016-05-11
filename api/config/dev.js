@@ -59,16 +59,16 @@ config.db.pass = 'gbmpYiJq9f0KOQSjAj';
 config.test = {};
 config.test.session = {
     'id': 90,
-    'displayName': 'Test User',
-    'password': 'b0f812d4ae09a4835a5a8de5bb7889ace5ac2b69',
-    'unverifiedEmail': 'test@stm.io',
+    'displayName': 'API Test',
+    'password': '5ce66553e9b178f7e94d4953e206391e2b887118',
+    'unverifiedEmail': 'apitest@stm.io',
     'description': 'My cool description!!',
     'apnsToken': '',
     'badge': 3,
-    'username': 'test'
+    'username': 'apitest'
 };
 config.test.login = {
-    'username': 'test',
+    'username': 'apitest',
     'password': 'zx$Peb{A3='
 };
 config.test.authRequest = function(request) {
@@ -76,7 +76,7 @@ config.test.authRequest = function(request) {
 }
 
 config.test.loginRequest = function(request) {
-    return request.auth(config.auth.username, config.auth.password).set('STM-USERNAME', 'test');
+    return request.auth(config.auth.username, config.auth.password).set('STM-USERNAME', config.test.session.username).set('STM-PASSWORD', config.test.session.password);
 }
 
 module.exports = config;

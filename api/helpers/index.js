@@ -1,7 +1,10 @@
+var config = require('config');
+var hasher = require("hashids")(config.hash.salt, config.hash.minLength, config.hash.characters);
+
 var fs = require('fs');
 var Promise = require('promise');
-var config = require(process.argv[2] == 'dev' ? '../config/dev' : '../config/prod');
-var hasher = require("hashids")(config.hash.salt, config.hash.minLength, config.hash.characters);
+var md5 = require('md5');
+var crypto = require('crypto');
 
 exports.encodeStr = function(str) {
     return hasher.encode(parseInt(str));
@@ -20,3 +23,24 @@ exports.outputResult = function(result) {
         'result': result
     };
 }
+
+exports.hashPass = function(pass) {
+    return sha1(md5(pass) + md5(pass.length) + md5(str_rot13(pass)));
+}
+
+exports.sha1 = function(data) {
+    var generator = crypto.createHash('sha1');
+    generator.update(data);
+    return generator.digest('hex');
+}
+
+exports.str_rot13 = function(s) {
+    return (s ? s : this).split('').map(function(_) {
+        if (!_.match(/[A-za-z]/)) return _;
+        c = Math.floor(_.charCodeAt(0) / 97);
+        k = (_.toLowerCase().charCodeAt(0) - 83) % 26 || 26;
+        return String.fromCharCode(k + ((c == 0) ? 64 : 96));
+    }).join('');
+}
+
+exports.md5 = md5;
