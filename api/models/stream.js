@@ -25,17 +25,21 @@ streamLastOnline = function(streamID) {
     var streamDir = getStreamDir(streamID);
     var liveFile = streamDir + streamAlpha + '.live';
 
-    return fs.readFile(liveFile, 'utf8').then(function(contents) {
-        var date = parseInt(contents);
-        var diff = _.now() - date;
+    return new Promise(function (fulfill, reject) {
+        fs.readFile(liveFile, 'utf8', (function(err, contents) {
+            if (!err) {
+                var date = parseInt(contents);
+                var diff = _.now() - date;
 
-        return diff;
+                return fulfill(diff);
+            } else return fulfill(-1);
+        });
     });
 }
 
 parseLiveStream = function(item) {
     return streamLastOnline(item['stream'].id).then(function(lastOnline) {
-        if (lastOnline < 30) {
+        if (lastOnline < 30 && lastOnline != -1) {
             stream['user'] = item['user'];
             return stream;
         } else {

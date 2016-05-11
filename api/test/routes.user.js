@@ -33,7 +33,7 @@ describe('POST /authenticate', function() {
     });
 });
 
-describe('/:userID', function() {
+describe('/:id', function() {
     describe('GET /info', function() {
         it('should return the users stats', function(done) {
             return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/info')).end(function(err, res) {

@@ -10,7 +10,7 @@ chai.use(chaiHttp);
 var version = config.versions[config.versions.length - 1];
 var url = config.baseURL + version + '/stream';
 
-describe('/:streamID', function() {
+describe('/:id', function() {
     describe('GET /isOnline', function() {
         it('should return a dictionary with a boolean', function(done) {
             return config.test.authRequest(chai.request(url).post('/authenticate').send(config.test.session)).end(function(err, res) {
