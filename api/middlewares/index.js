@@ -15,7 +15,11 @@ exports.serverAuth = serverAuth.requireAuth;
 exports.sessionAuth = serverAuth.requireLogin;
 exports.jsonParser = bodyParser.json({limit: '50mb'});
 exports.urlEncodeHandler = bodyParser.urlencoded({limit: '50mb', extended: true});
+exports.json = function(req, res, next) {
+    res.setHeader('Content-Type', 'application/json');
+    return next();
+}
 
-exports.normal = [exports.cookieParser, exports.expressSession, exports.jsonParser, exports.urlEncodeHandler];
-exports.auth = [exports.cookieParser, exports.expressSession, exports.serverAuth, exports.jsonParser, exports.urlEncodeHandler];
-exports.session = [exports.cookieParser, exports.expressSession, exports.serverAuth, exports.sessionAuth, exports.jsonParser, exports.urlEncodeHandler];
+exports.normal = [exports.cookieParser, exports.expressSession, exports.jsonParser, exports.urlEncodeHandler, exports.json];
+exports.auth = [exports.cookieParser, exports.expressSession, exports.serverAuth, exports.jsonParser, exports.urlEncodeHandler, exports.json];
+exports.session = [exports.cookieParser, exports.expressSession, exports.serverAuth, exports.sessionAuth, exports.jsonParser, exports.urlEncodeHandler, exports.json];
