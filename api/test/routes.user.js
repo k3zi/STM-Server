@@ -1,22 +1,23 @@
-var should = require('chai').should();
-var expect = require('chai').expect();
-var request = require('supertest');
+var chai = require('chai');
+var should = chai.should();
+var chaiHttp = require('chai-http');
 var winston = require('winston');
 var config = require('../config/dev');
+
+chai.use(chaiHttp);
 
 var version = config.versions[config.versions.length - 1];
 var url = config.baseURL + version + '/user';
 request = request(url);
 
 describe('POST /authenticate', function () {
-    it('should return error when provided nothing', function(done) {
-        config.test.authRequest(request.post('/authenticate')).send({})
-            .excpect(200)
-            .end(function(err, res) {
-                if(err) return done(err);
-                expect(res.body.success).to.equal(1);
-                expect(res.body.result.username).to.equal(config.test.login.username);
-                done();
+    it('should return error when provided an empty body', function(done) {
+        config.test.authRequest(request.post('/authenticate')).send({}).end(function(err, res) {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(1);
+            res.body.result.username.should.equal(config.test.login.username);
+            done();
         });
     });
 });

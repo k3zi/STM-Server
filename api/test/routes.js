@@ -1,12 +1,14 @@
-var should = require('should');
-var assert = require('assert');
-var request = require('supertest');
+var chai = require('chai');
+var should = chai.should();
+var chaiHttp = require('chai-http');
 var winston = require('winston');
 var config = require('../config/dev');
 
+chai.use(chaiHttp);
+
 var version = config.versions[config.versions.length - 1];
 var url = config.baseURL + version;
-request = request(url);
+request = chai.request(url);
 
 function importTest(name, path) {
     describe(name, function () {
@@ -18,7 +20,12 @@ describe(version, function () {
 
     describe('GET /status', function () {
         it('should return 200 OK', function done() {
-            request.get('/status').expect('Content-Type', /json/).expect(200, done);
+            request.get('/status').end(function(err, res) {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(1);
+                done();
+            });
         });
     });
 
