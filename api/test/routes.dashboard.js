@@ -13,9 +13,9 @@ var url = config.baseURL + version + '/dashboard';
 describe('GET /', function() {
     it('should have the an array of the dashboards contents', function() {
         return chai.request(url).get('/').end(function(err, res) {
-            expect(res).should.have.status(200);
-            expect(res.body).should.be.json;
-            expect(res.body.success).should.equal(1);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(1);
         });
     });
 });

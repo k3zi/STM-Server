@@ -21,9 +21,9 @@ describe(version, function() {
     describe('GET /status', function() {
         it('should return 200 OK', function() {
             return chai.request(url).get('/status').end(function(err, res) {
-                expect(res).should.have.status(200);
-                expect(res.body).should.be.json;
-                expect(res.body.success).should.equal(1);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(1);
             });
         });
     });
