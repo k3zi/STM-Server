@@ -11,12 +11,12 @@ var version = config.versions[config.versions.length - 1];
 var url = config.baseURL + version + '/dashboard';
 
 describe('GET /', function() {
-    it('should have the an arry of the dashboards contents', function(done) {
-        chai.request(url).get('/').end(function(err, res) {
+    it('should have the an array of the dashboards contents', function() {
+        return chai.request(url).get('/').end(function(err, res) {
+            console.log(res);
             expect(res).should.have.status(200);
             expect(res).should.be.json;
             expect(res.body.success).should.equal(1);
-            done();
         });
     });
 });
