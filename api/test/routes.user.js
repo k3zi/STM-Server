@@ -12,6 +12,6 @@ describe('POST /authenticate', function () {
     it('should return error when provided nothing', function(done) {
         config.test.authRequest(request.post('/authenticate')).send({})
             .expect('Content-Type', /json/)
-            .expect(200, {status: false}, done);
+            .expect(200, done);
     });
 });
