@@ -6,7 +6,7 @@ var config = require('../config/dev');
 
 var version = config.versions[config.versions.length - 1];
 var url = config.baseURL + version + '/user';
-request = request(url);
+request = request(url).auth(config.auth.username, config.auth.password);
 
 describe('POST /authenticate', function () {
     it('should return error when provided nothing', function(done) {
