@@ -19,7 +19,6 @@ var crypto = require('crypto');
 var apn = require('apn');
 var isThere = require("is-there");
 var domain = require('domain');
-var Promise = require('promise');
 
 //Middleware
 var cookieParser = require('cookie-parser');
@@ -1919,26 +1918,16 @@ function encodeStr(str) {
 }
 
 function sendMessageToAPNS(message, token, badge) {
-    return new Promise(function (fulfill, reject) {
-        if (!token || token.length == 0) {
-            return reject('Invalid token length');
-        }
+    var myDevice = new apn.Device(token);
+    var note = new apn.Notification();
 
-        try {
-            var myDevice = new apn.Device(token);
-            var note = new apn.Notification();
+    note.expiry = Math.floor(Date.now() / 1000) + 3600;
+    note.badge = badge ? badge : 1;
+    note.sound = "default";
+    note.alert = message;
 
-            note.expiry = Math.floor(Date.now() / 1000) + 3600;
-            note.badge = badge ? badge : 1;
-            note.sound = "default";
-            note.alert = message;
-
-            apnConnection.pushNotification(note, myDevice);
-            apnConnectionDev.pushNotification(note, myDevice);
-        } catch (ex) {
-            reject(ex);
-        }
-    });
+    apnConnection.pushNotification(note, myDevice);
+    apnConnectionDev.pushNotification(note, myDevice);
 }
 
 function unauthorized(res) {
