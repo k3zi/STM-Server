@@ -11,6 +11,17 @@ var version = config.versions[config.versions.length - 1];
 var url = config.baseURL + version + '/user';
 
 describe('POST /authenticate', function() {
+    it('should return a user object', function(done) {
+        return config.test.authRequest(chai.request(url).post('/authenticate').send(config.test.session)).end(function(err, res) {
+            should.equal(err, null);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(true);
+            res.body.result.username.should.equal(config.test.session.username);
+            done();
+        });
+    });
+
     it('should return error when provided an empty body', function(done) {
         return config.test.authRequest(chai.request(url).post('/authenticate')).end(function(err, res) {
             should.equal(err, null);
