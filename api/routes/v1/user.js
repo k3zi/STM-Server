@@ -44,7 +44,7 @@ router.get('/:userID/streams', middlewares.auth, function(req, res) {
     if (!userID) {
         return res.json(helpers.outputError('Missing Paramater'));
     }
-    logger.debug('received user id: ' + userID);
+    
     streamModel.fetchStreamsForUserID(userID).then(function(results) {
         res.json(helpers.outputResult(results));
     }).catch(function(err) {
