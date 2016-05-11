@@ -58,7 +58,7 @@ router.get('/:userID/info', middlewares.auth, function(req, res) {
 
     var items = {};
 
-    userModel.countUserFollowing(userID).then(function(count) {
+    helpers.checkID(userID).then(userModel.countUserFollowing).then(function(count) {
         items.following = count;
         return userID;
     }).then(userModel.countUserFollowers).then(function(count) {

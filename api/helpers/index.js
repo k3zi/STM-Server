@@ -6,6 +6,17 @@ var Promise = require('promise');
 var md5 = require('md5');
 var crypto = require('crypto');
 
+exports.checkID = function(objectID) {
+    return new Promise(function (fulfill, reject) {
+        if (typeof objectID == 'string') {
+            objectID = parseInt(objectID);
+        }
+
+        if (objectID < 0 || isNaN(objectID)) return reject('Invalid ID');
+        fulfill(objectID);
+    });
+}
+
 exports.encodeStr = function(str) {
     return hasher.encode(parseInt(str));
 }
