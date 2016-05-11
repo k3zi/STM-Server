@@ -34,8 +34,8 @@ describe('POST /authenticate', function() {
 });
 
 describe('GET /:userID/streams', function() {
-    it('should return a user object', function(done) {
-        return config.test.authRequest(chai.request(url).post('/' + config.test.session.id + '/streams').send(config.test.session)).end(function(err, res) {
+    it('should return a list of streams', function(done) {
+        return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/streams')).end(function(err, res) {
             should.equal(err, null);
             res.should.have.status(200);
             res.should.be.json;
@@ -45,7 +45,7 @@ describe('GET /:userID/streams', function() {
     });
 
     it('should return an error when provided a bogus user ID', function(done) {
-        return config.test.authRequest(chai.request(url).post('/chcgcgh/streams')).end(function(err, res) {
+        return config.test.authRequest(chai.request(url).get('/chcgcgh/streams')).end(function(err, res) {
             should.equal(err, null);
             res.should.have.status(200);
             res.should.be.json;
