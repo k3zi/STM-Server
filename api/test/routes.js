@@ -31,7 +31,7 @@ describe(version, function() {
 
     describe('/dashboard', function() {
         var routeURL = url + '/dashboard';
-        
+
         describe('GET /', function() {
             it('should have the an arry of the dashboards contents', function(done) {
                 chai.request(routeURL).get('/').end(function(err, res) {
@@ -44,6 +44,20 @@ describe(version, function() {
         });
     });
 
-    importTest('/user', './routes.user.js');
+    describe('/user', function() {
+        var routeURL = url + '/user';
+
+        describe('POST /authenticate', function() {
+            it('should return error when provided an empty body', function(done) {
+                chai.request(url).post('/authenticate').end(function(err, res) {
+                    expect(res).should.have.status(200);
+                    expect(res).should.be.json;
+                    expect(res.body.success).should.equal(1);
+                    expect(res.body.result.username).should.equal(config.test.login.username);
+                    done();
+                });
+            });
+        });
+    });
 
 });
