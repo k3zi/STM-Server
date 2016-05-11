@@ -24,7 +24,7 @@ describe(version, function() {
                 should.equal(err, null);
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.success.should.equal(1);
+                res.body.success.should.equal(true);
                 done();
             });
         });
