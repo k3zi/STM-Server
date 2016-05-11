@@ -45,7 +45,7 @@ describe('GET /:userID/streams', function() {
     });
 
     it('should return an error when provided a bogus user ID', function(done) {
-        return config.test.authRequest(chai.request(url).get('/-999/streams')).end(function(err, res) {
+        return config.test.authRequest(chai.request(url).get('/ghcgcyt/streams')).end(function(err, res) {
             should.equal(err, null);
             res.should.have.status(200);
             res.should.be.json;
