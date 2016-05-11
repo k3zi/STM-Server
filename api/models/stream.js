@@ -80,10 +80,11 @@ exports.getFeaturedItems = function() {
 }
 
 exports.fetchStreamsForUserID = function(userID) {
-    logger.debug('b: ' + userID);
     return new Promise(function (fulfill, reject) {
-        var userID = parseInt(userID);
-        logger.debug('a: ' + userID);
+        if (typeof userID == 'string') {
+            userID = parseInt(userID);
+        }
+        
         if (userID < 0 || isNaN(userID)) return reject('Invalid user ID');
         fulfill(userID);
     }).then(function(userID) {
