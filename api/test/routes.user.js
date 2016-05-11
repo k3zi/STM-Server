@@ -54,3 +54,25 @@ describe('GET /:userID/streams', function() {
         });
     });
 });
+
+describe('GET /:userID/info', function() {
+    it('should return the users stats', function(done) {
+        return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/info')).end(function(err, res) {
+            should.equal(err, null);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(true);
+            done();
+        });
+    });
+
+    it('should return an error when provided a bogus user ID', function(done) {
+        return config.test.authRequest(chai.request(url).get('/ghcgcyt/info')).end(function(err, res) {
+            should.equal(err, null);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(false);
+            done();
+        });
+    });
+});

@@ -19,6 +19,33 @@ ensureUserDirectoryExists = function(user) {
     });
 }
 
+exports.countUserFollowing = function(userID) {
+    var cypher = "MATCH (user: User)-[r: follows]->(:User)"
+    + " WHERE id(user) = {userID}"
+    + " RETURN COUNT(r) AS count";
+    return db.query(cypher, {'userID': userID}).then(function(result) {
+        return (result.length > 0 ? result[0]['count'] : 0);
+    });
+}
+
+exports.countUserFollowers = function(userID) {
+    var cypher = "MATCH (:User)-[r: follows]->(user: User)"
+    + " WHERE id(user) = {userID}"
+    + " RETURN COUNT(r) AS count";
+    return db.query(cypher, {'userID': userID}).then(function(result) {
+        return (result.length > 0 ? result[0]['count'] : 0);
+    });
+}
+
+exports.countUserComments = function(userID) {
+    var cypher = "MATCH (user: User)-[r: createdComment]-()"
+    + " WHERE id(user) = {userID}"
+    + " RETURN COUNT(r) AS count";
+    return db.query(cypher, {'userID': userID}).then(function(result) {
+        return (result.length > 0 ? result[0]['count'] : 0);
+    });
+}
+
 exports.create = function(username, password, password, unverifiedEmail, displayName) {
     return new Promise(function (fulfill, reject) {
         if (username.length == 0 || password.length == 0 || unverifiedEmail.length == 0 || displayName.length == 0) {
@@ -78,5 +105,15 @@ exports.fetchUserTimeline = function(userID) {
         }
 
         return results;
+    });
+}
+
+exports.userIsFollowingUser = function(userID1, userID2) {
+    var cypher = "MATCH (user1)-[r: follows]->(user2)"
+    + " WHERE id(user1) = {userID1} AND id(user2) = {userID2}"
+    + " RETURN COUNT(r) AS isFollowing";
+    return db.query(cypher, {'userID1': userID1, 'userID2': userID2}).then(function(result) {
+        var isFollowing = (result.length > 0 ? result[0]['isFollowing'] : 0);
+        return isFollowing > 0 ? true : false;
     });
 }
