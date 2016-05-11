@@ -32,7 +32,7 @@ describe(version, function() {
 
     importTest('/conversation', './routes.conversation.js');
     importTest('/dashboard', './routes.dashboard.js');
-    importTest('/stream', './routes.conversation.js');
+    importTest('/stream', './routes.stream.js');
     importTest('/user', './routes.user.js');
 
 });
