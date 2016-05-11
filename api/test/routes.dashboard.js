@@ -11,7 +11,9 @@ request = request(url);
 describe('GET /', function () {
     it('should have the an arry of the dashboards contents', function(done) {
         config.test.loginRequest(request.post('/')).end(function(err, res) {
-            done();
+            assert.equal(res.body.success, 1);
+            assert(res.body.result.constructor === Array);
+            done(err);
         });
     });
 });

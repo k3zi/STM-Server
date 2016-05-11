@@ -11,6 +11,7 @@ request = request(url);
 describe('POST /authenticate', function () {
     it('should return error when provided nothing', function(done) {
         config.test.authRequest(request.post('/authenticate')).end(function(err, res) {
+            assert.equal(res.body.success, 0);
             done();
         });
     });
