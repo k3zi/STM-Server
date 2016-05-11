@@ -17,7 +17,7 @@ function importTest(name, path) {
 }
 
 describe(version, function() {
-    
+
     describe('GET /status', function() {
         it('should return 200 OK', function done() {
             chai.request(url).get('/status').end(function(err, res) {
@@ -29,7 +29,21 @@ describe(version, function() {
         });
     });
 
+    describe('/dashboard', function() {
+        var routeURL = url + '/dashboard';
+        
+        describe('GET /', function() {
+            it('should have the an arry of the dashboards contents', function(done) {
+                chai.request(routeURL).get('/').end(function(err, res) {
+                    expect(res).should.have.status(200);
+                    expect(res).should.be.json;
+                    expect(res.body.success).should.equal(1);
+                    done();
+                });
+            });
+        });
+    });
+
     importTest('/user', './routes.user.js');
-    importTest('/dashboard', './routes.dashboard.js');
 
 });
