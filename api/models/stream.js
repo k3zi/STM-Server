@@ -50,9 +50,7 @@ exports.fetchActiveFollowed = function(userID) {
     var params = { 'userID': userID };
 
     return db.query(cypher, params).then(function(results) {
-        if (results.length > 0) {
-            return Promise.all(results.map(parseLiveStream));
-        }
+        return Promise.all(results.map(parseLiveStream));
     }).then(function(streams) {
         return streams.filter(function(n){ return n != undefined });
     });
