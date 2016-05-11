@@ -9,9 +9,9 @@ chai.use(chaiHttp);
 var version = config.versions[config.versions.length - 1];
 var url = config.baseURL + version + '/dashboard';
 
-describe('GET /', function () {
+describe('GET /', function() {
     it('should have the an arry of the dashboards contents', function(done) {
-        config.test.loginRequest(chai.request(url).get('/')).end(function(err, res) {
+        chai.request(url).get('/').end(function(err, res) {
             res.should.have.status(200);
             res.should.be.json;
             res.body.success.should.equal(1);

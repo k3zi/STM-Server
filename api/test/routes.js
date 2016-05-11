@@ -10,14 +10,14 @@ var version = config.versions[config.versions.length - 1];
 var url = config.baseURL + version;
 
 function importTest(name, path) {
-    describe(name, function () {
+    describe(name, function() {
         require(path);
     });
 }
 
-describe(version, function () {
+describe(version, function() {
 
-    describe('GET /status', function () {
+    describe('GET /status', function() {
         it('should return 200 OK', function done() {
             chai.request(url).get('/status').end(function(err, res) {
                 res.should.have.status(200);
