@@ -26,6 +26,6 @@ exports.fetchConversationsForUserID = function(userID) {
             results[i] = results[i]['convo'];
         }
 
-        res.json(outputResult(results));
+        return results;
     });
 }
