@@ -33,46 +33,48 @@ describe('POST /authenticate', function() {
     });
 });
 
-describe('GET /:userID/streams', function() {
-    it('should return a list of streams', function(done) {
-        return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/streams')).end(function(err, res) {
-            should.equal(err, null);
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.success.should.equal(true);
-            done();
+describe('/:userID', function() {
+    describe('GET /info', function() {
+        it('should return the users stats', function(done) {
+            return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/info')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(true);
+                done();
+            });
+        });
+
+        it('should return an error when provided a bogus user ID', function(done) {
+            return config.test.authRequest(chai.request(url).get('/ghcgcyt/info')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(false);
+                done();
+            });
         });
     });
 
-    it('should return an error when provided a bogus user ID', function(done) {
-        return config.test.authRequest(chai.request(url).get('/ghcgcyt/streams')).end(function(err, res) {
-            should.equal(err, null);
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.success.should.equal(false);
-            done();
+    describe('GET /streams', function() {
+        it('should return a list of streams', function(done) {
+            return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/streams')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(true);
+                done();
+            });
         });
-    });
-});
 
-describe('GET /:userID/info', function() {
-    it('should return the users stats', function(done) {
-        return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/info')).end(function(err, res) {
-            should.equal(err, null);
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.success.should.equal(true);
-            done();
-        });
-    });
-
-    it('should return an error when provided a bogus user ID', function(done) {
-        return config.test.authRequest(chai.request(url).get('/ghcgcyt/info')).end(function(err, res) {
-            should.equal(err, null);
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.success.should.equal(false);
-            done();
+        it('should return an error when provided a bogus user ID', function(done) {
+            return config.test.authRequest(chai.request(url).get('/ghcgcyt/streams')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(false);
+                done();
+            });
         });
     });
 });

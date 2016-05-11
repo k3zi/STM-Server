@@ -30,8 +30,9 @@ describe(version, function() {
         });
     });
 
-    importTest('/user', './routes.user.js');
-    importTest('/dashboard', './routes.dashboard.js');
     importTest('/conversation', './routes.conversation.js');
+    importTest('/dashboard', './routes.dashboard.js');
+    importTest('/stream', './routes.conversation.js');
+    importTest('/user', './routes.user.js');
 
 });

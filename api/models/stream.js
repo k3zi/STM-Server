@@ -20,26 +20,27 @@ ensureStreamDirectoryExists = function(stream) {
     });
 }
 
+streamLastOnline = function(streamID) {
+    var streamAlpha = helpers.encodeStr(streamID);
+    var streamDir = getStreamDir(streamID);
+    var liveFile = streamDir + streamAlpha + '.live';
+
+    return fs.readFile(liveFile, 'utf8').then(function(contents) {
+        var date = parseInt(contents);
+        var diff = _.now() - date;
+
+        return diff;
+    });
+}
+
 parseLiveStream = function(item) {
-    return new Promise(function (fulfill, reject) {
-        var stream = item['stream'];
-        var streamAlpha = helpers.encodeStr(stream.id);
-        var streamDir = getStreamDir(stream.id);
-        var liveFile = streamDir + streamAlpha + '.live';
-
-        fs.readFile(liveFile, 'utf8', function(err, contents) {
-            if (!err) {
-                var date = parseInt(contents);
-                var diff = _.now() - date;
-
-                if (diff < 30) {
-                    stream['user'] = item['user'];
-                    return fulfill(stream);
-                }
-            }
-
-            fulfill(undefined);
-        });
+    return streamLastOnline(item['stream'].id).then(function(lastOnline) {
+        if (lastOnline < 30) {
+            stream['user'] = item['user'];
+            return stream;
+        } else {
+            return undefined;
+        }
     });
 }
 
@@ -85,3 +86,5 @@ exports.fetchStreamsForUserID = function(userID) {
         return db.query(cypher, {'userID': userID});
     });
 }
+
+exports.streamIsOnline = streamIsOnline;
