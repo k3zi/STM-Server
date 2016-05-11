@@ -13,7 +13,7 @@ describe('GET /', function () {
         config.test.loginRequest(request.post('/')).end(function(err, res) {
             assert.equal(res.body.success, 1);
             assert(res.body.result.constructor === Array);
-            done(err);
+            done();
         });
     });
 });
