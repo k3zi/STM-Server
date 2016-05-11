@@ -26,13 +26,15 @@ streamLastOnline = function(streamID) {
     var liveFile = streamDir + streamAlpha + '.live';
 
     return new Promise(function (fulfill, reject) {
-        fs.readFile(liveFile, 'utf8', (function(err, contents) {
+        fs.readFile(liveFile, 'utf8', function(err, contents) {
             if (!err) {
                 var date = parseInt(contents);
                 var diff = _.now() - date;
 
                 return fulfill(diff);
-            } else return fulfill(-1);
+            } else {
+                return fulfill(-1);
+            }
         });
     });
 }
