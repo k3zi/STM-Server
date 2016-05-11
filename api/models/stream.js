@@ -82,7 +82,7 @@ exports.getFeaturedItems = function() {
 exports.fetchStreamsForUserID = function(userID) {
     return new Promise(function (fulfill, reject) {
         var userID = parseInt(userID) || -1;
-        if (userID = -1) return reject('Invalid user ID');
+        if (userID == -1) return reject('Invalid user ID');
         fulfill(userID);
     }).then(function(userID) {
         var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
