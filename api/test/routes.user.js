@@ -16,7 +16,7 @@ describe('POST /authenticate', function() {
             should.equal(err, null);
             res.should.have.status(200);
             res.should.be.json;
-            res.body.success.should.equal(1);
+            res.body.success.should.equal(true);
             res.body.result.username.should.equal(config.test.login.username);
             done();
         });
