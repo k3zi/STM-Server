@@ -87,4 +87,4 @@ exports.fetchStreamsForUserID = function(userID) {
     });
 }
 
-exports.streamIsOnline = streamIsOnline;
+exports.streamLastOnline = streamLastOnline;
