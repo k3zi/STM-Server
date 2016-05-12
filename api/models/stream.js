@@ -31,11 +31,11 @@ streamLastOnline = function(streamID) {
         fs.readFile(liveFile, 'utf8', function(err, contents) {
             if (!err) {
                 var date = parseInt(contents);
-                var diff = _.now() - date;
+                var diff = _.now()/1000 - date;
 
                 return fulfill(diff);
             } else {
-                return fulfill(_.now());
+                return fulfill(_.now()/1000);
             }
         });
     });
