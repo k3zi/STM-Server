@@ -18,18 +18,15 @@ router.get('/:streamID/isOnline', middlewares.auth, function(req, res) {
     }
 
     helpers.checkID(streamID).then(streamModel.streamLastOnline).then(function(lastOnline) {
-        logger.debug('last online: ' + lastOnline);
         if (lastOnline < 10) {
-            logger.debug('online: 1');
-            res.json(outputResult({'online': 1}));
+            res.json(helpers.outputResult({'online': 1}));
         } else if (lastOnline < 45) {
-            logger.debug('online: 2');
-            res.json(outputResult({'online': 2}));
+            res.json(helpers.outputResult({'online': 2}));
         } else {
-            logger.debug('online: 0');
-            return res.json(outputResult({'online': 0}));
+            res.json(helpers.outputResult({'online': 0}));
         }
     }).catch(function(err) {
+        logger.error(err);
     	res.json(helpers.outputError(err));
     });
 });
