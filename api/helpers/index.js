@@ -5,6 +5,7 @@ var fs = require('fs');
 var Promise = require('promise');
 var md5 = require('md5');
 var crypto = require('crypto');
+var _ = require('lodash');
 
 exports.checkID = function(objectID) {
     return new Promise(function (fulfill, reject) {
@@ -19,6 +20,10 @@ exports.checkID = function(objectID) {
 
 exports.encodeStr = function(str) {
     return hasher.encode(parseInt(str));
+}
+
+exports.now = function() {
+    return floor(_.now()/1000);
 }
 
 exports.outputError = function(error) {
