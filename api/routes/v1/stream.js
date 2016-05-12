@@ -27,7 +27,7 @@ router.get('/:streamID/isOnline', middlewares.auth, function(req, res) {
             res.json(outputResult({'online': 2}));
         } else {
             logger.debug('online: 0');
-            res.json(outputResult({'online': 0}));
+            return res.json(outputResult({'online': 0}));
         }
     }).catch(function(err) {
     	res.json(helpers.outputError(err));
