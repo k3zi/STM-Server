@@ -13,7 +13,7 @@ var url = config.baseURL + version + '/stream';
 describe('/:id', function() {
     describe('GET /isOnline', function() {
         it('should return a dictionary with a boolean', function(done) {
-            return config.test.authRequest(chai.request(url).post('/authenticate').send(config.test.session)).end(function(err, res) {
+            return config.test.authRequest(chai.request(url).get('/90/isOnline')).end(function(err, res) {
                 should.equal(err, null);
                 res.should.have.status(200);
                 res.should.be.json;
