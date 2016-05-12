@@ -85,7 +85,7 @@ router.get('/:userID/comments', middlewares.auth, function(req, res) {
         return res.json(helpers.outputError('Missing Paramater'));
     }
 
-    userModel.fetchUserSelectiveTimeline(userID, user.id).then(function(results) {
+    userModel.fetchUserSelectiveTimeline(userID, (user ? user.id : -1)).then(function(results) {
         res.json(helpers.outputResult(results));
     }).catch(function(err) {
     	res.json(helpers.outputError(err));
