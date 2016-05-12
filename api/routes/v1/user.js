@@ -78,4 +78,18 @@ router.get('/:userID/info', middlewares.auth, function(req, res) {
     });
 });
 
+router.get('/:userID/comments', middlewares.auth, function(req, res) {
+    var user = req.session.user;
+    var userID = req.params.userID;
+    if (!userID) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    userModel.fetchUserSelectiveTimeline(userID, user.id).then(function(results) {
+        res.json(helpers.outputResult(results));
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+});
+
 module.exports = router;

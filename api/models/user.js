@@ -108,6 +108,39 @@ exports.fetchUserTimeline = function(userID) {
     });
 }
 
+exports.fetchUserSelectiveTimeline = function(userID, currentUserID) {
+    var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+
+    return helpers.checkID(userID).then(function(userID) {
+        var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment|reposted]-(user :User)"
+        + " WHERE id(user) = {userID}"
+        + " MATCH (commentUser)-[:createdComment]->(comment)"
+        + " OPTIONAL MATCH (sessionUser)"
+        + " WHERE id(sessionUser) = {sessionUserID}"
+        + " OPTIONAL MATCH (sessionUser)-[didLike: likes]->(comment)"
+        + " OPTIONAL MATCH (sessionUser)-[didRepost: reposted]->(comment)"
+        + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
+        + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
+        + " RETURN comment, didLike, COUNT(DISTINCT likes) AS likes, COUNT(DISTINCT reposts) AS reposts, didRepost, stream, commentUser AS user"
+        + ", CASE WHEN didRepost.date IS NULL THEN comment.date ELSE didRepost.date END AS sortDate"
+        + " ORDER BY sortDate DESC";
+
+        return db.query(cypher, {'userID': userID, 'sessionUserID': currentUserID}).then(function(results) {
+            for (var i in results) {
+                results[i]['comment']['user'] = results[i]['user'];
+                results[i]['comment']['stream'] = results[i]['stream'];
+                results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
+                results[i]['comment']['likes'] = results[i]['likes'];
+                results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
+                results[i]['comment']['reposts'] = results[i]['reposts'];
+                results[i] = results[i]['comment'];
+            }
+
+            return results;
+        });
+    });
+}
+
 exports.userIsFollowingUser = function(userID1, userID2) {
     var cypher = "MATCH (user1)-[r: follows]->(user2)"
     + " WHERE id(user1) = {userID1} AND id(user2) = {userID2}"
