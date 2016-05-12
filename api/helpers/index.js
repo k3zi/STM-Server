@@ -23,7 +23,7 @@ exports.encodeStr = function(str) {
 }
 
 exports.now = function() {
-    return floor(_.now()/1000);
+    return Math.floor(_.now()/1000);
 }
 
 exports.outputError = function(error) {
