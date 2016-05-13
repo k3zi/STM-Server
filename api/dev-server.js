@@ -14,7 +14,6 @@ var md5 = require('md5');
 var crypto = require('crypto');
 
 //Misc
-var apn = require('apn');
 var isThere = require("is-there");
 var domain = require('domain');
 var Promise = require('promise');
@@ -22,8 +21,6 @@ var Promise = require('promise');
 var config = require('config');
 var db = require('./data/db');
 var logger = config.log.logger;
-
-var apnConnection = new apn.Connection(config.apn);
 
 //************** Let's Connect Everything! **************\\\
 logger.info('Running Fork on Port: %d', process.argv[3]);
@@ -50,7 +47,7 @@ function connectMySQL() {
     database: 'stream_main',
     password: 'gbmpYiJq9f0KOQSjAj'
   });
-  
+
   mysqlDB.connect(function(err) {
       if(err) {
           logger.error('error when connecting to db:', err);

@@ -6,6 +6,9 @@ var Promise = require('promise');
 var md5 = require('md5');
 var crypto = require('crypto');
 var _ = require('lodash');
+var apn = require('apn');
+
+var apnConnection = new apn.Connection(config.apn);
 
 exports.checkID = function(objectID) {
     return new Promise(function (fulfill, reject) {
@@ -59,7 +62,6 @@ exports.sendMessageToAPNS = function(message, token, badge) {
     note.alert = message;
 
     apnConnection.pushNotification(note, myDevice);
-    apnConnectionDev.pushNotification(note, myDevice);
 }
 
 exports.sha1 = function(data) {
