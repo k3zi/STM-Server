@@ -26,11 +26,11 @@ exports.now = function() {
     return Math.floor(_.now()/1000);
 }
 
-exports.outputError = function(error, suppress = false) {
+exports.outputError = function(error, suppress) {
     return {
         'success': false,
         'error': error,
-        'suppress': suppress
+        'suppress': suppress || false
     };
 }
 
