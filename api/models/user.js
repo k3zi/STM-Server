@@ -6,6 +6,8 @@ var logger = config.log.logger;
 var helpers = require('../helpers');
 var db = require('../data/db');
 
+var commentModel = require(config.directory.api + '/models/comment');
+
 getUserDir = function(userID) {
     return config.directory.user_content + '/' + helpers.encodeStr(userID) + '/';
 }
@@ -17,18 +19,6 @@ ensureUserDirectoryExists = function(user) {
             else fulfill(user);
         });
     });
-}
-
-parseComment = function(item) {
-    var comment = item['comment'];
-    comment['user'] = item['user'];
-    comment['stream'] = item['stream'];
-    comment['didLike'] = (item['didLike'] ? true : false);
-    comment['likes'] = item['likes'];
-    comment['didRepost'] = (item['didRepost'] ? true : false);
-    comment['reposts'] = item['reposts'];
-    comment['reposter'] = item['reposter'];
-    return comment;
 }
 
 exports.countUserFollowing = function(userID) {
@@ -105,7 +95,7 @@ exports.fetchUserLikes = function(userID, currentUserID) {
         + " ORDER BY like.date DESC";
 
         return db.query(cypher, {'userID': userID, 'sessionUserID': currentUserID}).then(function(results) {
-            return Promise.all(results.map(parseComment));
+            return Promise.all(results.map(commentModel.parseComment));
         });
     });
 }
@@ -128,7 +118,7 @@ exports.fetchUserSelectiveTimeline = function(userID, currentUserID) {
         + " ORDER BY sortDate DESC";
 
         return db.query(cypher, {'userID': userID, 'sessionUserID': currentUserID}).then(function(results) {
-            return Promise.all(results.map(parseComment));
+            return Promise.all(results.map(commentModel.parseComment));
         });
     });
 }
@@ -150,7 +140,7 @@ exports.fetchUserTimeline = function(userID) {
     + " ORDER BY sortDate DESC";
 
     return db.query(cypher, {'userID': userID}).then(function(results) {
-        return Promise.all(results.map(parseComment));;
+        return Promise.all(results.map(commentModel.parseComment));
     });
 }
 

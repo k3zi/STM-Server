@@ -30,6 +30,7 @@ describe(version, function() {
         });
     });
 
+    importTest('/comment', './routes.comment.js');
     importTest('/conversation', './routes.conversation.js');
     importTest('/dashboard', './routes.dashboard.js');
     importTest('/stream', './routes.stream.js');

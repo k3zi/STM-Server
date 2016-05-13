@@ -4,10 +4,11 @@ var helpers = require(config.directory.api + '/helpers');
 
 var router = express.Router();
 
+router.use('/comment', require('./comment'));
 router.use('/conversation', require('./conversation'));
 router.use('/dashboard', require('./dashboard'));
-router.use('/user', require('./user'));
 router.use('/stream', require('./stream'));
+router.use('/user', require('./user'));
 
 router.get('/status', function(req, res) {
     var result = helpers.outputResult('The server is doing fine.');
