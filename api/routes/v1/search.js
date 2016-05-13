@@ -11,7 +11,7 @@ var commentModel = require(config.directory.api + '/models/comment');
 
 var router = express.Router();
 
-router.post('/search', middlewares.auth, function(req, res) {
+router.post('/', middlewares.auth, function(req, res) {
     var user = req.session.user;
     var userID =  (user ? user.id : -1);
     var q = req.body.q;
