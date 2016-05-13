@@ -55,6 +55,28 @@ describe('/:id', function() {
         });
     });
 
+    describe('GET /repost', function() {
+        it('should return a success', function(done) {
+            return config.test.loginRequest(chai.request(url).get('/191/repost')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(true);
+                done();
+            });
+        });
+
+        it('should return an error when provided a bogus user ID', function(done) {
+            return config.test.loginRequest(chai.request(url).get('/ghcgcyt/repost')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(false);
+                done();
+            });
+        });
+    });
+
     describe('GET /unlike', function() {
         it('should return a success', function(done) {
             return config.test.loginRequest(chai.request(url).get('/191/unlike')).end(function(err, res) {
@@ -68,6 +90,28 @@ describe('/:id', function() {
 
         it('should return an error when provided a bogus user ID', function(done) {
             return config.test.loginRequest(chai.request(url).get('/ghcgcyt/unlike')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(false);
+                done();
+            });
+        });
+    });
+
+    describe('GET /unrepost', function() {
+        it('should return a success', function(done) {
+            return config.test.loginRequest(chai.request(url).get('/191/unrepost')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(true);
+                done();
+            });
+        });
+
+        it('should return an error when provided a bogus user ID', function(done) {
+            return config.test.loginRequest(chai.request(url).get('/ghcgcyt/unrepost')).end(function(err, res) {
                 should.equal(err, null);
                 res.should.have.status(200);
                 res.should.be.json;

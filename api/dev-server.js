@@ -7,15 +7,8 @@ var xio = require('socket.io-client');
 var redis = require('socket.io-redis');
 
 var mysql = require('mysql');
-var fs = require("fs");
-
-//Cryptography
-var md5 = require('md5');
-var crypto = require('crypto');
 
 //Misc
-var isThere = require("is-there");
-var domain = require('domain');
 var Promise = require('promise');
 
 var config = require('config');

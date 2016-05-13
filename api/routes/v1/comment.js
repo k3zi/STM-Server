@@ -57,4 +57,36 @@ router.get('/:commentID/unlike', middlewares.session, function (req, res) {
     });
 });
 
+router.get('/:commentID/repost', middlewares.session, function (req, res) {
+    var user = req.session.user;
+    var commentID = req.params.commentID;
+    if (!commentID) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    commentModel.repostComment(commentID, user.id).then(function (result) {
+        if (result) {
+            helpers.sendMessageToAPNS('@' + user.username + ' reposted: ' + result.comment.text, result.user.apnsToken, result.user.badge);
+        }
+
+        res.json(helpers.outputResult({}));
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+});
+
+router.get('/:commentID/unrepost', middlewares.session, function (req, res) {
+    var user = req.session.user;
+    var commentID = req.params.commentID;
+    if (!commentID) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    commentModel.unrepostComment(commentID, user.id).then(function (result) {
+        res.json(helpers.outputResult({}));
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+});
+
 module.exports = router;

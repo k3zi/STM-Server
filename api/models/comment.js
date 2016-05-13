@@ -70,4 +70,31 @@ exports.unlikeComment = function(commentID, currentUserID) {
     });
 }
 
+exports.repostComment = function(commentID, currentUserID) {
+    return helpers.checkID(commentID).then(function(commentID) {
+        var cypher = "MATCH (fromUser: User), (comment: Comment)<-[:createdComment]-(user: User)"
+        + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
+        + " CREATE UNIQUE (fromUser)-[r: reposted]->(comment)"
+        + " SET r.date = {date}"
+        + " SET user.badge = user.badge + 1"
+        + " RETURN user, comment";
+
+        return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID, 'date': helpers.now()}).then(function(results) {
+            if (results.length > 0) {
+                return results[0];
+            }
+        });
+    });
+}
+
+exports.unrepostComment = function(commentID, currentUserID) {
+    return helpers.checkID(commentID).then(function(commentID) {
+        var cypher = "MATCH (fromUser: User)-[r:reposted]->(comment: Comment)"
+        + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
+        + " DELETE r";
+
+        return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID});
+    });
+}
+
 exports.parseComment = parseComment;
