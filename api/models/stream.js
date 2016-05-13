@@ -40,7 +40,10 @@ streamLastOnline = function(streamID) {
 }
 
 parseLiveStream = function(item) {
-    return streamLastOnline(item['stream'].id).then(function(lastOnline) {
+    var stream = item['stream'];
+    if (!stream) return undefined;
+
+    return streamLastOnline(stream.id).then(function(lastOnline) {
         if (lastOnline < 30) {
             stream['user'] = item['user'];
             return stream;
