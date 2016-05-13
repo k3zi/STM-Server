@@ -26,10 +26,11 @@ exports.now = function() {
     return Math.floor(_.now()/1000);
 }
 
-exports.outputError = function(error) {
+exports.outputError = function(error, suppress = false) {
     return {
         'success': false,
-        'error': error
+        'error': error,
+        'suppress': suppress
     };
 }
 
@@ -42,6 +43,23 @@ exports.outputResult = function(result) {
 
 exports.hashPass = function(pass) {
     return sha1(md5(pass) + md5(pass.length) + md5(str_rot13(pass)));
+}
+
+exports.sendMessageToAPNS = function(message, token, badge) {
+    if (!token || token.length == 0) {
+        return;
+    }
+
+    var myDevice = new apn.Device(token);
+    var note = new apn.Notification();
+
+    note.expiry = Math.floor(Date.now() / 1000) + 3600;
+    note.badge = badge ? badge : 1;
+    note.sound = "default";
+    note.alert = message;
+
+    apnConnection.pushNotification(note, myDevice);
+    apnConnectionDev.pushNotification(note, myDevice);
 }
 
 exports.sha1 = function(data) {
