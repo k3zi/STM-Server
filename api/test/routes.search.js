@@ -12,7 +12,7 @@ var url = config.baseURL + version + '/search';
 
 describe('POST /', function() {
     it('should return an array of results', function(done) {
-        return config.test.authRequest(chai.request(url).post('/search').send({'q': 'Ke'})).end(function(err, res) {
+        return config.test.authRequest(chai.request(url).post('/').send({'q': 'Ke'})).end(function(err, res) {
             should.equal(err, null);
             res.should.have.status(200);
             res.should.be.json;
@@ -22,7 +22,7 @@ describe('POST /', function() {
     });
 
     it('should return an empty array when provided an empty body', function(done) {
-        return config.test.authRequest(chai.request(url).post('/search')).end(function(err, res) {
+        return config.test.authRequest(chai.request(url).post('/')).end(function(err, res) {
             should.equal(err, null);
             res.should.have.status(200);
             res.should.be.json;
