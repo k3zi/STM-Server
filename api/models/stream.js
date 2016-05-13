@@ -66,6 +66,13 @@ exports.fetchActiveFollowed = function(userID) {
     });
 }
 
+exports.fetchStreamsForUserID = function(userID) {
+    return helpers.checkID(userID).then(function(userID) {
+        var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
+        return db.query(cypher, {'userID': userID});
+    });
+}
+
 exports.find = function(params) {
     return new Promise(function (fulfill, reject) {
         if (params.length == 0) reject('no paramaters sent');
@@ -89,10 +96,20 @@ exports.getFeaturedItems = function() {
     });
 }
 
-exports.fetchStreamsForUserID = function(userID) {
-    return helpers.checkID(userID).then(function(userID) {
-        var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
-        return db.query(cypher, {'userID': userID});
+exports.search = function(query, currentUserID) {
+    var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+    var likeString = config.db.constructLike(q);
+
+    var cypher = "MATCH (stream: Stream)"
+    + " WHERE stream.name " + likeString + " OR stream.description " + likeString
+    + " RETURN stream"
+    + " LIMIT 5";
+    return db.query(cypher, {}).then(function (results) {
+        for (var i in results) {
+            results[i]['_type'] = 'STMStream';
+        }
+
+        return results;
     });
 }
 

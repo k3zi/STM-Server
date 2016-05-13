@@ -55,6 +55,9 @@ config.db = {};
 config.db.server = 'http://69.4.80.29:7474';
 config.db.user = 'neo4j';
 config.db.pass = 'gbmpYiJq9f0KOQSjAj';
+config.db.constructLike = function(q) {
+    return  "=~ '(?i).*" + q + ".*'";
+}
 
 config.test = {};
 config.test.session = {

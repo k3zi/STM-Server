@@ -7,6 +7,7 @@ var router = express.Router();
 router.use('/comment', require('./comment'));
 router.use('/conversation', require('./conversation'));
 router.use('/dashboard', require('./dashboard'));
+router.use('/search', require('./search'));
 router.use('/stream', require('./stream'));
 router.use('/user', require('./user'));
 

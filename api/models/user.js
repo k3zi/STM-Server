@@ -144,6 +144,27 @@ exports.fetchUserTimeline = function(userID) {
     });
 }
 
+exports.search = function(query, currentUserID) {
+    var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+    var likeString = config.db.constructLike(q);
+
+    var cypher = "MATCH (user: User)"
+    + " WHERE user.displayName " + likeString + " OR user.username " + likeString
+    + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
+    + " WHERE id(thisUser) = {userID}"
+    + " RETURN user, isFollowing"
+    + " LIMIT 5";
+    return db.query(cypher, {'userID': currentUserID}).then(function (results) {
+        for (var i in results) {
+            var user = results[i]['user'];
+            user['_type'] = 'STMUser';
+            user['isFollowing'] = (results[i]['isFollowing'] ? true : false);
+        }
+
+        return results;
+    });
+}
+
 exports.userIsFollowingUser = function(userID1, userID2) {
     var cypher = "MATCH (user1)-[r: follows]->(user2)"
     + " WHERE id(user1) = {userID1} AND id(user2) = {userID2}"

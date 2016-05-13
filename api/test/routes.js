@@ -33,6 +33,7 @@ describe(version, function() {
     importTest('/comment', './routes.comment.js');
     importTest('/conversation', './routes.conversation.js');
     importTest('/dashboard', './routes.dashboard.js');
+    importTest('/search', './routes.search.js');
     importTest('/stream', './routes.stream.js');
     importTest('/user', './routes.user.js');
 
