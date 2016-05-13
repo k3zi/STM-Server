@@ -144,6 +144,22 @@ exports.fetchUserTimeline = function(userID) {
     });
 }
 
+exports.followUser = function(currentUserID, userID) {
+    return helpers.checkID(userID).then(function(userID) {
+        var cypher = "MATCH (fromUser: User), (toUser: User)"
+        + " WHERE id(fromUser) = {fromID} AND id(toUser) = {toID}"
+        + " CREATE UNIQUE (fromUser)-[r: follows]->(toUser)"
+        + " SET r.date = {date}, toUser.badge = toUser.badge + 1"
+        + " RETURN toUser";
+
+        return db.query(cypher, {'fromID': currentUserID, 'toID': userID, 'date': helpers.now()}).then(function(results) {
+            if (results.length > 0) {
+                return results[0];
+            }
+        });
+    });
+}
+
 exports.search = function(query, currentUserID) {
     var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
     var likeString = config.db.constructLike(query);
@@ -163,6 +179,16 @@ exports.search = function(query, currentUserID) {
         }
 
         return results;
+    });
+}
+
+exports.unfollowUser = function(currentUserID, userID) {
+    return helpers.checkID(userID).then(function(userID) {
+        var cypher = "MATCH (fromUser: User)-[r:follows]->(toUser: User)"
+        + " WHERE id(fromUser) = {fromID} AND id(toUser) = {toID}"
+        + " DELETE r";
+
+        return db.query(cypher, {'fromID': currentUserID, 'toID': userID});
     });
 }
 

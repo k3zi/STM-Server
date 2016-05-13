@@ -50,6 +50,24 @@ router.get('/:userID/comments', middlewares.auth, function(req, res) {
     });
 });
 
+router.get('/:userID/follow', middlewares.session, function(req, res) {
+    var user = req.session.user;
+    var userID = req.params.userID;
+    if (!userID) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    userModel.followUser(user.id, userID).then(function(result) {
+        if (result) {
+            helpers.sendMessageToAPNS(user.displayName + ' (@' + user.username + ') is now following you', result.apnsToken, result.badge);
+        }
+
+        res.json(helpers.outputResult({}));
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+});
+
 router.get('/:userID/likes', middlewares.auth, function(req, res) {
     var user = req.session.user;
     var userID = req.params.userID;
@@ -101,6 +119,20 @@ router.get('/:userID/stats', middlewares.auth, function(req, res) {
         }
     }).then(function() {
         res.json(helpers.outputResult(items));
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+});
+
+router.get('/:userID/unfollow', middlewares.session, function(req, res) {
+    var user = req.session.user;
+    var userID = req.params.userID;
+    if (!userID) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    userModel.unfollowUser(user.id, userID).then(function(result) {
+        res.json(helpers.outputResult({}));
     }).catch(function(err) {
     	res.json(helpers.outputError(err));
     });
