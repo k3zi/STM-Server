@@ -98,7 +98,7 @@ exports.getFeaturedItems = function() {
 
 exports.search = function(query, currentUserID) {
     var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
-    var likeString = config.db.constructLike(q);
+    var likeString = config.db.constructLike(query);
 
     var cypher = "MATCH (stream: Stream)"
     + " WHERE stream.name " + likeString + " OR stream.description " + likeString

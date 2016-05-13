@@ -146,7 +146,7 @@ exports.fetchUserTimeline = function(userID) {
 
 exports.search = function(query, currentUserID) {
     var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
-    var likeString = config.db.constructLike(q);
+    var likeString = config.db.constructLike(query);
 
     var cypher = "MATCH (user: User)"
     + " WHERE user.displayName " + likeString + " OR user.username " + likeString
