@@ -159,6 +159,7 @@ exports.search = function(query, currentUserID) {
             var user = results[i]['user'];
             user['_type'] = 'STMUser';
             user['isFollowing'] = (results[i]['isFollowing'] ? true : false);
+            results[i] = user;
         }
 
         return results;

@@ -20,8 +20,8 @@ router.post('/', middlewares.auth, function(req, res) {
     if (!q) {
         return res.json(helpers.outputResult([]));
     }
-    
-    userModel.search(q, userID).then(function(results) {
+
+    userModel.search(q, userID).then(function (results) {
         items = items.concat(results);
         return streamModel.search(q, userID);
     }).then(function (results) {
