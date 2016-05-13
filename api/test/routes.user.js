@@ -35,7 +35,7 @@ describe('POST /authenticate', function() {
 
 describe('/:id', function() {
     describe('GET /comments', function() {
-        it('should return a list of streams', function(done) {
+        it('should return a list of comments', function(done) {
             return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/comments')).end(function(err, res) {
                 should.equal(err, null);
                 res.should.have.status(200);
@@ -56,7 +56,29 @@ describe('/:id', function() {
         });
     });
 
-    describe('GET /info', function() {
+    describe('GET /likes', function() {
+        it('should return a list of comments liked by the specified user', function(done) {
+            return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/likes')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(true);
+                done();
+            });
+        });
+
+        it('should return an error when provided a bogus user ID', function(done) {
+            return config.test.authRequest(chai.request(url).get('/ghcgcyt/likes')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(false);
+                done();
+            });
+        });
+    });
+
+    describe('GET /stats', function() {
         it('should return the users stats', function(done) {
             return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/info')).end(function(err, res) {
                 should.equal(err, null);

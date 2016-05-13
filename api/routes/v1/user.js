@@ -36,6 +36,34 @@ router.post('/authenticate', middlewares.auth, function(req, res) {
     });
 });
 
+router.get('/:userID/comments', middlewares.auth, function(req, res) {
+    var user = req.session.user;
+    var userID = req.params.userID;
+    if (!userID) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    userModel.fetchUserSelectiveTimeline(userID, (user ? user.id : -1)).then(function(results) {
+        res.json(helpers.outputResult(results));
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+});
+
+router.get('/:userID/likes', middlewares.auth, function(req, res) {
+    var user = req.session.user;
+    var userID = req.params.userID;
+    if (!userID) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    userModel.fetchUserLikes(userID, (user ? user.id : -1)).then(function(results) {
+        res.json(helpers.outputResult(results));
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+});
+
 router.get('/:userID/streams', middlewares.auth, function(req, res) {
     var userID = req.params.userID;
     if (!userID) {
@@ -49,7 +77,7 @@ router.get('/:userID/streams', middlewares.auth, function(req, res) {
     });
 });
 
-router.get('/:userID/info', middlewares.auth, function(req, res) {
+router.get('/:userID/stats', middlewares.auth, function(req, res) {
     var user = req.session.user;
     var userID = req.params.userID;
     if (!userID) {
@@ -73,20 +101,6 @@ router.get('/:userID/info', middlewares.auth, function(req, res) {
         }
     }).then(function() {
         res.json(helpers.outputResult(items));
-    }).catch(function(err) {
-    	res.json(helpers.outputError(err));
-    });
-});
-
-router.get('/:userID/comments', middlewares.auth, function(req, res) {
-    var user = req.session.user;
-    var userID = req.params.userID;
-    if (!userID) {
-        return res.json(helpers.outputError('Missing Paramater'));
-    }
-
-    userModel.fetchUserSelectiveTimeline(userID, (user ? user.id : -1)).then(function(results) {
-        res.json(helpers.outputResult(results));
     }).catch(function(err) {
     	res.json(helpers.outputError(err));
     });

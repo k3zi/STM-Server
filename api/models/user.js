@@ -19,6 +19,18 @@ ensureUserDirectoryExists = function(user) {
     });
 }
 
+parseComment = function(item) {
+    var comment = item['comment'];
+    comment['user'] = item['user'];
+    comment['stream'] = item['stream'];
+    comment['didLike'] = (item['didLike'] ? true : false);
+    comment['likes'] = item['likes'];
+    comment['didRepost'] = (item['didRepost'] ? true : false);
+    comment['reposts'] = item['reposts'];
+    comment['reposter'] = item['reposter'];
+    return comment;
+}
+
 exports.countUserFollowing = function(userID) {
     var cypher = "MATCH (user: User)-[r: follows]->(:User)"
     + " WHERE id(user) = {userID}"
@@ -76,35 +88,25 @@ exports.find = function(params) {
     }).then(ensureUserDirectoryExists);
 }
 
-exports.fetchUserTimeline = function(userID) {
-    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment|reposted]-(postingUser:User)<-[:follows*0..1]-(user :User)"
-    + " WHERE id(user) = {userID}"
-    + " WITH DISTINCT comment, stream, user"
-    + " MATCH (commentUser)-[:createdComment]->(comment)"
-    + " OPTIONAL MATCH (comment)<-[r1:reposted]-(reposter:User)<-[:follows*0..1]-(user)"
-    + " WITH comment, stream, user, commentUser, HEAD(COLLECT(reposter)) AS reposter, HEAD(COLLECT(r1)) AS r1"
-    + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
-    + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
-    + " OPTIONAL MATCH (user)-[didRepost: reposted]->(comment)"
-    + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
-    + " OPTIONAL MATCH (user)-[doesFollow: follows]->(commentUser)"
-    + " RETURN comment, reposter, COUNT(DISTINCT likes) AS likes, COUNT(DISTINCT reposts) AS reposts, didRepost, didLike, stream, commentUser AS user"
-    + ", CASE WHEN (doesFollow.date IS NOT NULL OR id(user) = id(commentUser)) THEN comment.date ELSE r1.date END AS sortDate"
-    + " ORDER BY sortDate DESC";
+exports.fetchUserLikes = function(userID, currentUserID) {
+    var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
 
-    return db.query(cypher, {'userID': userID}).then(function(results) {
-        for(var i in results) {
-            results[i]['comment']['user'] = results[i]['user'];
-            results[i]['comment']['stream'] = results[i]['stream'];
-            results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
-            results[i]['comment']['likes'] = results[i]['likes'];
-            results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
-            results[i]['comment']['reposts'] = results[i]['reposts'];
-            results[i]['comment']['reposter'] = results[i]['reposter'];
-            results[i] = results[i]['comment'];
-        }
+    return helpers.checkID(userID).then(function(userID) {
+        var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[like:likes]-(user :User)"
+        + " WHERE id(user) = {userID}"
+        + " MATCH (commentUser)-[:createdComment]->(comment)"
+        + " OPTIONAL MATCH (sessionUser)"
+        + " WHERE id(sessionUser) = {sessionUserID}"
+        + " OPTIONAL MATCH (sessionUser)-[didLike: likes]->(comment)"
+        + " OPTIONAL MATCH (sessionUser)-[didRepost: reposted]->(comment)"
+        + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
+        + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
+        + " RETURN comment, didLike, like, COUNT(DISTINCT likes) AS likes, COUNT(DISTINCT reposts) AS reposts, didRepost, stream, commentUser AS user"
+        + " ORDER BY like.date DESC";
 
-        return results;
+        return db.query(cypher, {'userID': userID, 'sessionUserID': currentUserID}).then(function(results) {
+            return Promise.all(results.map(parseComment));
+        });
     });
 }
 
@@ -126,18 +128,29 @@ exports.fetchUserSelectiveTimeline = function(userID, currentUserID) {
         + " ORDER BY sortDate DESC";
 
         return db.query(cypher, {'userID': userID, 'sessionUserID': currentUserID}).then(function(results) {
-            for (var i in results) {
-                results[i]['comment']['user'] = results[i]['user'];
-                results[i]['comment']['stream'] = results[i]['stream'];
-                results[i]['comment']['didLike'] = (results[i]['didLike'] ? true : false);
-                results[i]['comment']['likes'] = results[i]['likes'];
-                results[i]['comment']['didRepost'] = (results[i]['didRepost'] ? true : false);
-                results[i]['comment']['reposts'] = results[i]['reposts'];
-                results[i] = results[i]['comment'];
-            }
-
-            return results;
+            return Promise.all(results.map(parseComment));
         });
+    });
+}
+
+exports.fetchUserTimeline = function(userID) {
+    var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment|reposted]-(postingUser:User)<-[:follows*0..1]-(user :User)"
+    + " WHERE id(user) = {userID}"
+    + " WITH DISTINCT comment, stream, user"
+    + " MATCH (commentUser)-[:createdComment]->(comment)"
+    + " OPTIONAL MATCH (comment)<-[r1:reposted]-(reposter:User)<-[:follows*0..1]-(user)"
+    + " WITH comment, stream, user, commentUser, HEAD(COLLECT(reposter)) AS reposter, HEAD(COLLECT(r1)) AS r1"
+    + " OPTIONAL MATCH (user)-[didLike: likes]->(comment)"
+    + " OPTIONAL MATCH ()-[likes: likes]->(comment)"
+    + " OPTIONAL MATCH (user)-[didRepost: reposted]->(comment)"
+    + " OPTIONAL MATCH ()-[reposts: reposted]->(comment)"
+    + " OPTIONAL MATCH (user)-[doesFollow: follows]->(commentUser)"
+    + " RETURN comment, reposter, COUNT(DISTINCT likes) AS likes, COUNT(DISTINCT reposts) AS reposts, didRepost, didLike, stream, commentUser AS user"
+    + ", CASE WHEN (doesFollow.date IS NOT NULL OR id(user) = id(commentUser)) THEN comment.date ELSE r1.date END AS sortDate"
+    + " ORDER BY sortDate DESC";
+
+    return db.query(cypher, {'userID': userID}).then(function(results) {
+        return Promise.all(results.map(parseComment));;
     });
 }
 
