@@ -34,7 +34,7 @@ router.get('/:commentID/like', middlewares.session, function (req, res) {
 
     commentModel.likeComment(commentID, user.id).then(function (result) {
         if (result) {
-            helpers.sendMessageToAPNS('@' + user.username + ' liked: ' + result.comment.text, result.user.apnsToken, result.user.badge);
+            helpers.sendMessageToAPNS('@' + user.username + ' liked: "' + result.comment.text + '"', result.user.apnsToken, result.user.badge);
         }
 
         res.json(helpers.outputResult({}));
@@ -66,7 +66,7 @@ router.get('/:commentID/repost', middlewares.session, function (req, res) {
 
     commentModel.repostComment(commentID, user.id).then(function (result) {
         if (result) {
-            helpers.sendMessageToAPNS('@' + user.username + ' reposted: ' + result.comment.text, result.user.apnsToken, result.user.badge);
+            helpers.sendMessageToAPNS('@' + user.username + ' reposted: "' + result.comment.text + '"', result.user.apnsToken, result.user.badge);
         }
 
         res.json(helpers.outputResult({}));
