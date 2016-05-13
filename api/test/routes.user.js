@@ -80,7 +80,7 @@ describe('/:id', function() {
 
     describe('GET /stats', function() {
         it('should return the users stats', function(done) {
-            return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/info')).end(function(err, res) {
+            return config.test.authRequest(chai.request(url).get('/' + config.test.session.id + '/stats')).end(function(err, res) {
                 should.equal(err, null);
                 res.should.have.status(200);
                 res.should.be.json;
@@ -90,7 +90,7 @@ describe('/:id', function() {
         });
 
         it('should return an error when provided a bogus user ID', function(done) {
-            return config.test.authRequest(chai.request(url).get('/ghcgcyt/info')).end(function(err, res) {
+            return config.test.authRequest(chai.request(url).get('/ghcgcyt/stats')).end(function(err, res) {
                 should.equal(err, null);
                 res.should.have.status(200);
                 res.should.be.json;
