@@ -73,6 +73,28 @@ exports.randomStr = function(numberOfCharacters) {
     return str.substr(0, numberOfCharacters);
 }
 
+exports.sendMentionsForComment = function(comment, user) {
+    var mentions = comment.text.match(config.regex.mentionRegex);
+    var filteredMentions = [];
+    if (mentions) {
+        for (var i in mentions) {
+            filteredMentions.push(mentions[i].substr(1));
+        }
+    }
+
+    var cypher = "MATCH (n: User)"
+    + "WHERE n.username IN {filteredMentions} AND id(toUser) <> {userID}"
+    + " SET n.badge = n.badge + 1"
+    + " RETURN n";
+
+    return db.query(cypher, {'filteredMentions': filteredMentions, 'userID': user.id}).then(function(results) {
+        for (var i in results) {
+            var toUser = results[i];
+            sendMessageToAPNS('Mentioned by @' + user.username + ': "' + comment.text + '"', toUser.apnsToken, toUser.badge);
+        }
+    });
+}
+
 exports.sendMessageToAPNS = function(message, token, badge) {
     if (!token || token.length == 0) {
         return;

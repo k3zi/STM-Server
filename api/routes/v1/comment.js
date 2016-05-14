@@ -11,6 +11,7 @@ module.exports = function(passThrough) {
     var userModel = require(config.directory.api + '/models/user')(passThrough);
     var streamModel = require(config.directory.api + '/models/stream')(passThrough);
     var commentModel = require(config.directory.api + '/models/comment')(passThrough);
+    var relationships = require(config.directory.api + '/models/relationships')(passThrough);
 
     router.get('/:commentID/like', middlewares.session, function (req, res) {
         var user = req.session.user;
@@ -69,7 +70,18 @@ module.exports = function(passThrough) {
             return res.json(helpers.outputError('Missing Paramater'));
         }
 
-        commentModel.replyToCommentOnStream(text, commentID, streamID, user.id).then(function() {
+        commentModel.create(text).then(function(comment) {
+            var roomID = streamID + '-comments';
+            comment.user = user;
+            passThrough.commentSocket.to(roomID).volatile.emit('newComment', comment);
+
+            var p1 = relationships.relateUserToComment(user.id, comment.id);
+            var p2 = relationships.relateCommentToStream(comment.id, streamID);
+            var p3 = relationships.relateCommentReplyToComment(comment.id, commentID);
+            var p4 = helpers.sendMentionsForComment(comment, user);
+
+            return Promise.all([p1, p2, p3, p4]);
+        }).then(function() {
             res.json(helpers.outputResult({}));
         }).catch(function(err) {
         	res.json(helpers.outputError(err));

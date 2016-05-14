@@ -25,6 +25,16 @@ parseComment = function (item) {
 module.exports = function(passThrough) {
     var exports = {};
 
+    exports.create = function(text) {
+        return new Promise(function (fulfill, reject) {
+            if (!text || text.length == 0) return reject('Invalid text');
+
+            fulfill(text);
+        }).then(function(text) {
+            return db.save({'text': text, 'date': helpers.now()}, 'Comment');
+        });
+    }
+
     exports.fetchRepliesForComment = function(commentID, currentUserID) {
         var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
 
@@ -70,22 +80,6 @@ module.exports = function(passThrough) {
             + " DELETE r";
 
             return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID});
-        });
-    }
-
-    exports.replyToCommentOnStream = function(text, commentID, streamID, userID) {
-        var commentID = (typeof commentID == 'string' ? parseInt(commentID) : commentID) || -1;
-        var streamID = (typeof streamID == 'string' ? parseInt(streamID) : streamID) || -1;
-        var commentSocket = passThrough.commentSocket;
-
-        return new Promise(function (fulfill, reject) {
-            if (commentID == -1) return reject('Invalid comment ID');
-            if (streamID == -1) return reject('Invalid stream ID');
-            if (!commentSocket) return reject("Server can't connect to comment socket");
-
-            fulfill();
-        }).then(function() {
-            var roomID = streamID + '-comments';
         });
     }
 
