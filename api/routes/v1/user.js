@@ -146,7 +146,7 @@ router.post('/updateAPNS', middlewares.session, function(req, res) {
         return res.json(helpers.outputError('Missing Paramater'));
     }
 
-    userModel.updateAPNSForUser(token, userID).then(function(result) {
+    userModel.updateAPNSForUser(token, user.id).then(function(result) {
         if (result) {
             req.session.user = user;
             res.json(helpers.outputResult(result));
@@ -167,7 +167,7 @@ router.post('/update/:property', middlewares.session, function(req, res) {
         return res.json(helpers.outputError('Missing Paramater'));
     }
 
-    userModel.updatePropertyForUser(property, value, userID).then(function(result) {
+    userModel.updatePropertyForUser(property, value, user.id).then(function(result) {
         if (result) {
             req.session.user = user;
             res.json(helpers.outputResult(result));
