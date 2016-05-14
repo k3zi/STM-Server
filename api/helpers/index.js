@@ -20,7 +20,7 @@ sendMessageToAPNS = function(message, token, badge) {
     var note = new apn.Notification();
 
     note.expiry = Math.floor(Date.now() / 1000) + 3600;
-    note.badge = badge ? badge : 1;
+    note.badge = badge || 1;
     note.sound = "default";
     note.alert = message;
 
@@ -95,23 +95,27 @@ exports.sendMentionsForComment = function(comment, user) {
     logger.debug('Found Mentions: ' + mentions);
     var filteredMentions = [];
     if (mentions) {
-        for (var i in mentions) {
-            filteredMentions.push(mentions[i].substr(1));
-        }
+        mentions = mentions.map(function(item) {
+            return item.substr(1);
+        });
     }
 
-    logger.debug('Filtered mentions: ' + filteredMentions);
+    logger.debug('Filtered mentions: ' + mentions);
 
     var cypher = "MATCH (n: User)"
     + " WHERE n.username IN {filteredMentions} AND id(toUser) <> {userID}"
     + " SET n.badge = n.badge + 1"
     + " RETURN n";
-
-    return db.query(cypher, {'filteredMentions': filteredMentions, 'userID': user.id}).then(function(results) {
+    logger.debug('Executing cypher: ' + cypher);
+    var params = {'filteredMentions': filteredMentions, 'userID': user.id};
+    logger.debug('Params: ' + params);
+    return db.query(cypher, params).then(function(results) {
         logger.debug('Sending mentions to: ' + results);
+        var message = 'Mentioned by @' + user.username + ': "' + comment.text + '"';
+
         for (var i in results) {
             var toUser = results[i];
-            sendMessageToAPNS('Mentioned by @' + user.username + ': "' + comment.text + '"', toUser.apnsToken, toUser.badge);
+            sendMessageToAPNS(message, toUser.apnsToken, toUser.badge);
         }
     });
 }
