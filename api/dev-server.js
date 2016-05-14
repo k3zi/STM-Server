@@ -1,4 +1,5 @@
-//************** IMPORTANT INCLUDES **************\\\
+process.env.NODE_ENV = 'development';
+
 var http = require('http');
 var express = require('express');
 

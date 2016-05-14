@@ -4,7 +4,7 @@ var expect = chai.expect;
 var chaiHttp = require('chai-http');
 var winston = require('winston');
 var config = require('../config/dev');
-var helpers = require('../helpers');
+var helpers = require(config.directory.api + '/helpers');
 
 chai.use(chaiHttp);
 
