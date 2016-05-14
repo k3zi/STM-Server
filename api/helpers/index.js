@@ -1,5 +1,6 @@
 var config = require('config');
 var hasher = require("hashids")(config.hash.salt, config.hash.minLength, config.hash.characters);
+var logger = config.log.logger;
 
 var fs = require('fs');
 var Promise = require('promise');
@@ -9,6 +10,22 @@ var _ = require('lodash');
 var apn = require('apn');
 
 var apnConnection = new apn.Connection(config.apn);
+
+sendMessageToAPNS = function(message, token, badge) {
+    if (!token || token.length == 0) {
+        return;
+    }
+
+    var myDevice = new apn.Device(token);
+    var note = new apn.Notification();
+
+    note.expiry = Math.floor(Date.now() / 1000) + 3600;
+    note.badge = badge ? badge : 1;
+    note.sound = "default";
+    note.alert = message;
+
+    apnConnection.pushNotification(note, myDevice);
+}
 
 sha1 = function(data) {
     var generator = crypto.createHash('sha1');
@@ -75,6 +92,7 @@ exports.randomStr = function(numberOfCharacters) {
 
 exports.sendMentionsForComment = function(comment, user) {
     var mentions = comment.text.match(config.regex.mentionRegex);
+    logger.debug('Found Mentions: ' + mentions);
     var filteredMentions = [];
     if (mentions) {
         for (var i in mentions) {
@@ -83,7 +101,7 @@ exports.sendMentionsForComment = function(comment, user) {
     }
 
     var cypher = "MATCH (n: User)"
-    + "WHERE n.username IN {filteredMentions} AND id(toUser) <> {userID}"
+    + " WHERE n.username IN {filteredMentions} AND id(toUser) <> {userID}"
     + " SET n.badge = n.badge + 1"
     + " RETURN n";
 
@@ -95,22 +113,7 @@ exports.sendMentionsForComment = function(comment, user) {
     });
 }
 
-exports.sendMessageToAPNS = function(message, token, badge) {
-    if (!token || token.length == 0) {
-        return;
-    }
-
-    var myDevice = new apn.Device(token);
-    var note = new apn.Notification();
-
-    note.expiry = Math.floor(Date.now() / 1000) + 3600;
-    note.badge = badge ? badge : 1;
-    note.sound = "default";
-    note.alert = message;
-
-    apnConnection.pushNotification(note, myDevice);
-}
-
 exports.md5 = md5;
+exports.sendMessageToAPNS = sendMessageToAPNS;
 exports.sha1 = sha1;
 exports.str_rot13 = str_rot13;
