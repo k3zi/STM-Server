@@ -8,6 +8,7 @@ var md5 = require('md5');
 var crypto = require('crypto');
 var _ = require('lodash');
 var apn = require('apn');
+var db = require('../data/db');
 
 var apnConnection = new apn.Connection(config.apn);
 
@@ -92,7 +93,6 @@ exports.randomStr = function(numberOfCharacters) {
 
 exports.sendMentionsForComment = function(comment, user) {
     var mentions = comment.text.match(config.regex.mentionRegex);
-    logger.debug('Found Mentions: ' + mentions);
     var filteredMentions = [];
     if (mentions) {
         mentions = mentions.map(function(item) {
@@ -100,17 +100,11 @@ exports.sendMentionsForComment = function(comment, user) {
         });
     }
 
-    logger.debug('Filtered mentions: ' + mentions);
-
     var cypher = "MATCH (n: User)"
     + " WHERE n.username IN {filteredMentions} AND id(toUser) <> {userID}"
     + " SET n.badge = n.badge + 1"
     + " RETURN n";
-    logger.debug('Executing cypher: ' + cypher);
-    var params = {'filteredMentions': filteredMentions, 'userID': user.id};
-    logger.debug('Params: ' + params);
-    return db.query(cypher, params).then(function(results) {
-        logger.debug('Sending mentions to: ' + results);
+    return db.query(cypher, {'filteredMentions': filteredMentions, 'userID': user.id}).then(function(results) {
         var message = 'Mentioned by @' + user.username + ': "' + comment.text + '"';
 
         for (var i in results) {
