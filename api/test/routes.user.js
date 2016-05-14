@@ -33,6 +33,56 @@ describe('POST /authenticate', function() {
     });
 });
 
+describe('POST /updateAPNS', function() {
+    it('should return a user object', function(done) {
+        var randomStr = helpers.randomStr(64);
+        return config.test.loginRequest(chai.request(url).post('/updateAPNS').send({'token': randomStr})).end(function(err, res) {
+            should.equal(err, null);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(true);
+            res.body.result.username.should.equal(config.test.session.username);
+            res.body.result.apnsToken.should.equal(randomStr);
+            done();
+        });
+    });
+
+    it('should return error when provided an empty body', function(done) {
+        return config.test.loginRequest(chai.request(url).post('/updateAPNS')).end(function(err, res) {
+            should.equal(err, null);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(false);
+            done();
+        });
+    });
+});
+
+describe('POST /update/:property', function() {
+    it('should return a user object', function(done) {
+        var randomInt = helpers.randomInt(0, 100);
+        return config.test.loginRequest(chai.request(url).post('/update/badge').send({'value': randomInt})).end(function(err, res) {
+            should.equal(err, null);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(true);
+            res.body.result.username.should.equal(config.test.session.username);
+            res.body.result.badge.should.equal(randomInt);
+            done();
+        });
+    });
+
+    it('should return error when provided an empty body', function(done) {
+        return config.test.loginRequest(chai.request(url).post('/update/badge')).end(function(err, res) {
+            should.equal(err, null);
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.success.should.equal(false);
+            done();
+        });
+    });
+});
+
 describe('/:id', function() {
     describe('GET /comments', function() {
         it('should return a list of comments', function(done) {

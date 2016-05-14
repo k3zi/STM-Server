@@ -10,6 +10,21 @@ var apn = require('apn');
 
 var apnConnection = new apn.Connection(config.apn);
 
+sha1 = function(data) {
+    var generator = crypto.createHash('sha1');
+    generator.update(data);
+    return generator.digest('hex');
+}
+
+str_rot13 = function(s) {
+    return (s ? s : this).split('').map(function(_) {
+        if (!_.match(/[A-za-z]/)) return _;
+        c = Math.floor(_.charCodeAt(0) / 97);
+        k = (_.toLowerCase().charCodeAt(0) - 83) % 26 || 26;
+        return String.fromCharCode(k + ((c == 0) ? 64 : 96));
+    }).join('');
+}
+
 exports.checkID = function(objectID) {
     return new Promise(function (fulfill, reject) {
         if (typeof objectID == 'string') {
@@ -48,6 +63,16 @@ exports.hashPass = function(pass) {
     return sha1(md5(pass) + md5(pass.length) + md5(str_rot13(pass)));
 }
 
+exports.randomInt = function(low, high) {
+    return Math.floor(Math.random() * (high - low) + low);
+}
+
+exports.randomStr = function(numberOfCharacters) {
+    var num = Math.ceil(numberOfCharacters/2);
+    var str = crypto.randomBytes(num).toString('hex');
+    return str.substr(0, numberOfCharacters);
+}
+
 exports.sendMessageToAPNS = function(message, token, badge) {
     if (!token || token.length == 0) {
         return;
@@ -64,19 +89,6 @@ exports.sendMessageToAPNS = function(message, token, badge) {
     apnConnection.pushNotification(note, myDevice);
 }
 
-exports.sha1 = function(data) {
-    var generator = crypto.createHash('sha1');
-    generator.update(data);
-    return generator.digest('hex');
-}
-
-exports.str_rot13 = function(s) {
-    return (s ? s : this).split('').map(function(_) {
-        if (!_.match(/[A-za-z]/)) return _;
-        c = Math.floor(_.charCodeAt(0) / 97);
-        k = (_.toLowerCase().charCodeAt(0) - 83) % 26 || 26;
-        return String.fromCharCode(k + ((c == 0) ? 64 : 96));
-    }).join('');
-}
-
 exports.md5 = md5;
+exports.sha1 = sha1;
+exports.str_rot13 = str_rot13;

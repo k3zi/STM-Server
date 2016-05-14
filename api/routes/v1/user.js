@@ -138,4 +138,45 @@ router.get('/:userID/unfollow', middlewares.session, function(req, res) {
     });
 });
 
+router.post('/updateAPNS', middlewares.session, function(req, res) {
+    var user = req.session.user;
+    var token = req.body.token;
+
+    if (!token) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    userModel.updateAPNSForUser(property, value, userID).then(function(result) {
+        if (result) {
+            req.session.user = user;
+            res.json(helpers.outputResult(result));
+        } else {
+            res.json(helpers.outputError('APNS could not be updated'));
+        }
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+});
+
+router.post('/update/:property', middlewares.session, function(req, res) {
+    var user = req.session.user;
+    var property = req.params.property;
+    var token = req.body.token;
+
+    if (!property || !value) {
+        return res.json(helpers.outputError('Missing Paramater'));
+    }
+
+    userModel.updatePropertyForUser(property, value, userID).then(function(result) {
+        if (result) {
+            req.session.user = user;
+            res.json(helpers.outputResult(result));
+        } else {
+            res.json(helpers.outputError('Property could not be updated'));
+        }
+    }).catch(function(err) {
+    	res.json(helpers.outputError(err));
+    });
+});
+
 module.exports = router;

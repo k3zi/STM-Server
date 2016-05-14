@@ -192,6 +192,30 @@ exports.unfollowUser = function(currentUserID, userID) {
     });
 }
 
+exports.updateAPNSForUser = function(token, userID) {
+    var cypher = "START x = node({userID})"
+    + " OPTIONAL MATCH (user: User {apnsToken: {token1}})"
+    + " WHERE id(user) <> id(x)"
+    + " SET x.apnsToken = {token2}, user.apnsToken = ''"
+    + " RETURN x";
+    return db.query(cypher, {'userID': userID, 'token1': token, 'token2': token}).then(function (results) {
+        if (results.length > 0) {
+            return results[0];
+        }
+    });
+}
+
+exports.updatePropertyForUser = function(property, value, userID) {
+    var cypher = "START x = node({userID})"
+    + " SET x." + property + " = {value}"
+    + " RETURN x";
+    return db.query(cypher, {'userID': userID, 'value': value}).then(function (results) {
+        if (results.length > 0) {
+            return results[0];
+        }
+    });
+}
+
 exports.userIsFollowingUser = function(userID1, userID2) {
     var cypher = "MATCH (user1)-[r: follows]->(user2)"
     + " WHERE id(user1) = {userID1} AND id(user2) = {userID2}"
