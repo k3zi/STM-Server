@@ -161,7 +161,7 @@ router.post('/updateAPNS', middlewares.session, function(req, res) {
 router.post('/update/:property', middlewares.session, function(req, res) {
     var user = req.session.user;
     var property = req.params.property;
-    var token = req.body.token;
+    var value = req.body.value;
 
     if (!property || !value) {
         return res.json(helpers.outputError('Missing Paramater'));
