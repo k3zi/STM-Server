@@ -100,12 +100,15 @@ exports.sendMentionsForComment = function(comment, user) {
         }
     }
 
+    logger.debug('Filtered mentions: ' + filteredMentions);
+
     var cypher = "MATCH (n: User)"
     + " WHERE n.username IN {filteredMentions} AND id(toUser) <> {userID}"
     + " SET n.badge = n.badge + 1"
     + " RETURN n";
 
     return db.query(cypher, {'filteredMentions': filteredMentions, 'userID': user.id}).then(function(results) {
+        logger.debug('Sending mentions to: ' + results);
         for (var i in results) {
             var toUser = results[i];
             sendMessageToAPNS('Mentioned by @' + user.username + ': "' + comment.text + '"', toUser.apnsToken, toUser.badge);
