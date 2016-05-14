@@ -101,7 +101,7 @@ exports.sendMentionsForComment = function(comment, user) {
     }
 
     var cypher = "MATCH (n: User)"
-    + " WHERE n.username IN {filteredMentions} AND id(toUser) <> {userID}"
+    + " WHERE n.username IN {filteredMentions} AND id(n) <> userID}"
     + " SET n.badge = n.badge + 1"
     + " RETURN n";
     return db.query(cypher, {'filteredMentions': filteredMentions, 'userID': user.id}).then(function(results) {
