@@ -22,79 +22,101 @@ parseComment = function (item) {
     return comment;
 }
 
-exports.fetchRepliesForComment = function(commentID, currentUserID) {
-    var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+module.exports = function(passThrough) {
+    var exports = {};
 
-    return helpers.checkID(commentID).then(function(commentID) {
-        var cypher = "MATCH (user: User)-[:createdComment]->(reply: Comment)-[:replyTo*]->(comment: Comment)-[:on]->(stream: Stream)"
-        + " WHERE id(comment) = {commentID}"
-        + " OPTIONAL MATCH (sessionUser)"
-        + " WHERE id(sessionUser) = {sessionUserID}"
-        + " OPTIONAL MATCH (sessionUser)-[didLike: likes]->(reply)"
-        + " OPTIONAL MATCH ()-[likes: likes]->(reply)"
-        + " OPTIONAL MATCH (sessionUser)-[didRepost: reposted]->(reply)"
-        + " OPTIONAL MATCH ()-[reposts: reposted]->(reply)"
-        + " RETURN reply AS comment, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, user"
-        + " ORDER BY comment.date ASC";
+    exports.fetchRepliesForComment = function(commentID, currentUserID) {
+        var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
 
-        return db.query(cypher, {'commentID': commentID, 'sessionUserID': currentUserID}).then(function(results) {
-            return Promise.all(results.map(parseComment));
+        return helpers.checkID(commentID).then(function(commentID) {
+            var cypher = "MATCH (user: User)-[:createdComment]->(reply: Comment)-[:replyTo*]->(comment: Comment)-[:on]->(stream: Stream)"
+            + " WHERE id(comment) = {commentID}"
+            + " OPTIONAL MATCH (sessionUser)"
+            + " WHERE id(sessionUser) = {sessionUserID}"
+            + " OPTIONAL MATCH (sessionUser)-[didLike: likes]->(reply)"
+            + " OPTIONAL MATCH ()-[likes: likes]->(reply)"
+            + " OPTIONAL MATCH (sessionUser)-[didRepost: reposted]->(reply)"
+            + " OPTIONAL MATCH ()-[reposts: reposted]->(reply)"
+            + " RETURN reply AS comment, didLike, COUNT(likes) AS likes, COUNT(reposts) AS reposts, didRepost, stream, user"
+            + " ORDER BY comment.date ASC";
+
+            return db.query(cypher, {'commentID': commentID, 'sessionUserID': currentUserID}).then(function(results) {
+                return Promise.all(results.map(parseComment));
+            });
         });
-    });
-}
+    }
 
-exports.likeComment = function(commentID, currentUserID) {
-    return helpers.checkID(commentID).then(function(commentID) {
-        var cypher = "MATCH (fromUser: User), (comment: Comment)<-[:createdComment]-(user: User)"
-        + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
-        + " CREATE UNIQUE (fromUser)-[r: likes]->(comment)"
-        + " SET r.date = {date}"
-        + " SET user.badge = user.badge + 1"
-        + " RETURN user, comment";
+    exports.likeComment = function(commentID, currentUserID) {
+        return helpers.checkID(commentID).then(function(commentID) {
+            var cypher = "MATCH (fromUser: User), (comment: Comment)<-[:createdComment]-(user: User)"
+            + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
+            + " CREATE UNIQUE (fromUser)-[r: likes]->(comment)"
+            + " SET r.date = {date}"
+            + " SET user.badge = user.badge + 1"
+            + " RETURN user, comment";
 
-        return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID, 'date': helpers.now()}).then(function(results) {
-            if (results.length > 0) {
-                return results[0];
-            }
+            return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID, 'date': helpers.now()}).then(function(results) {
+                if (results.length > 0) {
+                    return results[0];
+                }
+            });
         });
-    });
-}
+    }
 
-exports.unlikeComment = function(commentID, currentUserID) {
-    return helpers.checkID(commentID).then(function(commentID) {
-        var cypher = "MATCH (fromUser: User)-[r:likes]->(comment: Comment)"
-        + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
-        + " DELETE r";
+    exports.unlikeComment = function(commentID, currentUserID) {
+        return helpers.checkID(commentID).then(function(commentID) {
+            var cypher = "MATCH (fromUser: User)-[r:likes]->(comment: Comment)"
+            + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
+            + " DELETE r";
 
-        return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID});
-    });
-}
-
-exports.repostComment = function(commentID, currentUserID) {
-    return helpers.checkID(commentID).then(function(commentID) {
-        var cypher = "MATCH (fromUser: User), (comment: Comment)<-[:createdComment]-(user: User)"
-        + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
-        + " CREATE UNIQUE (fromUser)-[r: reposted]->(comment)"
-        + " SET r.date = {date}"
-        + " SET user.badge = user.badge + 1"
-        + " RETURN user, comment";
-
-        return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID, 'date': helpers.now()}).then(function(results) {
-            if (results.length > 0) {
-                return results[0];
-            }
+            return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID});
         });
-    });
+    }
+
+    exports.replyToCommentOnStream = function(text, commentID, streamID, userID) {
+        var commentID = (typeof commentID == 'string' ? parseInt(commentID) : commentID) || -1;
+        var streamID = (typeof streamID == 'string' ? parseInt(streamID) : streamID) || -1;
+        var commentSocket = passThrough.commentSocket;
+
+        return new Promise(function (fulfill, reject) {
+            if (commentID == -1) return reject('Invalid comment ID');
+            if (streamID == -1) return reject('Invalid stream ID');
+            if (!commentSocket) return reject("Server can't connect to comment socket");
+
+            fulfill();
+        }).then(function() {
+            var roomID = streamID + '-comments';
+        });
+    }
+
+    exports.repostComment = function(commentID, currentUserID) {
+        return helpers.checkID(commentID).then(function(commentID) {
+            var cypher = "MATCH (fromUser: User), (comment: Comment)<-[:createdComment]-(user: User)"
+            + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
+            + " CREATE UNIQUE (fromUser)-[r: reposted]->(comment)"
+            + " SET r.date = {date}"
+            + " SET user.badge = user.badge + 1"
+            + " RETURN user, comment";
+
+            return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID, 'date': helpers.now()}).then(function(results) {
+                if (results.length > 0) {
+                    return results[0];
+                }
+            });
+        });
+    }
+
+    exports.unrepostComment = function(commentID, currentUserID) {
+        return helpers.checkID(commentID).then(function(commentID) {
+            var cypher = "MATCH (fromUser: User)-[r:reposted]->(comment: Comment)"
+            + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
+            + " DELETE r";
+
+            return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID});
+        });
+    }
+
+    exports.parseComment = parseComment;
+
+    return exports;
 }
-
-exports.unrepostComment = function(commentID, currentUserID) {
-    return helpers.checkID(commentID).then(function(commentID) {
-        var cypher = "MATCH (fromUser: User)-[r:reposted]->(comment: Comment)"
-        + " WHERE id(fromUser) = {fromID} AND id(comment) = {commentID}"
-        + " DELETE r";
-
-        return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID});
-    });
-}
-
-exports.parseComment = parseComment;

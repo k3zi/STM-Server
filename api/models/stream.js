@@ -53,64 +53,70 @@ parseLiveStream = function(item) {
     });
 }
 
-exports.fetchActiveFollowed = function(userID) {
-    var cypher = "MATCH (stream: Stream)<-[:createdStream]-(owner: User)<-[:follows]-(user)"
-    + " WHERE id(user) = {userID}"
-    + " RETURN stream, owner AS user";
-    var params = { 'userID': userID };
+module.exports = function(passThrough) {
+    var exports = {};
 
-    return db.query(cypher, params).then(function(results) {
-        return Promise.all(results.map(parseLiveStream));
-    }).then(function(streams) {
-        return streams.filter(function(n){ return n != undefined });
-    });
+    exports.fetchActiveFollowed = function(userID) {
+        var cypher = "MATCH (stream: Stream)<-[:createdStream]-(owner: User)<-[:follows]-(user)"
+        + " WHERE id(user) = {userID}"
+        + " RETURN stream, owner AS user";
+        var params = { 'userID': userID };
+
+        return db.query(cypher, params).then(function(results) {
+            return Promise.all(results.map(parseLiveStream));
+        }).then(function(streams) {
+            return streams.filter(function(n){ return n != undefined });
+        });
+    }
+
+    exports.fetchStreamsForUserID = function(userID) {
+        return helpers.checkID(userID).then(function(userID) {
+            var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
+            return db.query(cypher, {'userID': userID});
+        });
+    }
+
+    exports.find = function(params) {
+        return new Promise(function (fulfill, reject) {
+            if (params.length == 0) reject('no paramaters sent');
+
+            fulfill(params);
+        }).then(function(params) {
+            return db.find(params, 'User');
+        }).then(ensureUserDirectoryExists);
+    }
+
+    exports.getFeaturedItems = function() {
+        var cypher = "MATCH (stream: Stream {featured: true})<-[:createdStream]-(user: User) RETURN stream, user LIMIT 10";
+
+        return db.query(cypher, {}).then(function(results) {
+            for (var i in results) {
+                results[i]['stream']['user'] = results[i]['user'];
+                results[i] = results[i]['stream'];
+            }
+
+            return results;
+        });
+    }
+
+    exports.search = function(query, currentUserID) {
+        var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+        var likeString = config.db.constructLike(query);
+
+        var cypher = "MATCH (stream: Stream)"
+        + " WHERE stream.name " + likeString + " OR stream.description " + likeString
+        + " RETURN stream"
+        + " LIMIT 5";
+        return db.query(cypher, {}).then(function (results) {
+            for (var i in results) {
+                results[i]['_type'] = 'STMStream';
+            }
+
+            return results;
+        });
+    }
+
+    exports.streamLastOnline = streamLastOnline;
+
+    return exports;
 }
-
-exports.fetchStreamsForUserID = function(userID) {
-    return helpers.checkID(userID).then(function(userID) {
-        var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
-        return db.query(cypher, {'userID': userID});
-    });
-}
-
-exports.find = function(params) {
-    return new Promise(function (fulfill, reject) {
-        if (params.length == 0) reject('no paramaters sent');
-
-        fulfill(params);
-    }).then(function(params) {
-        return db.find(params, 'User');
-    }).then(ensureUserDirectoryExists);
-}
-
-exports.getFeaturedItems = function() {
-    var cypher = "MATCH (stream: Stream {featured: true})<-[:createdStream]-(user: User) RETURN stream, user LIMIT 10";
-
-    return db.query(cypher, {}).then(function(results) {
-        for (var i in results) {
-            results[i]['stream']['user'] = results[i]['user'];
-            results[i] = results[i]['stream'];
-        }
-
-        return results;
-    });
-}
-
-exports.search = function(query, currentUserID) {
-    var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
-    var likeString = config.db.constructLike(query);
-
-    var cypher = "MATCH (stream: Stream)"
-    + " WHERE stream.name " + likeString + " OR stream.description " + likeString
-    + " RETURN stream"
-    + " LIMIT 5";
-    return db.query(cypher, {}).then(function (results) {
-        for (var i in results) {
-            results[i]['_type'] = 'STMStream';
-        }
-
-        return results;
-    });
-}
-
-exports.streamLastOnline = streamLastOnline;

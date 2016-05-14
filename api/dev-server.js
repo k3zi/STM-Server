@@ -64,6 +64,8 @@ connectMySQL();
 
 app.use(require('express-json-promise')());
 
+var passThrough = {hostSocket: hostSocket, outputSocket: outputSocket, commentSocket: commentSocket, mainSocket: mainSocket};
+
 for (var k in config.versions) {
-    app.use(config.versions[k], require('./routes' + config.versions[k]));
+    app.use(config.versions[k], require('./routes' + config.versions[k])(passThrough));
 }
