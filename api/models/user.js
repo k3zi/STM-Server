@@ -103,7 +103,9 @@ module.exports = function(passThrough) {
     }
 
     exports.fetchUserSelectiveTimeline = function(userID, currentUserID) {
+        logger.debug('before: ' + currentUserID);
         var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+        logger.debug('after: ' + currentUserID);
 
         return helpers.checkID(userID).then(function(userID) {
             var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment|reposted]-(user :User)"
