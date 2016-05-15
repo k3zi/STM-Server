@@ -43,7 +43,14 @@ module.exports = function(passThrough) {
     exports.requireAuth = function(req, res, next) {
         var auth = basicAuth(req);
         var authorized = auth && auth.name && auth.pass && auth.name === config.auth.username && auth.pass === config.auth.password;
-        return determineAuthentication(authorized, req, res, next);
+
+        if (authorized && !req.session.user && req.get('stm-username') && req.get('stm-password')) {
+            reauthenticate(req, function (valid) {
+                determineAuthentication(authorized, req, res, next);
+            });
+        } else {
+            return determineAuthentication(authorized, req, res, next);
+        }
     }
 
     exports.requireLogin = function(req, res, next) {

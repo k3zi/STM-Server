@@ -65,6 +65,8 @@ connectMySQL();
 app.use(require('express-json-promise')());
 
 var passThrough = {hostSocket: hostSocket, outputSocket: outputSocket, commentSocket: commentSocket, mainSocket: mainSocket};
+var middlewares = require(config.directory.api + '/middlewares')(passThrough);
+passThrough.middlewares = middlewares;
 
 for (var k in config.versions) {
     app.use(config.versions[k], require('./routes' + config.versions[k])(passThrough));

@@ -7,7 +7,7 @@ var logger = config.log.logger;
 var router = express.Router();
 
 module.exports = function(passThrough) {
-    var middlewares = require(config.directory.api + '/middlewares')(passThrough);
+    var middlewares = passThrough.middlewares;
     var userModel = require(config.directory.api + '/models/user')(passThrough);
     var streamModel = require(config.directory.api + '/models/stream')(passThrough);
     var commentModel = require(config.directory.api + '/models/comment')(passThrough);
