@@ -11,6 +11,21 @@ module.exports = function(passThrough) {
     var userModel = require(config.directory.api + '/models/user')(passThrough);
     var streamModel = require(config.directory.api + '/models/stream')(passThrough);
 
+    router.get('/:streamID/delete', middlewares.session, function(req, res) {
+        var user = req.session.user;
+        var streamID = req.params.streamID;
+
+        if (!streamID) {
+            return res.json(helpers.outputError('Missing Paramater'));
+        }
+
+        streamModel.delete(streamID, user.id).then(function() {
+            res.json(helpers.outputResult({}));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
     router.get('/:streamID/isOnline', middlewares.auth, function(req, res) {
         var streamID = req.params.streamID;
 
@@ -27,7 +42,6 @@ module.exports = function(passThrough) {
                 res.json(helpers.outputResult({'online': 0}));
             }
         }).catch(function(err) {
-            logger.error(err);
         	res.json(helpers.outputError(err));
         });
     });

@@ -16,14 +16,11 @@ module.exports = function(passThrough) {
         var items = [];
 
         streamModel.fetchActiveFollowed(user.id).then(function(activeStreams) {
-            logger.debug('Retrieved Active Streams: ' + activeStreams);
             items.push({'name': 'Active Streams (You Follow)', 'items': activeStreams});
         }).then(streamModel.getFeaturedItems).then(function(featuredStreams) {
-            logger.debug('Retrieved Featured Streams: ' + featuredStreams);
             items.push({'name': 'Featured Streams', 'items': featuredStreams});
             res.json(helpers.outputResult(items));
         }).catch(function(err) {
-            logger.error(err);
         	res.json(helpers.outputError(err));
         });
     });
@@ -35,7 +32,6 @@ module.exports = function(passThrough) {
         userModel.fetchUserTimeline(user.id).then(function(items) {
             res.json(helpers.outputResult(items));
         }).catch(function(err) {
-            logger.error(err);
         	res.json(helpers.outputError(err));
         });
     });

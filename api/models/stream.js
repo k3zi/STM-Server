@@ -56,13 +56,23 @@ parseLiveStream = function(item) {
 module.exports = function(passThrough) {
     var exports = {};
 
+    exports.delete = function(streamID, userID) {
+        return helpers.checkID(streamID).then(function(streamID) {
+            var cypher = "START x = node({userID})"
+            + " MATCH x -[:createdStream]-> (stream)"
+            + " WHERE id(stream) = {streamID}"
+            + " DETACH DELETE stream";
+
+            return db.query(cypher, {'userID': userID, 'streamID': streamID});
+        });
+    }
+
     exports.fetchActiveFollowed = function(userID) {
         var cypher = "MATCH (stream: Stream)<-[:createdStream]-(owner: User)<-[:follows]-(user)"
         + " WHERE id(user) = {userID}"
         + " RETURN stream, owner AS user";
-        var params = { 'userID': userID };
 
-        return db.query(cypher, params).then(function(results) {
+        return db.query(cypher, {'userID': userID}).then(function(results) {
             return Promise.all(results.map(parseLiveStream));
         }).then(function(streams) {
             return streams.filter(function(n){ return n != undefined });

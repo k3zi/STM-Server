@@ -18,7 +18,6 @@ module.exports = function(passThrough) {
         conversationModel.fetchConversationsForUserID(user.id).then(function(convos) {
             res.json(helpers.outputResult(convos));
         }).catch(function(err) {
-            logger.error(err);
         	res.json(helpers.outputError(err));
         });
     });

@@ -63,6 +63,8 @@ exports.now = function() {
 }
 
 exports.outputError = function(error, suppress) {
+    logger.error(error);
+
     return {
         'success': false,
         'error': error,
