@@ -10,6 +10,42 @@ var _ = require('lodash');
 module.exports = function(passThrough) {
     var exports = {};
 
+    connectUserToConvo = function(userID, convoID) {
+        var cypher = "MATCH (convo: Conversation), (user: User)"
+        + " WHERE id(convo) = {convoID} AND id(user) = {userID}"
+        + " CREATE UNIQUE (user)-[r: joined {read: 0}]->(convo) RETURN r";
+
+        return db.query(cypher, {'convoID': convoID, 'userID': userID});
+    }
+
+    fetchConversation = function(convoID) {
+        var cypher = "MATCH (convo: Conversation)"
+        + " WHERE id(convo) = {convoID}"
+        + " OPTIONAL MATCH (users: User)-[:joined]->(convo)"
+        + " RETURN convo, COLLECT(users) AS users"
+
+        return db.query(cypher, {'convoID': convoID}).then(function(results) {
+            if (results.length > 0) {
+                var result = results[0];
+                result.convo.users = result.users;
+                result.convo.lastMessage = null;
+                return result.convo;
+            }
+        });
+    }
+
+    exports.create = function(userList) {
+        userList = _.uniq(userList);
+
+        return db.save({name: ''}, 'Conversation').then(function(convo) {
+            return Promise.all(userList.map(function(userID) {
+                return connectUserToConvo(userID, convo.id);
+            })).then(function() {
+                return fetchConversation(convo.id);
+            });
+        });
+    }
+
     exports.fetchConversationsForUserID = function(userID) {
         var cypher = "MATCH (user: User)-[joinInfo:joined]->(convo: Conversation)<-[:on]-(messages: Message)"
         + " WHERE id(user) = {userID}"

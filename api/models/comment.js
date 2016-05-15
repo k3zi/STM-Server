@@ -82,7 +82,7 @@ module.exports = function(passThrough) {
             return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID});
         });
     }
-
+    
     exports.repostComment = function(commentID, currentUserID) {
         return helpers.checkID(commentID).then(function(commentID) {
             var cypher = "MATCH (fromUser: User), (comment: Comment)<-[:createdComment]-(user: User)"
