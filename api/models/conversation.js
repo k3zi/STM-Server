@@ -46,6 +46,16 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.createMessage = function(text) {
+        return new Promise(function (fulfill, reject) {
+            if (!text || text.length == 0) return reject('No text inputted');
+
+            fulfill(text);
+        }).then(function(text) {
+            return db.save({'text': text, 'date': helpers.now()}, 'Message');
+        });
+    }
+
     exports.fetchConversationsForUserID = function(userID) {
         var cypher = "MATCH (user: User)-[joinInfo:joined]->(convo: Conversation)<-[:on]-(messages: Message)"
         + " WHERE id(user) = {userID}"

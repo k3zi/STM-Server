@@ -107,11 +107,26 @@ exports.sendMentionsForComment = function(comment, user) {
     + " SET n.badge = n.badge + 1"
     + " RETURN n";
     return db.query(cypher, {'filteredMentions': filteredMentions, 'userID': user.id}).then(function(results) {
-        var message = 'Mentioned by @' + user.username + ': "' + comment.text + '"';
+        var apnsMessage = 'Mentioned by @' + user.username + ': "' + comment.text + '"';
 
         for (var i in results) {
             var toUser = results[i];
-            sendMessageToAPNS(message, toUser.apnsToken, toUser.badge);
+            sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
+        }
+    });
+}
+
+exports.sendNotificationsForMessage = function(message, convoID, user) {
+    var cypher = "MATCH (user: User)-[:joined]->(convo: Conversation)"
+    + " WHERE id(convo) = {convoID} AND id(user) <> {userID}"
+    + " SET user.badge = user.badge + 1"
+    + " RETURN user";
+    return db.query(cypher, {'convoID': convoID, 'userID': user.id}).then(function(results) {
+        var apnsMessage = '@' + user.username + ': ' + message.text;
+
+        for (var i in results) {
+            var toUser = results[i];
+            sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
         }
     });
 }

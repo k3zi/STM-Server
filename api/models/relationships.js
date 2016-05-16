@@ -16,6 +16,12 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.relateUserToMessage = function(userID, messageID) {
+        return helpers.checkID(messageID).then(function(messageID) {
+            return db.relate(userID, 'createdMessage', messageID, {'date': helpers.now()});
+        });
+    }
+
     exports.relateCommentToStream = function(commentID, streamID) {
         return helpers.checkID(commentID).then(function(commentID) {
             return db.relate(commentID, 'on', streamID, {});
@@ -24,6 +30,10 @@ module.exports = function(passThrough) {
 
     exports.relateCommentReplyToComment = function(commentID, parentID) {
         return db.relate(commentID, 'replyTo', parentID, {});
+    }
+
+    exports.relateMessageToConvo = function(messageID, convoID) {
+        return db.relate(messageID, 'on', convoID, {});
     }
 
     return exports;
