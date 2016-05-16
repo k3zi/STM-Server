@@ -69,5 +69,24 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.fetchConversationMessages(comvoID, userID) {
+        return helpers.checkID(comvoID).then(function(convoID) {
+            var cypher = "MATCH (currentUser: User)-[joinInfo:joined]->(convo: Conversation)<-[:on]-(message: Message)<-[:createdMessage]-(user: User)"
+            + " WHERE id(convo) = {convoID} AND id(currentUser) = {userID}"
+            + " SET joinInfo.read = {date}"
+            + " RETURN message, user"
+            + " ORDER BY message.date ASC";
+
+            return db.query(cypher, {'convoID': convoID, 'userID': userID, 'date': helpers.now()}).then(function() {
+                for (var i in results) {
+                    results[i].message.user = results[i].user;
+                    results[i] = results[i].message;
+                }
+
+                return results;
+            });
+        });
+    }
+
     return exports;
 }

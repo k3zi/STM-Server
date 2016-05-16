@@ -38,5 +38,16 @@ module.exports = function(passThrough) {
         });
     });
 
+    router.get('/:convoID/list', middlewares.session, function(req, res) {
+        var user = req.session.user;
+        var convoID = req.params.convoID;
+
+        conversationModel.fetchConversationMessages(convoID, user.id).then(function(messages) {
+            res.json(helpers.outputResult(messages));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
     return router;
 }
