@@ -70,7 +70,7 @@ module.exports = function(passThrough) {
     }
 
     exports.fetchConversationMessages = function(comvoID, userID) {
-        return helpers.checkID(comvoID).then(function(convoID) {
+        return helpers.checkID(convoID).then(function(convoID) {
             var cypher = "MATCH (currentUser: User)-[joinInfo:joined]->(convo: Conversation)<-[:on]-(message: Message)<-[:createdMessage]-(user: User)"
             + " WHERE id(convo) = {convoID} AND id(currentUser) = {userID}"
             + " SET joinInfo.read = {date}"
