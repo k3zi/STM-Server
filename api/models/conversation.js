@@ -69,7 +69,7 @@ module.exports = function(passThrough) {
         });
     }
 
-    exports.fetchConversationMessages(comvoID, userID) {
+    exports.fetchConversationMessages = function(comvoID, userID) {
         return helpers.checkID(comvoID).then(function(convoID) {
             var cypher = "MATCH (currentUser: User)-[joinInfo:joined]->(convo: Conversation)<-[:on]-(message: Message)<-[:createdMessage]-(user: User)"
             + " WHERE id(convo) = {convoID} AND id(currentUser) = {userID}"
