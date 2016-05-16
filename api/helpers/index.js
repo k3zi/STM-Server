@@ -121,7 +121,9 @@ exports.sendNotificationsForMessage = function(message, convoID, user) {
     + " WHERE id(convo) = {convoID} AND id(user) <> {userID}"
     + " SET user.badge = user.badge + 1"
     + " RETURN user";
+    logger.debug('cypher: ' + cypher);
     return db.query(cypher, {'convoID': convoID, 'userID': user.id}).then(function(results) {
+        logger.debug('sendNotificationsForMessage: ' + results);
         var apnsMessage = '@' + user.username + ': ' + message.text;
 
         for (var i in results) {
