@@ -63,7 +63,7 @@ module.exports = function(passThrough) {
 
             return Promise.all([p1, p2, p3]);
         }).then(function() {
-            res.json(outputResult({}));
+            res.json(helpers.outputResult({}));
         }).catch(function(err) {
         	res.json(helpers.outputError(err));
         });
