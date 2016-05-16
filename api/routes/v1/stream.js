@@ -46,5 +46,22 @@ module.exports = function(passThrough) {
         });
     });
 
+    router.post('/:streamID/update/:property', middlewares.session, function(req, res) {
+        var user = req.session.user;
+        var property = req.params.property;
+        var value = req.body.value;
+        var streamID = req.params.streamID;
+
+        if (!property || !value || !streamID) {
+            return res.json(helpers.outputError('Missing Paramater'));
+        }
+
+        streamModel.updatePropertyForStream(property, value, streamID, user.id).then(function(result) {
+            res.json(helpers.outputResult(result));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
     return router;
 }

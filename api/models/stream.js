@@ -59,7 +59,7 @@ module.exports = function(passThrough) {
     exports.delete = function(streamID, userID) {
         return helpers.checkID(streamID).then(function(streamID) {
             var cypher = "START x = node({userID})"
-            + " MATCH x -[:createdStream]-> (stream)"
+            + " MATCH x-[:createdStream]->(stream)"
             + " WHERE id(stream) = {streamID}"
             + " DETACH DELETE stream";
 
@@ -123,6 +123,21 @@ module.exports = function(passThrough) {
             }
 
             return results;
+        });
+    }
+
+    exports.updatePropertyForStream = function(property, value, streamID, userID) {
+        var cypher = "START x = node({userID})"
+        + " MATCH x-[:createdStream]->(stream: Stream)"
+        + " WHERE id(stream) = {streamID}"
+        + " SET stream." + property + " = {value}"
+        + " RETURN stream";
+        return db.query(cypher, {'userID': userID, 'streamID': streamID, 'value': value}).then(function (results) {
+            if (results.length > 0) {
+                return results[0];
+            } else {
+                return Promise.reject('You do not own this stream');
+            }
         });
     }
 
