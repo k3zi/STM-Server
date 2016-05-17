@@ -62,10 +62,6 @@ module.exports = function(passThrough) {
                 return reject('Stream name needs to be at least 4 characters');
             }
 
-            if (!data.type) {
-                return reject('Missing stream type');
-            }
-
             if (!data.description) {
                 return reject('Missing description');
             }
@@ -146,10 +142,10 @@ module.exports = function(passThrough) {
             var recordFile = streamDir + streamAlpha + '.aac';
             var lockFile = streamDir + streamAlpha + '.aac.lock';
 
-            isThere(recordFile, function(exists) {
+            helpers.isThere(recordFile, function(exists) {
                 if (exists) fs.unlinkSync(recordFile);
 
-                isThere(lockFile, function(exists) {
+                helpers.isThere(lockFile, function(exists) {
                     if (exists) fs.unlinkSync(lockFile);
 
                     var securityHash = random(10);

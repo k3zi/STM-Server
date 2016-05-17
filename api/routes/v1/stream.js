@@ -17,7 +17,7 @@ module.exports = function(passThrough) {
 
         var data = {
             'name': req.body.name,
-            'type': req.body.type,
+            'type': req.body.type || 0,
             'description': req.body.description,
             'private': false
         };

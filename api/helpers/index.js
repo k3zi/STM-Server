@@ -9,6 +9,7 @@ var crypto = require('crypto');
 var _ = require('lodash');
 var apn = require('apn');
 var db = require('../data/db');
+var isThere = require('is-there');
 
 var apnConnection = new apn.Connection(config.apn);
 
@@ -161,6 +162,7 @@ exports.sendNotificationsForStreamCreated = function(stream, user) {
     });
 }
 
+exports.isThere = isThere;
 exports.md5 = md5;
 exports.sendMessageToAPNS = sendMessageToAPNS;
 exports.sha1 = sha1;
