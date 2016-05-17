@@ -63,5 +63,25 @@ module.exports = function(passThrough) {
         });
     });
 
+    router.post('/:streamID/continue', middlewares.session, function(req, res) {
+        var user = req.session.user;
+        var streamID = req.params.streamID;
+
+        var streamAlpha = helpers.encodeStr(streamID);
+
+        streamModel.fetchStreamWithID(streamID, user.id).then(function(stream) {
+            streamModel.incrementStream(stream.id).then(function(securityHash) {
+                stream.securityHash = securityHash;
+                return helpers.sendNotificationsForStreamContinue(stream, user);
+            }).then(function() {
+                return streamModel.save(stream);
+            });
+        }).then(function(stream) {
+            res.json(helpers.outputResult(stream));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
     return router;
 }

@@ -15,7 +15,7 @@ ensureStreamDirectoryExists = function(stream) {
     return new Promise(function (fulfill, reject) {
         fs.ensureDir(getStreamDir(stream.id), function(err) {
             if (err) reject(err);
-            else fulfill(user);
+            else fulfill(stream);
         });
     });
 }
@@ -86,6 +86,16 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.fetchStreamWithID = function(streamID, userID) {
+        return helpers.checkID(streamID).then(function(streamID) {
+            var cypher = "START x = node({userID})"
+            + " MATCH x-[:createdStream]->(stream)"
+            + " WHERE id(stream) = {streamID}"
+            + " RETURN stream";
+            return db.query(cypher, {'userID': userID, 'streamID': streamID}).then(ensureStreamDirectoryExists);
+        });
+    }
+
     exports.find = function(params) {
         return new Promise(function (fulfill, reject) {
             if (params.length == 0) reject('no paramaters sent');
@@ -107,6 +117,32 @@ module.exports = function(passThrough) {
 
             return results;
         });
+    }
+
+    exports.incrementStream = function(streamID) {
+        return new Promise(function (fulfill, reject) {
+            var streamAlpha = helpers.encodeStr(streamID);
+            var streamDir = getStreamDir(streamID);
+            var recordFile = streamDir + streamAlpha + '.aac';
+            var lockFile = streamDir + streamAlpha + '.aac.lock';
+
+            isThere(recordFile, function(exists) {
+                if (exists) fs.unlinkSync(recordFile);
+
+                isThere(lockFile, function(exists) {
+                    if (exists) fs.unlinkSync(lockFile);
+
+                    var securityHash = random(10);
+                    fs.closeSync(fs.openSync(lockFile, 'w'));
+                    fs.appendFileSync(lockFile, securityHash);
+                    fulfill(securityHash);
+                });
+            });
+        });
+    }
+
+    exports.save = function(stream) {
+        return db.save(stream);
     }
 
     exports.search = function(query, currentUserID) {
