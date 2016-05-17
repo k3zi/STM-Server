@@ -108,7 +108,13 @@ module.exports = function(passThrough) {
             + " MATCH x-[:createdStream]->(stream)"
             + " WHERE id(stream) = {streamID}"
             + " RETURN stream";
-            return db.query(cypher, {'userID': userID, 'streamID': streamID}).then(ensureStreamDirectoryExists);
+            return db.query(cypher, {'userID': userID, 'streamID': streamID}).then(function(results) {
+                if (results.length > 0) {
+                    return results[0];
+                } else {
+                    return Promise.reject("Couldn't find stream");
+                }
+            }).then(ensureStreamDirectoryExists);
         });
     }
 
