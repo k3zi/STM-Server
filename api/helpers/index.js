@@ -146,6 +146,21 @@ exports.sendNotificationsForStreamContinue = function(stream, user) {
     });
 }
 
+exports.sendNotificationsForStreamCreated = function(stream, user) {
+    var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
+    + " WHERE id(thisUser) = {userID}"
+    + " SET user.badge = user.badge + 1"
+    + " RETURN user";
+    return db.query(cypher, {'userID': user.id}).then(function(results) {
+        var apnsMessage = '@' + user.username + ' created a stream called: ' + stream.name;
+
+        for (var i in results) {
+            var toUser = results[i];
+            sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
+        }
+    });
+}
+
 exports.md5 = md5;
 exports.sendMessageToAPNS = sendMessageToAPNS;
 exports.sha1 = sha1;

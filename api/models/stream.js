@@ -56,6 +56,26 @@ parseLiveStream = function(item) {
 module.exports = function(passThrough) {
     var exports = {};
 
+    exports.create = function(data) {
+        return new Promise(function (fulfill, reject) {
+            if (!data.name || data.name.length < 4) {
+                return reject('Stream name needs to be at least 4 characters');
+            }
+
+            if (!data.type) {
+                return reject('Missing stream type');
+            }
+
+            if (!data.description) {
+                return reject('Missing description');
+            }
+
+            return fulfill(data);
+        }).then(function(data) {
+            return db.save(data, 'Stream');
+        }).then(ensureStreamDirectoryExists);
+    }
+
     exports.delete = function(streamID, userID) {
         return helpers.checkID(streamID).then(function(streamID) {
             var cypher = "START x = node({userID})"

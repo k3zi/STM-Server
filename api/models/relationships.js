@@ -22,6 +22,12 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.relateUserToStream = function(userID, streamID) {
+        return helpers.checkID(streamID).then(function(streamID) {
+            return db.relate(userID, 'createdStream', streamID, {'date': helpers.now()});
+        });
+    }
+
     exports.relateCommentToStream = function(commentID, streamID) {
         return helpers.checkID(commentID).then(function(commentID) {
             return db.relate(commentID, 'on', streamID, {});
