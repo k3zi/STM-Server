@@ -148,7 +148,7 @@ module.exports = function(passThrough) {
                 helpers.isThere(lockFile, function(exists) {
                     if (exists) fs.unlinkSync(lockFile);
 
-                    var securityHash = random(10);
+                    var securityHash = helpers.randomStr(10);
                     fs.closeSync(fs.openSync(lockFile, 'w'));
                     fs.appendFileSync(lockFile, securityHash);
                     fulfill(securityHash);
