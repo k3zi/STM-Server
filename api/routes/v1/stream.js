@@ -46,16 +46,16 @@ module.exports = function(passThrough) {
         var streamAlpha = helpers.encodeStr(streamID);
 
         streamModel.fetchStreamWithID(streamID, user.id).then(function(stream) {
-            logger.log('1: ' + stream);
+            logger.debug('1: ' + stream);
             streamModel.incrementStream(stream.id).then(function(securityHash) {
                 stream.securityHash = securityHash;
                 return helpers.sendNotificationsForStreamContinue(stream, user);
             }).then(function() {
-                logger.log('2: ' + stream);
+                logger.debug('2: ' + stream);
                 return streamModel.save(stream);
             });
         }).then(function(stream) {
-            logger.log('3: ' + stream);
+            logger.debug('3: ' + stream);
             res.json(helpers.outputResult(stream));
         }).catch(function(err) {
         	res.json(helpers.outputError(err));
