@@ -110,7 +110,6 @@ module.exports = function(passThrough) {
                 }
 
                 if (isVerified) {
-                    logger.debug('is verified');
                     outputSocket.to(roomID).emit('streamData', data);
                     fs.appendFile(recordFile, new Buffer(data.data, 'base64'), (err) => {
                         if (err) return logger.debug(err);
