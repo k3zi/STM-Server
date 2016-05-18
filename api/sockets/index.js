@@ -112,22 +112,16 @@ module.exports = function(passThrough) {
                 if (isVerified) {
                     logger.debug('is verified');
                     outputSocket.to(roomID).emit('streamData', data);
-                    fs.appendFile(recordFile, new Buffer(data.data, 'base64')).then(function() {
+                    fs.appendFile(recordFile, new Buffer(data.data, 'base64'), (err) => {
+                        if (err) return logger.debug(err);
+
                         var wstream = fs.createWriteStream(liveFile);
                         wstream.write(helpers.mow().toString());
                         wstream.end();
-                        executeCallback();
+                        callback({'status': 'ok', 'bytes': data.data.length, 'listeners': 0});
                     });
                 }
             });
-
-            function executeCallback() {
-                callback({
-                    'status': 'ok',
-                    'bytes': data.data.length,
-                    'listeners': 0
-                });
-            }
         });
     });
 
