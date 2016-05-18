@@ -34,6 +34,7 @@ config.auth.password = "C/=}SU,nv)A**9cX.L&ML56";
 
 config.app = {};
 config.app.stream = {};
+config.app.stream.auth = "WrfN'/:_f.#8fYh(=RY(LxTDRrU";
 config.app.stream.secondsRequiredToStartPlaying = 1.5;
 config.app.stream.secondsRequiredToStartPlayingAfterBufferUnderun = 3.0;
 //config.app.stream.bufferSizeInSeconds = 10.0;

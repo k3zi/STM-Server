@@ -32,7 +32,6 @@ server.listen(process.argv[3], '127.0.0.1');
 var hostSocket = io.of('/host');
 var outputSocket = io.of('/output');
 var commentSocket = io.of('/comment');
-var mainSocket = io.of('/main');
 
 function connectMySQL() {
   mysqlDB = mysql.createConnection({
@@ -64,7 +63,8 @@ connectMySQL();
 
 app.use(require('express-json-promise')());
 
-var passThrough = {hostSocket: hostSocket, outputSocket: outputSocket, commentSocket: commentSocket, mainSocket: mainSocket};
+var passThrough = {hostSocket: hostSocket, outputSocket: outputSocket, commentSocket: commentSocket};
+require(config.directory.api + '/sockets')(passThrough);
 var middlewares = require(config.directory.api + '/middlewares')(passThrough);
 passThrough.middlewares = middlewares;
 
