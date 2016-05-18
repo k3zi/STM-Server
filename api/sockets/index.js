@@ -40,7 +40,7 @@ module.exports = function(passThrough) {
                 commentSocket.to(roomID).volatile.emit('item', item);
             }
         }).catch(function(err) {
-            logger.error(err;
+            logger.error(err);
             socket.disconnect();
         });
 
