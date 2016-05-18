@@ -39,6 +39,16 @@ module.exports = function(passThrough) {
         });
     });
 
+    router.get('/:streamID/comments', middlewares.auth, function(req, res) {
+        var streamID = req.params.streamID;
+
+        streamModel.fetchCommentsForStreamID(streamID).then(function(comments) {
+            res.json(helpers.outputResult(comments));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
     router.post('/:streamID/continue', middlewares.session, function(req, res) {
         var user = req.session.user;
         var streamID = req.params.streamID;

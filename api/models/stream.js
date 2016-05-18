@@ -95,6 +95,25 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.fetchCommentsForStreamID = function(streamID) {
+        return helpers.checkID(streamID).then(function(streamID) {
+            var cypher = "START stream = node({streamID})"
+            + " MATCH (comment: Comment)-[:on]->(stream)"
+            + " MATCH (user: User)-[:createdComment]->(comment)"
+            + " RETURN comment, user"
+            + " ORDER BY comment.date DESC"
+            + " LIMIT 50";
+            return db.query(cypher, {'streamID': streamID}).then(function(results) {
+                for (var in results) {
+                    results[i].comment.user = results[i].user;
+                    results[i] = results[i].comment;
+                }
+
+                return results;
+            });
+        });
+    }
+
     exports.fetchStreamsForUserID = function(userID) {
         return helpers.checkID(userID).then(function(userID) {
             var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
