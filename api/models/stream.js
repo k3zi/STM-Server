@@ -104,7 +104,7 @@ module.exports = function(passThrough) {
             + " ORDER BY comment.date DESC"
             + " LIMIT 50";
             return db.query(cypher, {'streamID': streamID}).then(function(results) {
-                for (var in results) {
+                for (var i in results) {
                     results[i].comment.user = results[i].user;
                     results[i] = results[i].comment;
                 }
