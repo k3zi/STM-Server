@@ -34,7 +34,7 @@ module.exports = function(passThrough) {
 
             socket.join(roomID);
             if (!params.owner) {
-                var item = {'message': '@' + commentUser.username + ' joined the stream'};
+                var item = {'message': '@' + user.username + ' joined the stream'};
                 item.user = user;
 
                 commentSocket.to(roomID).volatile.emit('item', item);
