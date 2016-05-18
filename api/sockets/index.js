@@ -15,6 +15,7 @@ module.exports = function(passThrough) {
     var commentSocket = passThrough.commentSocket;
     var hostSocket = passThrough.hostSocket;
     var outputSocket = passThrough.outputSocket;
+
     var commentModel = require(config.directory.api + '/models/comment')(passThrough);
     var relationships = require(config.directory.api + '/models/relationships')(passThrough)
 
@@ -42,6 +43,7 @@ module.exports = function(passThrough) {
         });
 
         socket.on('addComment', function(data, callback) {
+            logger.debug('create comment with text: ' + data.text);
             commentModel.create(data.text).then(function(comment) {
                 comment.user = user;
                 commentSocket.to(roomID).volatile.emit('newComment', comment);
@@ -52,6 +54,7 @@ module.exports = function(passThrough) {
 
                 return Promise.all([p1, p2, p3]);
             }).then(function() {
+                logger.debug('did create comment');
                 callback(helpers.outputResult({}));
             }).catch(function(err) {
             	callback(helpers.outputError(err));
@@ -97,7 +100,7 @@ module.exports = function(passThrough) {
         socket.on('dataForStream', function(data, callback) {
             helpers.isThere(lockFile, function(exists) {
                 if (!exists) return;
-                
+
                 if (!isVerified) {
                     var securityHash = fs.readFileSync(lockFile, 'utf8');
                     if  (securityHash == givenSecurityHash) {
@@ -107,10 +110,11 @@ module.exports = function(passThrough) {
                 }
 
                 if (isVerified) {
+                    logger.debug('is verified');
                     outputSocket.to(roomID).emit('streamData', data);
                     fs.appendFile(recordFile, new Buffer(data.data, 'base64')).then(function() {
                         var wstream = fs.createWriteStream(liveFile);
-                        wstream.write(Date.secNow().toString());
+                        wstream.write(helpers.mow().toString());
                         wstream.end();
                         executeCallback();
                     });
