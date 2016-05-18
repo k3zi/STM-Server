@@ -116,7 +116,7 @@ module.exports = function(passThrough) {
                         if (err) return logger.debug(err);
 
                         var wstream = fs.createWriteStream(liveFile);
-                        wstream.write(helpers.mow().toString());
+                        wstream.write(helpers.now().toString());
                         wstream.end();
                         callback({'status': 'ok', 'bytes': data.data.length, 'listeners': 0});
                     });
