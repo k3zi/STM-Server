@@ -30,6 +30,7 @@ module.exports = function(passThrough) {
 
         db.read(userID).then(function(userX) {
             user = userX;
+            logger.debug('found user: ' + user);
 
             socket.join(roomID);
             if (!params.owner) {
@@ -39,6 +40,7 @@ module.exports = function(passThrough) {
                 commentSocket.to(roomID).volatile.emit('item', item);
             }
         }).catch(function(err) {
+            logger.error(err;
             socket.disconnect();
         });
 
