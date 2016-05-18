@@ -97,8 +97,8 @@ module.exports = function(passThrough) {
         socket.on('dataForStream', function(data, callback) {
             helpers.isThere(lockFile, function(exists) {
                 if (!exists) return;
-
-                if (!isVerifie) {
+                
+                if (!isVerified) {
                     var securityHash = fs.readFileSync(lockFile, 'utf8');
                     if  (securityHash == givenSecurityHash) {
                         isVerified = true;
