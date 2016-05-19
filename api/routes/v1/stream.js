@@ -1,3 +1,4 @@
+var fs = require('fs-promise');
 var express = require('express');
 var config = require('config');
 
@@ -119,6 +120,21 @@ module.exports = function(passThrough) {
         });
     });
 
+    router.get('/:streamID/picture', middlewares.auth, function(req, res) {
+        var streamID = req.params.streamID;
+        helpers.checkID(streamID).then(function(streamID) {
+            var file = streamModel.getStreamDir(streamID) + 'picture.png';
+            helpers.isThere(file, function(exists) {
+                if (exists) {
+                    res.sendFile(file);
+                } else {
+                    res.status(404);
+                    res.end();
+                }
+            });
+        });
+    });
+
     router.get('/:streamID/playStream/:userID/:auth', middlewares.raw, function(req, res) {
         var streamID = req.params.streamID;
         var userID = req.params.userID;
@@ -176,6 +192,27 @@ module.exports = function(passThrough) {
             res.json(helpers.outputResult(result));
         }).catch(function(err) {
         	res.json(helpers.outputError(err));
+        });
+    });
+
+    router.post('/:streamID/upload/picture', middlewares.session, function(req, res) {
+        var user = req.session.user;
+        var streamID = req.params.streamID;
+
+        helpers.checkID(streamID).then(function(streamID) {
+            streamModel.fetchStreamWithID(streamID, user.id).then(function(stream) {
+                var fstream = fs.createWriteStream(streamModel.getStreamDir(stream.id) + 'picture.png');
+                req.pipe(fstream);
+
+                fstream.on('error', function(err) {
+                    console.log(err);
+                   res.send(500, err);
+                });
+
+                fstream.on('finish', function() {
+                    res.json(outputResult({}));
+                });
+            });
         });
     });
 

@@ -266,6 +266,8 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.ensureStreamDirectoryExists = ensureStreamDirectoryExists;
+    exports.getStreamDir = getStreamDir;
     exports.streamLastOnline = streamLastOnline;
 
     return exports;
