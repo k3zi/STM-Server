@@ -21,7 +21,7 @@ module.exports = function(passThrough) {
 
     commentSocket.on('connection', function(socket) {
         var params = socket.handshake.query;
-        if (params.stmHash != config.app.stream.auth) return socket.disconnect();
+        if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
 
         var streamID = parseInt(params.streamID);
         var userID = parseInt(params.userID);

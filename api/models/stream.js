@@ -162,17 +162,20 @@ module.exports = function(passThrough) {
     }
 
     exports.findOrCreateStreamSession = function(streamID, userID) {
-        var cypher = "START user = node({userID})"
-        + " MATCH (user)-[r:listenedTo]->(stream: Stream)"
-        + " WHERE id(stream) = {streamID}"
-        + " RETURN r"
-        + " LIMIT 1";
-        return db.query(cypher,  {'streamID': streamID, 'userID':  userID}).then(function(results) {
-            if (results.length > 0) {
-                return db.rel.read(results[0].id).then(incrementRelationship);
-            } else {
-                return createStreamSession(streamID, userID);
-            }
+        return helpers.checkID(streamID).then(function(streamID) {
+            var cypher = "START user = node({userID})"
+            + " MATCH (user)-[r:listenedTo]->(stream: Stream)"
+            + " WHERE id(stream) = {streamID}"
+            + " RETURN r"
+            + " LIMIT 1";
+            return db.query(cypher,  {'streamID': streamID, 'userID':  userID}).then(function(results) {
+                if (results.length > 0) {
+                    logger.debug("didn't find duplicate session");
+                    return db.rel.read(results[0].id).then(incrementRelationship);
+                } else {
+                    return createStreamSession(streamID, userID);
+                }
+            });
         });
     }
 

@@ -22,4 +22,16 @@ describe('/:id', function() {
             });
         });
     });
+
+    describe('GET /playStream', function() {
+        it('should return a dictionary with a boolean', function(done) {
+            return config.test.authRequest(chai.request(url).get('/90/playStream')).end(function(err, res) {
+                should.equal(err, null);
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.success.should.equal(true);
+                done();
+            });
+        });
+    });
 });
