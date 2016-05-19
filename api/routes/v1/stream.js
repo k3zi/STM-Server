@@ -121,7 +121,7 @@ module.exports = function(passThrough) {
 
     router.get('/:streamID/playStream/:userID/:auth', middlewares.raw, function(req, res) {
         var streamID = req.params.streamID;
-        var userID = (typeof req.params.userID == 'string' ? parseInt(req.params.userID) : req.params.userID) || -1;
+        var userID = req.params.userID;
         var auth = req.params.auth;
 
         var xsocket = false;
@@ -130,18 +130,19 @@ module.exports = function(passThrough) {
             return res.json(helpers.outputError('Missing Paramater'));
         }
 
-
         req.on('close', function(){
             if (xsocket) {
                 xsocket.disconnect();
             }
         });
 
-        streamModel.findStreamSession(streamID, userID).then(function(session) {
-            if (!session) return Promise.reject('No session found');
-            startStream();
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
+        helpers.checkID(userID).then(function(userID) {
+            streamModel.findStreamSession(streamID, userID).then(function(session) {
+                if (!session) return Promise.reject('No session found');
+                startStream();
+            }).catch(function(err) {
+            	res.json(helpers.outputError(err));
+            });
         });
 
         function startStream() {
