@@ -105,6 +105,27 @@ module.exports = function(passThrough) {
         });
     });
 
+    router.get('/:streamID/meta', middlewares.auth, function(req, res) {
+        var streamID = req.params.streamID;
+
+        helpers.checkID(streamID).then(function(streamID) {
+            var streamAlpha = helpers.encodeStr(streamID);
+            var streamDir = streamModel.getStreamDir(streamID);
+            var metaFile = streamDir + streamAlpha + '.meta';
+
+            fs.readFile(metaFile, 'utf8', function(err, contents) {
+                if (err) {
+                    res.json(outputResult({}));
+                } else {
+                    var json = JSON.parse(contents);
+                    res.json(outputResult(json));
+                }
+            });
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
     router.get('/:streamID/startSession', middlewares.session, function(req, res) {
         var user = req.session.user;
         var streamID = req.params.streamID;
@@ -132,6 +153,8 @@ module.exports = function(passThrough) {
                     res.end();
                 }
             });
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
         });
     });
 
@@ -195,12 +218,12 @@ module.exports = function(passThrough) {
         });
     });
 
-    router.post('/:streamID/upload/picture', middlewares.session, function(req, res) {
+    router.post('/:streamID/upload/picture', middlewares.uploadSession, function(req, res) {
         var user = req.session.user;
         var streamID = req.params.streamID;
 
         helpers.checkID(streamID).then(function(streamID) {
-            streamModel.fetchStreamWithID(streamID, user.id).then(function(stream) {
+            return streamModel.fetchStreamWithID(streamID, user.id).then(function(stream) {
                 var fstream = fs.createWriteStream(streamModel.getStreamDir(stream.id) + 'picture.png');
                 req.pipe(fstream);
 
@@ -213,6 +236,8 @@ module.exports = function(passThrough) {
                     res.json(outputResult({}));
                 });
             });
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
         });
     });
 

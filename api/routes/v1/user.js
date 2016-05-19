@@ -104,7 +104,7 @@ module.exports = function(passThrough) {
         });
     });
 
-    router.post('/upload/profilePicture', middlewares.session, function(req, res) {
+    router.post('/upload/profilePicture', middlewares.uploadSession, function(req, res) {
         var user = req.session.user;
         var fstream = fs.createWriteStream(userModel.getUserDir(user.id) + 'profilePicture.png');
         req.pipe(fstream);
@@ -178,6 +178,8 @@ module.exports = function(passThrough) {
                     res.end();
                 }
             });
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
         });
     });
 
