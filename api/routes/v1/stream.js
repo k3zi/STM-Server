@@ -104,6 +104,21 @@ module.exports = function(passThrough) {
         });
     });
 
+    router.post('/:streamID/playStream', middlewares.session, function(req, res) {
+        var user = req.session.user;
+        var streamID = req.params.streamID;
+
+        if (!streamID) {
+            return res.json(helpers.outputError('Missing Paramater'));
+        }
+
+        streamModel.findOrCreateStreamSession(streamID, user.id).then(function(session) {
+            res.json(helpers.outputResult(helpers.extend({} , session.properties, config.app.stream)));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
     router.post('/:streamID/update/:property', middlewares.session, function(req, res) {
         var user = req.session.user;
         var property = req.params.property;

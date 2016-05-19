@@ -59,6 +59,16 @@ exports.encodeStr = function(str) {
     return hasher.encode(parseInt(str));
 }
 
+exports.extend = function(target) {
+    var sources = [].slice.call(arguments, 1);
+    sources.forEach(function (source) {
+        for (var prop in source) {
+            target[prop] = source[prop];
+        }
+    });
+    return target;
+}
+
 exports.now = function() {
     return Math.floor(_.now()/1000);
 }

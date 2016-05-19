@@ -7,8 +7,8 @@ var helpers = require('../helpers');
 var db = require('../data/db');
 var _ = require('lodash');
 
-getStreamDir = function(streamID) {
-    return config.directory.stream_content + '/' + helpers.encodeStr(streamID) + '/';
+createStreamSession = function(streamID, userID) {
+    return db.relate(userID, 'listenedTo', streamID, {'date': helpers.now(), 'online': true, 'plays': 1, 'auth': helpers.randomStr(32)});
 }
 
 ensureStreamDirectoryExists = function(stream) {
@@ -17,6 +17,20 @@ ensureStreamDirectoryExists = function(stream) {
             if (err) reject(err);
             else fulfill(stream);
         });
+    });
+}
+
+getStreamDir = function(streamID) {
+    return config.directory.stream_content + '/' + helpers.encodeStr(streamID) + '/';
+}
+
+incrementRelationship = function(relationship) {
+    relationship.properties.online = true;
+    relationship.properties.plays += 1;
+    relationship.properties.auth = helpers.randomStr(32);
+
+    return db.rel.update(relationship).then(function() {
+        return relationship;
     });
 }
 
@@ -145,6 +159,21 @@ module.exports = function(passThrough) {
         }).then(function(params) {
             return db.find(params, 'User');
         }).then(ensureUserDirectoryExists);
+    }
+
+    exports.findOrCreateStreamSession = function(streamID, userID) {
+        var cypher = "START user = node({userID})"
+        + " MATCH (user)-[r:listenedTo]->(stream: Stream)"
+        + " WHERE id(stream) = {streamID}"
+        + " RETURN r"
+        + " LIMIT 1";
+        return db.query(cypher,  {'streamID': streamID, 'userID':  userID}).then(function(results) {
+            if (results.length > 0) {
+                return db.rel.read(results[0].id).then(incrementRelationship);
+            } else {
+                return createStreamSession(streamID, userID);
+            }
+        });
     }
 
     exports.getFeaturedItems = function() {
