@@ -104,7 +104,7 @@ module.exports = function(passThrough) {
         });
     });
 
-    router.post('/:streamID/playStream', middlewares.session, function(req, res) {
+    router.get('/:streamID/playStream', middlewares.session, function(req, res) {
         var user = req.session.user;
         var streamID = req.params.streamID;
 
