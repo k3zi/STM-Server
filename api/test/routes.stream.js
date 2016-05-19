@@ -13,7 +13,7 @@ var url = config.baseURL + version + '/stream';
 describe('/:id', function() {
     describe('GET /isOnline', function() {
         it('should return a dictionary with a boolean', function(done) {
-            return config.test.authRequest(chai.request(url).get('/90/isOnline')).end(function(err, res) {
+            return config.test.authRequest(chai.request(url).get('/279/isOnline')).end(function(err, res) {
                 should.equal(err, null);
                 res.should.have.status(200);
                 res.should.be.json;
@@ -25,7 +25,7 @@ describe('/:id', function() {
 
     describe('GET /playStream', function() {
         it('should return a dictionary with a boolean', function(done) {
-            return config.test.authRequest(chai.request(url).get('/90/playStream')).end(function(err, res) {
+            return config.test.loginRequest(chai.request(url).get('/279/playStream')).end(function(err, res) {
                 should.equal(err, null);
                 res.should.have.status(200);
                 res.should.be.json;
