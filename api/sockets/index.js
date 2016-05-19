@@ -69,7 +69,7 @@ module.exports = function(passThrough) {
 
     hostSocket.on('connection', function(socket) {
         var params = socket.handshake.query;
-        if (params.stmHash != "WrfN'/:_f.#8fYh(=RY(LxTDRrU") return socket.disconnect();
+        if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
 
         var userID = parseInt(params.userID);
         var streamID = parseInt(params.streamID);

@@ -151,6 +151,21 @@ module.exports = function(passThrough) {
         });
     });
 
+    router.get('/:userID/profilePicture', middlewares.auth, function(req, res) {
+        var userID = req.params.userID;
+        helpers.checkID(userID).then(function(userID) {
+            var file = userModel.getUserDir(userID) + 'profilePicture.png';
+            helpers.isThere(file, function(exists) {
+                if (exists) {
+                    res.sendFile(file);
+                } else {
+                    res.status(404);
+                    res.end();
+                }
+            });
+        });
+    });
+
     router.get('/:userID/streams', middlewares.auth, function(req, res) {
         var userID = req.params.userID;
         if (!userID) {

@@ -230,5 +230,7 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.getUserDir = getUserDir;
+
     return exports;
 }
