@@ -170,8 +170,6 @@ module.exports = function(passThrough) {
     }
 
     exports.findStreamSession = function(streamID, userID) {
-        var userID = (typeof userID == 'string' ? parseInt(userID) : userID) || -1;
-
         return helpers.checkID(streamID).then(function(streamID) {
             var cypher = "START user = node({userID})"
             + " MATCH (user)-[r:listenedTo]->(stream: Stream)"
