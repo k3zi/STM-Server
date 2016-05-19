@@ -121,7 +121,7 @@ module.exports = function(passThrough) {
 
     router.get('/:streamID/playStream/:userID/:auth', middlewares.raw, function(req, res) {
         var streamID = req.params.streamID;
-        var userID = req.params.streamID;
+        var userID = req.params.userID;
         var auth = req.params.auth;
 
         var roomID = streamID + '-audio';
