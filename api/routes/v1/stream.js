@@ -124,8 +124,6 @@ module.exports = function(passThrough) {
         var userID = req.params.userID;
         var auth = req.params.auth;
 
-        var roomID = streamID + '-audio';
-        var xhost = 'http://127.0.0.1:' + passThrough.port + '/output';
         var xsocket = false;
 
         if (!streamID || !userID || !auth) {
@@ -147,6 +145,8 @@ module.exports = function(passThrough) {
         });
 
         function startStream() {
+            var roomID = streamID + '-audio';
+            var xhost = 'http://127.0.0.1:' + passThrough.port + '/output';
             res.setHeader("Content-Type", "audio/aac");
 
             xsocket = xio.connect(xhost);
