@@ -149,7 +149,7 @@ module.exports = function(passThrough) {
             var xhost = 'http://127.0.0.1:' + passThrough.port + '/output';
             res.setHeader("Content-Type", "audio/aac");
 
-            xsocket = xio.connect(xhost);
+            xsocket = require('socket.io-client').connect(xhost);
 
             xsocket.on('connect', function() {
                 xsocket.emit('stream', roomID);
