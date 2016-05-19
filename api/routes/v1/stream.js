@@ -115,10 +115,10 @@ module.exports = function(passThrough) {
 
             fs.readFile(metaFile, 'utf8', function(err, contents) {
                 if (err) {
-                    res.json(outputResult({}));
+                    res.json(helpers.outputResult({}));
                 } else {
                     var json = JSON.parse(contents);
-                    res.json(outputResult(json));
+                    res.json(helpers.outputResult(json));
                 }
             });
         }).catch(function(err) {
@@ -233,7 +233,7 @@ module.exports = function(passThrough) {
                 });
 
                 fstream.on('finish', function() {
-                    res.json(outputResult({}));
+                    res.json(helpers.outputResult({}));
                 });
             });
         }).catch(function(err) {

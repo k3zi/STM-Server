@@ -115,7 +115,7 @@ module.exports = function(passThrough) {
         });
 
         fstream.on('finish', function() {
-            res.json(outputResult({}));
+            res.json(helpers.outputResult({}));
         });
     });
 
