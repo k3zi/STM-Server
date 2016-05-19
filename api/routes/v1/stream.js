@@ -104,7 +104,7 @@ module.exports = function(passThrough) {
         });
     });
 
-    router.get('/:streamID/playStream', middlewares.session, function(req, res) {
+    router.get('/:streamID/startSession', middlewares.session, function(req, res) {
         var user = req.session.user;
         var streamID = req.params.streamID;
 
@@ -117,6 +117,48 @@ module.exports = function(passThrough) {
         }).catch(function(err) {
         	res.json(helpers.outputError(err));
         });
+    });
+
+    router.get('/:streamID/playStream/:userID/:auth', middlewares.raw, function(req, res) {
+        var streamID = req.params.streamID;
+        var userID = req.params.streamID;
+        var auth = req.params.auth;
+
+        var roomID = streamID + '-audio';
+        var xhost = 'http://127.0.0.1:' + passThrough.port + '/output';
+        var xsocket = false;
+
+        if (!streamID || !userID || !auth) {
+            return res.json(helpers.outputError('Missing Paramater'));
+        }
+
+
+        req.on('close', function(){
+            if (xsocket) {
+                xsocket.disconnect();
+            }
+        });
+
+        streamModel.findStreamSession(streamID, userID).then(function(session) {
+            if (!session) return Promise.reject('No session found');
+            startStream();
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+
+        function startStream() {
+            res.setHeader("Content-Type", "audio/aac");
+
+            xsocket = xio.connect(xhost);
+
+            xsocket.on('connect', function() {
+                xsocket.emit('stream', roomID);
+            });
+
+            xsocket.on('streamData', function(data) {
+                res.write(new Buffer(data.data, 'base64'));
+            });
+        }
     });
 
     router.post('/:streamID/update/:property', middlewares.session, function(req, res) {

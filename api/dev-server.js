@@ -63,7 +63,7 @@ connectMySQL();
 
 app.use(require('express-json-promise')());
 
-var passThrough = {hostSocket: hostSocket, outputSocket: outputSocket, commentSocket: commentSocket};
+var passThrough = {hostSocket: hostSocket, outputSocket: outputSocket, commentSocket: commentSocket, port: process.argv[3]};
 require(config.directory.api + '/sockets')(passThrough);
 var middlewares = require(config.directory.api + '/middlewares')(passThrough);
 passThrough.middlewares = middlewares;

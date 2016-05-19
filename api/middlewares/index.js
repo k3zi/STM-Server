@@ -23,6 +23,7 @@ module.exports = function(passThrough) {
         return next();
     }
 
+    exports.raw =  [exports.cookieParser, exports.expressSession, exports.jsonParser, exports.urlEncodeHandler]
     exports.normal = [exports.cookieParser, exports.expressSession, exports.jsonParser, exports.urlEncodeHandler, exports.json];
     exports.auth = [exports.cookieParser, exports.expressSession, exports.serverAuth, exports.jsonParser, exports.urlEncodeHandler, exports.json];
     exports.session = [exports.cookieParser, exports.expressSession, exports.serverAuth, exports.sessionAuth, exports.jsonParser, exports.urlEncodeHandler, exports.json];

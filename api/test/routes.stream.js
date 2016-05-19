@@ -23,9 +23,9 @@ describe('/:id', function() {
         });
     });
 
-    describe('GET /playStream', function() {
+    describe('GET /startSession', function() {
         it('should return a dictionary with a boolean', function(done) {
-            return config.test.loginRequest(chai.request(url).get('/279/playStream')).end(function(err, res) {
+            return config.test.loginRequest(chai.request(url).get('/279/startSession')).end(function(err, res) {
                 should.equal(err, null);
                 res.should.have.status(200);
                 res.should.be.json;

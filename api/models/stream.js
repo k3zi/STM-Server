@@ -34,6 +34,14 @@ incrementRelationship = function(relationship) {
     });
 }
 
+setSessionOnline = function(relationship) {
+    relationship.properties.online = true;
+
+    return db.rel.update(relationship).then(function() {
+        return relationship;
+    });
+}
+
 streamLastOnline = function(streamID) {
     var streamAlpha = helpers.encodeStr(streamID);
     var streamDir = getStreamDir(streamID);
@@ -161,7 +169,7 @@ module.exports = function(passThrough) {
         }).then(ensureUserDirectoryExists);
     }
 
-    exports.findOrCreateStreamSession = function(streamID, userID) {
+    exports.findStreamSession = function(streamID, userID) {
         return helpers.checkID(streamID).then(function(streamID) {
             var cypher = "START user = node({userID})"
             + " MATCH (user)-[r:listenedTo]->(stream: Stream)"
@@ -170,12 +178,20 @@ module.exports = function(passThrough) {
             + " LIMIT 1";
             return db.query(cypher,  {'streamID': streamID, 'userID':  userID}).then(function(results) {
                 if (results.length > 0) {
-                    logger.debug("didn't find duplicate session");
-                    return db.rel.read(results[0].id).then(incrementRelationship);
-                } else {
-                    return createStreamSession(streamID, userID);
+                    return db.rel.read(results[0].id).then(setSessionOnline);
                 }
             });
+        });
+    }
+
+    exports.findOrCreateStreamSession = function(streamID, userID) {
+        return exports.findStreamSession(streamID, userID).then(function(relationship) {
+            if (relationship) {
+                logger.debug("didn't find duplicate session");
+                return incrementRelationship(relationship);
+            } else {
+                return createStreamSession(streamID, userID);
+            }
         });
     }
 
