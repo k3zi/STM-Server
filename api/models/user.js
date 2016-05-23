@@ -166,8 +166,9 @@ module.exports = function(passThrough) {
         });
     }
 
-    exports.listFollowers = function(userID) {
+    exports.listFollowers = function(userID, currentUserID) {
         var currentUserID = helpers.fixID(currentUserID);
+
         return helpers.checkID(userID).then(function(userID) {
             var cypher = "MATCH (users: User)-[:follows]->(user: User)"
             + " WHERE id(user) = {userID}"
@@ -175,7 +176,7 @@ module.exports = function(passThrough) {
             + " WHERE id(thisUser) = {currentUserID}"
             + " RETURN users, isFollowing";
 
-            return db.query(cypher, {'userID': userID, 'currentUserID': currentUserID}).then(function(results) {
+            return db.query(cypher, {userID: userID, currentUserID: currentUserID}).then(function(results) {
                 for (var i in results) {
                     var user = results[i]['users'];
                     user['isFollowing'] = (results[i]['isFollowing'] ? true : false)
@@ -197,7 +198,7 @@ module.exports = function(passThrough) {
             + " WHERE id(thisUser) = {currentUserID}"
             + " RETURN users, isFollowing";
 
-            return db.query(cypher, {'userID': userID, 'currentUserID': currentUserID}).then(function(results) {
+            return db.query(cypher, {userID: userID, currentUserID: currentUserID}).then(function(results) {
                 for (var i in results) {
                     var user = results[i]['users'];
                     user['isFollowing'] = (results[i]['isFollowing'] ? true : false)
