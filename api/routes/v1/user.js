@@ -11,6 +11,39 @@ module.exports = function(passThrough) {
     var userModel = require(config.directory.api + '/models/user')(passThrough);
     var streamModel = require(config.directory.api + '/models/stream')(passThrough);
 
+    router.post('/create', middlewares.auth, function(req, res) {
+        var data = req.body;
+        var username = data.username || '';
+        var password = data.password || '';
+        var email = data.email || '';
+        var displayName = data.displayName || '';
+
+        var p1 = userModel.find({unverifiedEmail: email}).then(function(results) {
+            if (results && results.length > 0) {
+                return Promise.reject('A user is already using this email');
+            }
+
+            return Promise.fulfill();
+        });
+
+        var p2 = userModel.find({username: username}).then(function(results) {
+            if (results && results.length > 0) {
+                return Promise.reject('A user is already using this username');
+            }
+
+            return Promise.fulfill();
+        });
+
+        Promise.all([p1, p2]).then(function() {
+            return userModel.create(username, password, email, displayName);
+        }).then(function(user) {
+            req.session.user = user;
+            res.json(helpers.outputResult(user));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
     router.post('/authenticate', middlewares.auth, function(req, res) {
         var data = req.body;
         var username = data.username || '';
@@ -21,14 +54,11 @@ module.exports = function(passThrough) {
         }
 
         userModel.find({username: data.username, password: data.password}).then(function(results) {
-            return new Promise(function (fulfill, reject) {
-                if (!results || results.length == 0) {
-                    return reject('Invalid username/password');
-                }
+            if (!results || results.length == 0) {
+                return Promise.reject('Invalid username/password');
+            }
 
-                var user = results[0];
-                fulfill(user);
-            });
+            return results[0];
         }).then(function(user) {
             req.session.user = user;
             res.json(helpers.outputResult(user));
@@ -55,6 +85,66 @@ module.exports = function(passThrough) {
                 var user = results[0];
                 fulfill(user);
             });
+        }).then(function(user) {
+            req.session.user = user;
+            res.json(helpers.outputResult(user));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
+    router.post('/twitter/authenticate', middlewares.auth, function(req, res) {
+        var data = req.body;
+        var username = data.username || '';
+        var twitterAuthToken = data.twitterAuthToken || '';
+
+        if (username.length == 0 || password.length == 0) {
+            return res.json(helpers.outputError('Missing Paramater'));
+        }
+
+        userModel.find({twitterAuthToken: data.twitterAuthToken}).then(function(results) {
+            if (!results || results.length == 0) {
+                return userModel.find({username: username}).then(function(results) {
+                    var isAvailable = (!results || results.length == 0);
+                    res.json(helpers.outputResult({'usernameAvailable': isAvailable}));
+                });
+            } else {
+                var user = results[0];
+                req.session.user = user;
+                res.json(helpers.outputResult(user));
+            }
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
+    router.post('/twitter/create', middlewares.auth, function(req, res) {
+        var data = req.body;
+        var username = data.username || '';
+        var password = data.password || '';
+        var displayName = data.displayName || '';
+
+        var twitterAuthToken = data.twitterAuthToken || '';
+        var twitterAuthTokenSecret = data.twitterAuthTokenSecret || '';
+
+        var p1 = userModel.find({twitterAuthToken: twitterAuthToken}).then(function(results) {
+            if (results && results.length > 0) {
+                return Promise.reject('A user is already using this twitter account');
+            }
+
+            return Promise.fulfill();
+        });
+
+        var p2 = userModel.find({username: username}).then(function(results) {
+            if (results && results.length > 0) {
+                return Promise.reject('A user is already using this username');
+            }
+
+            return Promise.fulfill();
+        });
+
+        Promise.all([p1, p2]).then(function() {
+            return userModel.create(username, password, email, displayName, twitterAuthToken, twitterAuthTokenSecret);
         }).then(function(user) {
             req.session.user = user;
             res.json(helpers.outputResult(user));

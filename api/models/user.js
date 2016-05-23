@@ -50,21 +50,13 @@ module.exports = function(passThrough) {
         });
     }
 
-    exports.create = function(username, password, password, unverifiedEmail, displayName) {
+    exports.create = function(username, password, unverifiedEmail, displayName, twitterAuthToken, twitterAuthTokenSecret) {
         return new Promise(function (fulfill, reject) {
-            if (username.length == 0 || password.length == 0 || unverifiedEmail.length == 0 || displayName.length == 0) {
+            if (username.length == 0 || password.length == 0 || unverifiedEmail.length == 0 || displayName.length == 0 || twitterAuthToken.length == 0 || twitterAuthTokenSecret.length == 0) {
                 return reject('Missing Paramater');
             }
 
-            var user = {
-                username: username,
-                password: password,
-                unverifiedEmail: unverifiedEmail,
-                displayName: displayName,
-                badge: 0
-            }
-
-            fulfill(user);
+            fulfill({username: username, password: helpers.hashPass(postData.password), unverifiedEmail: unverifiedEmail, displayName: displayName, twitterAuthToken: twitterAuthToken, twitterAuthTokenSecret: twitterAuthTokenSecret, badge: 0});
         }).then(function(user) {
             return db.save(user, 'User');
         }).then(ensureUserDirectoryExists);
