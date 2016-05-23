@@ -216,7 +216,6 @@ module.exports = function(passThrough) {
             return res.json(helpers.outputError('Missing Paramater'));
         }
 
-        logger.debug('/:userID/comments by: ' + (user ? user.id : -1));
         userModel.fetchUserSelectiveTimeline(userID, (user ? user.id : -1)).then(function(results) {
             res.json(helpers.outputResult(results));
         }).catch(function(err) {
@@ -250,6 +249,34 @@ module.exports = function(passThrough) {
         }
 
         userModel.fetchUserLikes(userID, (user ? user.id : -1)).then(function(results) {
+            res.json(helpers.outputResult(results));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
+    router.get('/:userID/followers', middlewares.auth, function(req, res) {
+        var user = req.session.user;
+        var userID = req.params.userID;
+        if (!userID) {
+            return res.json(helpers.outputError('Missing Paramater'));
+        }
+
+        userModel.listFollowers(userID, (user ? user.id : -1)).then(function(results) {
+            res.json(helpers.outputResult(results));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
+    router.get('/:userID/following', middlewares.auth, function(req, res) {
+        var user = req.session.user;
+        var userID = req.params.userID;
+        if (!userID) {
+            return res.json(helpers.outputError('Missing Paramater'));
+        }
+
+        userModel.listFollowing(userID, (user ? user.id : -1)).then(function(results) {
             res.json(helpers.outputResult(results));
         }).catch(function(err) {
         	res.json(helpers.outputError(err));

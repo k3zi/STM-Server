@@ -166,6 +166,49 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.listFollowers = function(userID) {
+        var currentUserID = helpers.fixID(currentUserID);
+        return helpers.checkID(userID).theb(function(userID) {
+            var cypher = "MATCH (users: User)-[:follows]->(user: User)"
+            + " WHERE id(user) = {userID}"
+            + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(users)"
+            + " WHERE id(thisUser) = {currentUserID}"
+            + " RETURN users, isFollowing";
+
+            return db.query(cypher, {'userID': userID, 'currentUserID': currentUserID}).then(function(results) {
+                for (var i in results) {
+                    var user = results[i]['users'];
+                    user['isFollowing'] = (results[i]['isFollowing'] ? true : false)
+                    results[i] = user;
+                }
+
+                return results;
+            });
+        });
+    }
+
+    exports.listFollowing = function(userID, currentUserID) {
+        var currentUserID = helpers.fixID(currentUserID);
+
+        return helpers.checkID(userID).theb(function(userID) {
+            var cypher = "MATCH (user: User)-[:follows]->(users: User)"
+            + " WHERE id(user) = {userID}"
+            + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(users)"
+            + " WHERE id(thisUser) = {currentUserID}"
+            + " RETURN users, isFollowing";
+
+            return db.query(cypher, {'userID': userID, 'currentUserID': currentUserID}).then(function(results) {
+                for (var i in results) {
+                    var user = results[i]['users'];
+                    user['isFollowing'] = (results[i]['isFollowing'] ? true : false)
+                    results[i] = user;
+                }
+
+                return results;
+            });
+        });
+    }
+
     exports.search = function(query, userID) {
         var userID = helpers.fixID(userID);
         var likeString = config.db.constructLike(query);
