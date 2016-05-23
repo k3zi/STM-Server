@@ -168,7 +168,7 @@ module.exports = function(passThrough) {
 
     exports.listFollowers = function(userID) {
         var currentUserID = helpers.fixID(currentUserID);
-        return helpers.checkID(userID).theb(function(userID) {
+        return helpers.checkID(userID).then(function(userID) {
             var cypher = "MATCH (users: User)-[:follows]->(user: User)"
             + " WHERE id(user) = {userID}"
             + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(users)"
@@ -190,7 +190,7 @@ module.exports = function(passThrough) {
     exports.listFollowing = function(userID, currentUserID) {
         var currentUserID = helpers.fixID(currentUserID);
 
-        return helpers.checkID(userID).theb(function(userID) {
+        return helpers.checkID(userID).then(function(userID) {
             var cypher = "MATCH (user: User)-[:follows]->(users: User)"
             + " WHERE id(user) = {userID}"
             + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(users)"
