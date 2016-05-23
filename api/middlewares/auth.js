@@ -6,9 +6,9 @@ module.exports = function(passThrough) {
     var exports = {};
     var userModel = require(config.directory.api + '/models/user')(passThrough);
 
-    unauthorized = function(res) {
+    unauthorized = function(req, res) {
         res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-        var result = helpers.outputError('Authorization Required');
+        var result = helpers.outputError('Authorization Required: ' + req.originalUrl);
         res.status(401).json(result);
     }
 
@@ -16,7 +16,7 @@ module.exports = function(passThrough) {
         if (authorized) {
             return next();
         } else {
-            return unauthorized(res);
+            return unauthorized(req, res);
         }
     }
 
@@ -60,10 +60,10 @@ module.exports = function(passThrough) {
         if (req.get('stm-username') && req.get('stm-password')) {
             reauthenticate(req, function (valid) {
                 if (valid) next();
-                else unauthorized(res);
+                else unauthorized(req, res);
             });
         } else {
-            return unauthorized(res);
+            return unauthorized(req, res);
         }
     }
 
