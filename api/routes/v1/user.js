@@ -296,20 +296,20 @@ module.exports = function(passThrough) {
         var items = {};
 
         helpers.checkID(userID).then(function(userID) {
-            var p1 = userModel.countUserFollowing(userID);
-            var p2 = userModel.countUserFollowers(userID);
-            var p3 = userModel.countUserComments(userID);
-            return Promise.all([p1, p2, p3]);
+            var tasks = [];
+            tasks.push(userModel.countUserFollowing(userID));
+            tasks.push(userModel.countUserFollowers(userID));
+            tasks.push(userModel.countUserComments(userID));
+            if (user) {
+                tasks.push(userModel.userIsFollowingUser(user.id, userID));
+            }
+
+            return Promise.all(tasks);
         }).then(function(values) {
             items.following = values[0];
             items.followers = values[1];
             items.comments = values[2];
-
-            if (user) {
-                return userModel.userIsFollowingUser(user.id, userID).then(function(isFollowing) {
-                    items.isFollowing = isFollowing;
-                });
-            }
+            items.isFollowing = values[3];
         }).then(function() {
             res.json(helpers.outputResult(items));
         }).catch(function(err) {
