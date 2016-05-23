@@ -122,6 +122,7 @@ module.exports = function(passThrough) {
         var data = req.body;
         var username = data.username || '';
         var password = data.password || '';
+        var email = data.email || '';
         var displayName = data.displayName || '';
 
         var twitterAuthToken = data.twitterAuthToken || '';
@@ -143,7 +144,15 @@ module.exports = function(passThrough) {
             return Promise.resolve();
         });
 
-        Promise.all([p1, p2]).then(function() {
+        var p3 = userModel.find({unverifiedEmail: email}).then(function(results) {
+            if (results && results.length > 0) {
+                return Promise.reject('A user is already using this email');
+            }
+
+            return Promise.resolve();
+        });
+
+        Promise.all([p1, p2, p3]).then(function() {
             return userModel.createTwitter(username, password, email, displayName, twitterAuthToken, twitterAuthTokenSecret);
         }).then(function(user) {
             req.session.user = user;
