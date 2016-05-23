@@ -23,7 +23,7 @@ module.exports = function(passThrough) {
                 return Promise.reject('A user is already using this email');
             }
 
-            return Promise.fulfill();
+            return Promise.resolve();
         });
 
         var p2 = userModel.find({username: username}).then(function(results) {
@@ -31,7 +31,7 @@ module.exports = function(passThrough) {
                 return Promise.reject('A user is already using this username');
             }
 
-            return Promise.fulfill();
+            return Promise.resolve();
         });
 
         Promise.all([p1, p2]).then(function() {
@@ -132,7 +132,7 @@ module.exports = function(passThrough) {
                 return Promise.reject('A user is already using this twitter account');
             }
 
-            return Promise.fulfill();
+            return Promise.resolve();
         });
 
         var p2 = userModel.find({username: username}).then(function(results) {
@@ -140,7 +140,7 @@ module.exports = function(passThrough) {
                 return Promise.reject('A user is already using this username');
             }
 
-            return Promise.fulfill();
+            return Promise.resolve();
         });
 
         Promise.all([p1, p2]).then(function() {
