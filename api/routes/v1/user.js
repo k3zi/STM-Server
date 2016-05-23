@@ -302,6 +302,7 @@ module.exports = function(passThrough) {
             tasks.push(userModel.countUserComments(userID));
             if (user) {
                 tasks.push(userModel.userIsFollowingUser(user.id, userID));
+                tasks.push(userModel.userIsFollowingUser(userID, user.id));
             }
 
             return Promise.all(tasks);
@@ -310,6 +311,7 @@ module.exports = function(passThrough) {
             items.followers = values[1];
             items.comments = values[2];
             items.isFollowing = values[3];
+            items.isFollower = values[4];
         }).then(function() {
             res.json(helpers.outputResult(items));
         }).catch(function(err) {
