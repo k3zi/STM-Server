@@ -49,10 +49,18 @@ exports.checkID = function(objectID) {
         if (typeof objectID == 'string') {
             objectID = parseInt(objectID);
         }
-
+        
         if (objectID < 0 || isNaN(objectID)) return reject('Invalid ID');
         fulfill(objectID);
     });
+}
+
+exports.fixID = function(objectID) {
+    if (typeof objectID == 'string') {
+        objectID = parseInt(objectID);
+    }
+
+    return objectID;
 }
 
 exports.encodeStr = function(str) {

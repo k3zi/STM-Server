@@ -168,8 +168,8 @@ module.exports = function(passThrough) {
         });
     }
 
-    exports.search = function(query, currentUserID) {
-        var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+    exports.search = function(query, userID) {
+        var userID = helpers.fixID(userID);
         var likeString = config.db.constructLike(query);
 
         var cypher = "MATCH (user: User)"
@@ -178,7 +178,7 @@ module.exports = function(passThrough) {
         + " WHERE id(thisUser) = {userID}"
         + " RETURN user, isFollowing"
         + " LIMIT 5";
-        return db.query(cypher, {'userID': currentUserID}).then(function (results) {
+        return db.query(cypher, {'userID': userID}).then(function (results) {
             for (var i in results) {
                 var user = results[i]['user'];
                 user['_type'] = 'STMUser';
@@ -225,11 +225,14 @@ module.exports = function(passThrough) {
     }
 
     exports.userIsFollowingUser = function(userID1, userID2) {
+        var userID1 = helpers.fixID(userID1);
+        var userID2 = helpers.fixID(userID2);
+
         var cypher = "MATCH (user1)-[r: follows]->(user2)"
         + " WHERE id(user1) = {userID1} AND id(user2) = {userID2}"
         + " RETURN COUNT(r) AS isFollowing";
         return db.query(cypher, {'userID1': userID1, 'userID2': userID2}).then(function(result) {
-            var isFollowing = (result.length > 0 ? result[0]['isFollowing'] : 0);
+            var isFollowing = (result.length > 0 ? result[0] : 0);
             return isFollowing > 0 ? true : false;
         });
     }

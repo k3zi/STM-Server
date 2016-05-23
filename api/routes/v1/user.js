@@ -295,14 +295,16 @@ module.exports = function(passThrough) {
 
         var items = {};
 
-        helpers.checkID(userID).then(userModel.countUserFollowing).then(function(count) {
-            items.following = count;
-            return userID;
-        }).then(userModel.countUserFollowers).then(function(count) {
-            items.followers = count;
-            return userID;
-        }).then(userModel.countUserComments).then(function(count) {
-            items.comments = count;
+        helpers.checkID(userID).then(function(userID) {
+            var p1 = userModel.countUserFollowing(userID);
+            var p2 = userModel.countUserFollowers(userID);
+            var p3 = userModel.countUserComments(userID);
+            return Promise.all([p1, p2, p3]);
+        }).then(function(values) {
+            items.following = values[0];
+            items.followers = values[1];
+            items.comments = values[2];
+
             if (user) {
                 return userModel.userIsFollowingUser(user.id, userID).then(function(isFollowing) {
                     items.isFollowing = isFollowing;
