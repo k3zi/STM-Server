@@ -14,8 +14,8 @@ config.directory.stream_content = config.directory.home + "/stream_content";
 
 config.log = {};
 config.log.level = 'debug';
-config.log.exception = config.directory.home + "/api.exception.log";
-config.log.api = config.directory.home + "/api.log";
+config.log.exception = config.directory.home + "/api.prod.exception.log";
+config.log.api = config.directory.home + "/api.prod.log";
 
 winston.add(winston.transports.File, {
   filename: config.log.api
