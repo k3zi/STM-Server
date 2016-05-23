@@ -232,7 +232,7 @@ module.exports = function(passThrough) {
         + " WHERE id(user1) = {userID1} AND id(user2) = {userID2}"
         + " RETURN COUNT(r) AS isFollowing";
         return db.query(cypher, {'userID1': userID1, 'userID2': userID2}).then(function(result) {
-            var isFollowing = (result.length > 0 ? result[0] : 0);
+            var isFollowing = (result.length > 0 ? result[0]['isFollowing'] : 0);
             return isFollowing > 0 ? true : false;
         });
     }
