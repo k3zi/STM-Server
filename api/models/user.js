@@ -56,7 +56,7 @@ module.exports = function(passThrough) {
                 return reject('Missing Paramater');
             }
 
-            fulfill({username: username, password: helpers.hashPass(postData.password), unverifiedEmail: unverifiedEmail, displayName: displayName, badge: 0});
+            fulfill({username: username, password: helpers.hashPass(password), unverifiedEmail: unverifiedEmail, displayName: displayName, badge: 0});
         }).then(function(user) {
             return db.save(user, 'User');
         }).then(ensureUserDirectoryExists);
@@ -68,7 +68,7 @@ module.exports = function(passThrough) {
                 return reject('Missing Paramater');
             }
 
-            fulfill({username: username, password: helpers.hashPass(postData.password), unverifiedEmail: unverifiedEmail, displayName: displayName, twitterAuthToken: twitterAuthToken, twitterAuthTokenSecret: twitterAuthTokenSecret, badge: 0});
+            fulfill({username: username, password: helpers.hashPass(password), unverifiedEmail: unverifiedEmail, displayName: displayName, twitterAuthToken: twitterAuthToken, twitterAuthTokenSecret: twitterAuthTokenSecret, badge: 0});
         }).then(function(user) {
             return db.save(user, 'User');
         }).then(ensureUserDirectoryExists);
