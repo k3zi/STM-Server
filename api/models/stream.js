@@ -235,7 +235,7 @@ module.exports = function(passThrough) {
     }
 
     exports.search = function(query, currentUserID) {
-        var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+        var currentUserID = helpers.fixID(currentUserID);
         var likeString = config.db.constructLike(query);
 
         var cypher = "MATCH (stream: Stream)"

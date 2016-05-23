@@ -36,7 +36,7 @@ module.exports = function(passThrough) {
     }
 
     exports.fetchRepliesForComment = function(commentID, currentUserID) {
-        var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+        var currentUserID = helpers.fixID(currentUserID);
 
         return helpers.checkID(commentID).then(function(commentID) {
             var cypher = "MATCH (user: User)-[:createdComment]->(reply: Comment)-[:replyTo*]->(comment: Comment)-[:on]->(stream: Stream)"
@@ -82,7 +82,7 @@ module.exports = function(passThrough) {
             return db.query(cypher, {'fromID': currentUserID, 'commentID': commentID});
         });
     }
-    
+
     exports.repostComment = function(commentID, currentUserID) {
         return helpers.checkID(commentID).then(function(commentID) {
             var cypher = "MATCH (fromUser: User), (comment: Comment)<-[:createdComment]-(user: User)"

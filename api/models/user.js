@@ -85,7 +85,7 @@ module.exports = function(passThrough) {
     }
 
     exports.fetchUserLikes = function(userID, currentUserID) {
-        var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
+        var currentUserID = helpers.fixID(currentUserID);
 
         return helpers.checkID(userID).then(function(userID) {
             var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[like:likes]-(user :User)"
@@ -107,9 +107,7 @@ module.exports = function(passThrough) {
     }
 
     exports.fetchUserSelectiveTimeline = function(userID, currentUserID) {
-        logger.debug('before: ' + currentUserID);
-        var currentUserID = (typeof currentUserID == 'string' ? parseInt(currentUserID) : currentUserID) || -1;
-        logger.debug('after: ' + currentUserID);
+        var currentUserID = helpers.fixID(currentUserID);
 
         return helpers.checkID(userID).then(function(userID) {
             var cypher = "MATCH (stream: Stream)<-[:on]-(comment: Comment)<-[:createdComment|reposted]-(user :User)"
@@ -232,6 +230,7 @@ module.exports = function(passThrough) {
         + " WHERE id(user1) = {userID1} AND id(user2) = {userID2}"
         + " RETURN COUNT(r) AS isFollowing";
         return db.query(cypher, {'userID1': userID1, 'userID2': userID2}).then(function(result) {
+            logger.debug(result[0]);
             var isFollowing = (result.length > 0 ? result[0]['isFollowing'] : 0);
             return isFollowing > 0 ? true : false;
         });
