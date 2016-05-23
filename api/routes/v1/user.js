@@ -98,11 +98,11 @@ module.exports = function(passThrough) {
         var username = data.username || '';
         var twitterAuthToken = data.twitterAuthToken || '';
 
-        if (username.length == 0 || password.length == 0) {
+        if (username.length == 0 || twitterAuthToken.length == 0) {
             return res.json(helpers.outputError('Missing Paramater'));
         }
 
-        userModel.find({twitterAuthToken: data.twitterAuthToken}).then(function(results) {
+        userModel.find({twitterAuthToken: twitterAuthToken}).then(function(results) {
             if (!results || results.length == 0) {
                 return userModel.find({username: username}).then(function(results) {
                     var isAvailable = (!results || results.length == 0);
