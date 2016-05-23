@@ -144,7 +144,7 @@ module.exports = function(passThrough) {
         });
 
         Promise.all([p1, p2]).then(function() {
-            return userModel.create(username, password, email, displayName, twitterAuthToken, twitterAuthTokenSecret);
+            return userModel.createTwitter(username, password, email, displayName, twitterAuthToken, twitterAuthTokenSecret);
         }).then(function(user) {
             req.session.user = user;
             res.json(helpers.outputResult(user));

@@ -50,7 +50,19 @@ module.exports = function(passThrough) {
         });
     }
 
-    exports.create = function(username, password, unverifiedEmail, displayName, twitterAuthToken, twitterAuthTokenSecret) {
+    exports.create = function(username, password, unverifiedEmail, displayName) {
+        return new Promise(function (fulfill, reject) {
+            if (username.length == 0 || password.length == 0 || unverifiedEmail.length == 0 || displayName.length == 0) {
+                return reject('Missing Paramater');
+            }
+
+            fulfill({username: username, password: helpers.hashPass(postData.password), unverifiedEmail: unverifiedEmail, displayName: displayName, badge: 0});
+        }).then(function(user) {
+            return db.save(user, 'User');
+        }).then(ensureUserDirectoryExists);
+    }
+
+    exports.createTwitter = function(username, password, unverifiedEmail, displayName, twitterAuthToken, twitterAuthTokenSecret) {
         return new Promise(function (fulfill, reject) {
             if (username.length == 0 || password.length == 0 || unverifiedEmail.length == 0 || displayName.length == 0 || twitterAuthToken.length == 0 || twitterAuthTokenSecret.length == 0) {
                 return reject('Missing Paramater');
