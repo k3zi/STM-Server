@@ -22,6 +22,7 @@ module.exports = function(passThrough) {
             return res.json(helpers.outputError('Missing Paramater'));
         }
 
+        userList.push(user.id);
         conversationModel.create(userList).then(function(convo) {
             res.json(helpers.outputResult(convo));
         }).catch(function(err) {
