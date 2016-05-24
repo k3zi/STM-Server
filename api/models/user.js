@@ -232,6 +232,31 @@ module.exports = function(passThrough) {
         });
     }
 
+    exports.searchFollowers = function(query, userID) {
+        return helpers.checkID(userID).then(function(userID) {
+            var likeString = config.db.constructLike(query);
+
+            var cypher = "MATCH (user:User)-[:follows]->(thisUser: User)"
+            + " WHERE id(thisUser) = {userID}"
+            + " WITH user, thisUser"
+            + " WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString
+            + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
+            + " RETURN user, isFollowing"
+            + " ORDER BY isFollowing.date DESC"
+            + " LIMIT 20";
+
+            return db.query(cypher, {'userID': userID}).then(function (results) {
+                for (var i in results) {
+                    var user = results[i]['user'];
+                    user['isFollowing'] = (results[i]['isFollowing'] ? true : false);
+                    results[i] = user;
+                }
+
+                return results;
+            });
+        });
+    }
+
     exports.unfollowUser = function(currentUserID, userID) {
         return helpers.checkID(userID).then(function(userID) {
             var cypher = "MATCH (fromUser: User)-[r:follows]->(toUser: User)"

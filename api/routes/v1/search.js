@@ -33,5 +33,20 @@ module.exports = function(passThrough) {
         });
     });
 
+    router.post('/followers', middlewares.session, function(req, res) {
+        var user = req.session.user;
+        var q = req.body.q;
+
+        if (!q) {
+            return res.json(helpers.outputResult([]));
+        }
+
+        userModel.searchFollowers(q, user.id).then(function(results) {
+            res.json(helpers.outputResult(results));
+        }).catch(function(err) {
+        	res.json(helpers.outputError(err));
+        });
+    });
+
     return router;
 }
