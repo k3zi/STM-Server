@@ -239,7 +239,7 @@ module.exports = function(passThrough) {
             var cypher = "MATCH (user:User)-[:follows]->(thisUser: User)"
             + " WHERE id(thisUser) = {userID}"
             + " WITH user, thisUser"
-            + " WHERE user.displayName =~ " + likeString + " OR user.username =~ " + likeString
+            + " WHERE user.displayName " + likeString + " OR user.username " + likeString
             + " OPTIONAL MATCH (thisUser)-[isFollowing:follows]->(user)"
             + " RETURN user, isFollowing"
             + " ORDER BY isFollowing.date DESC"
