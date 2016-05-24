@@ -17,7 +17,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Comment ID'));
         }
 
         commentModel.likeComment(commentID, user.id).then(function (result) {
@@ -49,7 +49,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Comment ID'));
         }
 
         commentModel.fetchRepliesForComment(commentID, (user ? user.id : -1)).then(function(results) {
@@ -67,7 +67,7 @@ module.exports = function(passThrough) {
         var text = req.body.text;
 
         if (!commentID && !streamID && !text) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramaters'));
         }
 
         commentModel.create(text).then(function(comment) {
@@ -92,7 +92,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Comment ID'));
         }
 
         commentModel.repostComment(commentID, user.id).then(function (result) {

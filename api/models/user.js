@@ -53,7 +53,7 @@ module.exports = function(passThrough) {
     exports.create = function(username, password, unverifiedEmail, displayName) {
         return new Promise(function (fulfill, reject) {
             if (username.length == 0 || password.length == 0 || unverifiedEmail.length == 0 || displayName.length == 0) {
-                return reject('Missing Paramater');
+                return reject('Missing Paramaters To Create User');
             }
 
             fulfill({username: username, password: helpers.hashPass(password), unverifiedEmail: unverifiedEmail, displayName: displayName, badge: 0});
@@ -65,7 +65,7 @@ module.exports = function(passThrough) {
     exports.createTwitter = function(username, password, unverifiedEmail, displayName, twitterAuthToken, twitterAuthTokenSecret) {
         return new Promise(function (fulfill, reject) {
             if (username.length == 0 || password.length == 0 || unverifiedEmail.length == 0 || displayName.length == 0 || twitterAuthToken.length == 0 || twitterAuthTokenSecret.length == 0) {
-                return reject('Missing Paramater');
+                return reject('Missing Paramaters To Create Twitter User');
             }
 
             fulfill({username: username, password: helpers.hashPass(password), unverifiedEmail: unverifiedEmail, displayName: displayName, twitterAuthToken: twitterAuthToken, twitterAuthTokenSecret: twitterAuthTokenSecret, badge: 0});

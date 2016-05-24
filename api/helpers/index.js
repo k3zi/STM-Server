@@ -49,7 +49,7 @@ exports.checkID = function(objectID) {
         if (typeof objectID == 'string') {
             objectID = parseInt(objectID);
         }
-        
+
         if (objectID < 0 || isNaN(objectID)) return reject('Invalid ID');
         fulfill(objectID);
     });
@@ -82,7 +82,7 @@ exports.now = function() {
 }
 
 exports.outputError = function(error, suppress) {
-    logger.error(error);
+    logger.error({message: error, trace: new Error().stack});
 
     return {
         'success': false,
