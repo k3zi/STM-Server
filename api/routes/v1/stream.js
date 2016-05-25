@@ -13,7 +13,7 @@ module.exports = function(passThrough) {
     var streamModel = require(config.directory.api + '/models/stream')(passThrough);
     var relationships = require(config.directory.api + '/models/relationships')(passThrough);
 
-    router.post('/create', middlewares.session, function(req, res) {
+    router.post('/create', middlewares.session, function(req, res, next) {
         var user = req.session.user;
 
         var data = {
@@ -35,22 +35,18 @@ module.exports = function(passThrough) {
             });
         }).then(function(stream) {
             res.json(helpers.outputResult(stream));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:streamID/comments', middlewares.auth, function(req, res) {
+    router.get('/:streamID/comments', middlewares.auth, function(req, res, next) {
         var streamID = req.params.streamID;
 
         streamModel.fetchCommentsForStreamID(streamID).then(function(comments) {
             res.json(helpers.outputResult(comments));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/:streamID/continue', middlewares.session, function(req, res) {
+    router.post('/:streamID/continue', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var streamID = req.params.streamID;
 
@@ -65,12 +61,10 @@ module.exports = function(passThrough) {
             });
         }).then(function(stream) {
             res.json(helpers.outputResult(stream));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:streamID/delete', middlewares.session, function(req, res) {
+    router.get('/:streamID/delete', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var streamID = req.params.streamID;
 
@@ -80,12 +74,10 @@ module.exports = function(passThrough) {
 
         streamModel.delete(streamID, user.id).then(function() {
             res.json(helpers.outputResult({}));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:streamID/isOnline', middlewares.auth, function(req, res) {
+    router.get('/:streamID/isOnline', middlewares.auth, function(req, res, next) {
         var streamID = req.params.streamID;
 
         if (!streamID) {
@@ -100,12 +92,10 @@ module.exports = function(passThrough) {
             } else {
                 res.json(helpers.outputResult({'online': 0}));
             }
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:streamID/meta', middlewares.auth, function(req, res) {
+    router.get('/:streamID/meta', middlewares.auth, function(req, res, next) {
         var streamID = req.params.streamID;
 
         helpers.checkID(streamID).then(function(streamID) {
@@ -121,12 +111,10 @@ module.exports = function(passThrough) {
                     res.json(helpers.outputResult(json));
                 }
             });
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:streamID/startSession', middlewares.session, function(req, res) {
+    router.get('/:streamID/startSession', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var streamID = req.params.streamID;
 
@@ -136,12 +124,10 @@ module.exports = function(passThrough) {
 
         streamModel.findOrCreateStreamSession(streamID, user.id).then(function(session) {
             res.json(helpers.outputResult(helpers.extend({} , session.properties, config.app.stream)));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:streamID/picture', middlewares.auth, function(req, res) {
+    router.get('/:streamID/picture', middlewares.auth, function(req, res, next) {
         var streamID = req.params.streamID;
         helpers.checkID(streamID).then(function(streamID) {
             var file = streamModel.getStreamDir(streamID) + 'picture.png';
@@ -153,12 +139,10 @@ module.exports = function(passThrough) {
                     res.end();
                 }
             });
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:streamID/playStream/:userID/:auth', middlewares.raw, function(req, res) {
+    router.get('/:streamID/playStream/:userID/:auth', middlewares.raw, function(req, res, next) {
         var streamID = req.params.streamID;
         var userID = req.params.userID;
         var auth = req.params.auth;
@@ -179,9 +163,7 @@ module.exports = function(passThrough) {
             streamModel.findStreamSession(streamID, userID).then(function(session) {
                 if (!session) return Promise.reject('No session found');
                 startStream();
-            }).catch(function(err) {
-            	res.json(helpers.outputError(err));
-            });
+            }).catch(next);
         });
 
         function startStream() {
@@ -201,7 +183,7 @@ module.exports = function(passThrough) {
         }
     });
 
-    router.post('/:streamID/update/:property', middlewares.session, function(req, res) {
+    router.post('/:streamID/update/:property', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var property = req.params.property;
         var value = req.body.value;
@@ -213,12 +195,10 @@ module.exports = function(passThrough) {
 
         streamModel.updatePropertyForStream(property, value, streamID, user.id).then(function(result) {
             res.json(helpers.outputResult(result));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/:streamID/upload/picture', middlewares.uploadSession, function(req, res) {
+    router.post('/:streamID/upload/picture', middlewares.uploadSession, function(req, res, next) {
         var user = req.session.user;
         var streamID = req.params.streamID;
 
@@ -236,9 +216,7 @@ module.exports = function(passThrough) {
                     res.json(helpers.outputResult({}));
                 });
             });
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
     return router;

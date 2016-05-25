@@ -11,7 +11,7 @@ module.exports = function(passThrough) {
     var userModel = require(config.directory.api + '/models/user')(passThrough);
     var streamModel = require(config.directory.api + '/models/stream')(passThrough);
 
-    router.get('/items', middlewares.session, function(req, res) {
+    router.get('/items', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var items = [];
 
@@ -20,20 +20,16 @@ module.exports = function(passThrough) {
         }).then(streamModel.getFeaturedItems).then(function(featuredStreams) {
             items.push({'name': 'Featured Streams', 'items': featuredStreams});
             res.json(helpers.outputResult(items));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/timeline', middlewares.session, function(req, res) {
+    router.get('/timeline', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var items = [];
 
         userModel.fetchUserTimeline(user.id).then(function(items) {
             res.json(helpers.outputResult(items));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
     return router;

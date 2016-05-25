@@ -25,8 +25,8 @@ module.exports = function (passThrough) {
     });
 
     router.use(function(error, req, res, next) {
-        var result = helpers.outputError('500: Internal Server Error' + error);
-        res.status(500).json(result);
+        var result = helpers.outputError(error, false, req);
+        res.json(result);
     });
 
     return router;

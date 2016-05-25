@@ -11,7 +11,7 @@ module.exports = function(passThrough) {
     var userModel = require(config.directory.api + '/models/user')(passThrough);
     var streamModel = require(config.directory.api + '/models/stream')(passThrough);
 
-    router.post('/create', middlewares.auth, function(req, res) {
+    router.post('/create', middlewares.auth, function(req, res, next) {
         var data = req.body;
         var username = data.username || '';
         var password = data.password || '';
@@ -39,12 +39,10 @@ module.exports = function(passThrough) {
         }).then(function(user) {
             req.session.user = user;
             res.json(helpers.outputResult(user));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/authenticate', middlewares.auth, function(req, res) {
+    router.post('/authenticate', middlewares.auth, function(req, res, next) {
         var data = req.body;
         var username = data.username || '';
         var password = data.password || '';
@@ -62,12 +60,10 @@ module.exports = function(passThrough) {
         }).then(function(user) {
             req.session.user = user;
             res.json(helpers.outputResult(user));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/login', middlewares.auth, function(req, res) {
+    router.post('/login', middlewares.auth, function(req, res, next) {
         var data = req.body;
         var username = data.username || '';
         var password = data.password || '';
@@ -88,12 +84,10 @@ module.exports = function(passThrough) {
         }).then(function(user) {
             req.session.user = user;
             res.json(helpers.outputResult(user));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/twitter/authenticate', middlewares.auth, function(req, res) {
+    router.post('/twitter/authenticate', middlewares.auth, function(req, res, next) {
         var data = req.body;
         var username = data.username || '';
         var twitterAuthToken = data.twitterAuthToken || '';
@@ -113,12 +107,10 @@ module.exports = function(passThrough) {
                 req.session.user = user;
                 res.json(helpers.outputResult(user));
             }
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/twitter/create', middlewares.auth, function(req, res) {
+    router.post('/twitter/create', middlewares.auth, function(req, res, next) {
         var data = req.body;
         var username = data.username || '';
         var password = data.password || '';
@@ -157,12 +149,10 @@ module.exports = function(passThrough) {
         }).then(function(user) {
             req.session.user = user;
             res.json(helpers.outputResult(user));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/updateAPNS', middlewares.session, function(req, res) {
+    router.post('/updateAPNS', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var token = req.body.token;
 
@@ -177,12 +167,10 @@ module.exports = function(passThrough) {
             } else {
                 res.json(helpers.outputError('APNS could not be updated'));
             }
-        }).catch(function(err) {
-            res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/update/:property', middlewares.session, function(req, res) {
+    router.post('/update/:property', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var property = req.params.property;
         var value = req.body.value;
@@ -198,14 +186,13 @@ module.exports = function(passThrough) {
             } else {
                 res.json(helpers.outputError('Property could not be updated'));
             }
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/upload/profilePicture', middlewares.uploadSession, function(req, res) {
+    router.post('/upload/profilePicture', middlewares.uploadSession, function(req, res, next) {
         var user = req.session.user;
         var photoSignature = helpers.randomStr(27);
+        logger.debug('created signature for photo: ' + photoSignature);
         userModel.updatePropertyForUser('photoSignature', photoSignature, user.id).then(function(result) {
             req.session.user = result;
 
@@ -213,17 +200,18 @@ module.exports = function(passThrough) {
             req.pipe(fstream);
 
             fstream.on('error', function(err) {
-                console.log(err);
-               res.send(500, err);
+                logger.error(err);
+                res.send(500, err);
             });
 
             fstream.on('finish', function() {
+                logger.debug('finished uploading photo');
                 res.json(helpers.outputResult(result));
             });
-        });
+        }).catch(next);
     });
 
-    router.get('/:userID/comments', middlewares.auth, function(req, res) {
+    router.get('/:userID/comments', middlewares.auth, function(req, res, next) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
@@ -232,12 +220,10 @@ module.exports = function(passThrough) {
 
         userModel.fetchUserSelectiveTimeline(userID, (user ? user.id : -1)).then(function(results) {
             res.json(helpers.outputResult(results));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:userID/follow', middlewares.session, function(req, res) {
+    router.get('/:userID/follow', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
@@ -250,12 +236,10 @@ module.exports = function(passThrough) {
             }
 
             res.json(helpers.outputResult({}));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:userID/likes', middlewares.auth, function(req, res) {
+    router.get('/:userID/likes', middlewares.auth, function(req, res, next) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
@@ -264,12 +248,10 @@ module.exports = function(passThrough) {
 
         userModel.fetchUserLikes(userID, (user ? user.id : -1)).then(function(results) {
             res.json(helpers.outputResult(results));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:userID/followers', middlewares.auth, function(req, res) {
+    router.get('/:userID/followers', middlewares.auth, function(req, res, next) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
@@ -278,12 +260,10 @@ module.exports = function(passThrough) {
 
         userModel.listFollowers(userID, (user ? user.id : -1)).then(function(results) {
             res.json(helpers.outputResult(results));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:userID/following', middlewares.auth, function(req, res) {
+    router.get('/:userID/following', middlewares.auth, function(req, res, next) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
@@ -292,12 +272,10 @@ module.exports = function(passThrough) {
 
         userModel.listFollowing(userID, (user ? user.id : -1)).then(function(results) {
             res.json(helpers.outputResult(results));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:userID/profilePicture', middlewares.auth, function(req, res) {
+    router.get('/:userID/profilePicture', middlewares.auth, function(req, res, next) {
         var userID = req.params.userID;
         helpers.checkID(userID).then(function(userID) {
             var file = userModel.getUserDir(userID) + 'profilePicture.png';
@@ -309,12 +287,10 @@ module.exports = function(passThrough) {
                     res.end();
                 }
             });
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:userID/streams', middlewares.auth, function(req, res) {
+    router.get('/:userID/streams', middlewares.auth, function(req, res, next) {
         var userID = req.params.userID;
         if (!userID) {
             return res.json(helpers.outputError('Missing Paramater', false, req));
@@ -322,12 +298,10 @@ module.exports = function(passThrough) {
 
         streamModel.fetchStreamsForUserID(userID).then(function(results) {
             res.json(helpers.outputResult(results));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:userID/stats', middlewares.auth, function(req, res) {
+    router.get('/:userID/stats', middlewares.auth, function(req, res, next) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
@@ -355,12 +329,10 @@ module.exports = function(passThrough) {
             items.isFollower = values[4];
         }).then(function() {
             res.json(helpers.outputResult(items));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:userID/unfollow', middlewares.session, function(req, res) {
+    router.get('/:userID/unfollow', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
@@ -369,9 +341,7 @@ module.exports = function(passThrough) {
 
         userModel.unfollowUser(user.id, userID).then(function(result) {
             res.json(helpers.outputResult({}));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
     return router;

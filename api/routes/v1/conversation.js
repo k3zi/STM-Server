@@ -14,7 +14,7 @@ module.exports = function(passThrough) {
     var conversationModel = require(config.directory.api + '/models/conversation')(passThrough);
     var relationships = require(config.directory.api + '/models/relationships')(passThrough);
 
-    router.post('/create', middlewares.session, function(req, res) {
+    router.post('/create', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var userList = req.body.users;
 
@@ -25,33 +25,27 @@ module.exports = function(passThrough) {
         userList.push(user.id);
         conversationModel.create(userList).then(function(convo) {
             res.json(helpers.outputResult(convo));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/list', middlewares.session, function(req, res) {
+    router.get('/list', middlewares.session, function(req, res, next) {
         var user = req.session.user;
 
         conversationModel.fetchConversationsForUserID(user.id).then(function(convos) {
             res.json(helpers.outputResult(convos));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:convoID/list', middlewares.session, function(req, res) {
+    router.get('/:convoID/list', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var convoID = req.params.convoID;
 
         conversationModel.fetchConversationMessages(convoID, user.id).then(function(messages) {
             res.json(helpers.outputResult(messages));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/:convoID/send', middlewares.session, function(req, res) {
+    router.post('/:convoID/send', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var convoID = req.params.convoID;
         var text = req.body.text;
@@ -65,9 +59,7 @@ module.exports = function(passThrough) {
             return Promise.all([p1, p2, p3]);
         }).then(function() {
             res.json(helpers.outputResult({}));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
     return router;

@@ -12,7 +12,7 @@ module.exports = function(passThrough) {
     var streamModel = require(config.directory.api + '/models/stream')(passThrough);
     var commentModel = require(config.directory.api + '/models/comment')(passThrough);
 
-    router.post('/', middlewares.auth, function(req, res) {
+    router.post('/', middlewares.auth, function(req, res, next) {
         var user = req.session.user;
         var userID =  (user ? user.id : -1);
         var q = req.body.q;
@@ -28,12 +28,10 @@ module.exports = function(passThrough) {
         }).then(function (results) {
             items = items.concat(results);
             res.json(helpers.outputResult(items));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/followers', middlewares.session, function(req, res) {
+    router.post('/followers', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var q = req.body.q;
 
@@ -43,9 +41,7 @@ module.exports = function(passThrough) {
 
         userModel.searchFollowers(q, user.id).then(function(results) {
             res.json(helpers.outputResult(results));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
     return router;

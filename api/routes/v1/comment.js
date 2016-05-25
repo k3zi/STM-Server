@@ -13,7 +13,7 @@ module.exports = function(passThrough) {
     var commentModel = require(config.directory.api + '/models/comment')(passThrough);
     var relationships = require(config.directory.api + '/models/relationships')(passThrough);
 
-    router.get('/:commentID/like', middlewares.session, function (req, res) {
+    router.get('/:commentID/like', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
@@ -29,11 +29,11 @@ module.exports = function(passThrough) {
         }).catch(next);
     });
 
-    router.get('/:commentID/unlike', middlewares.session, function (req, res, next) {
+    router.get('/:commentID/unlike', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
-            return res.json(helpers.outputError('Missing Paramater', false, req));
+            return res.json(helpers.outputError('Missing Paramater'));
         }
 
         commentModel.unlikeComment(commentID, user.id).then(function (result) {
@@ -41,7 +41,7 @@ module.exports = function(passThrough) {
         }).catch(next);
     });
 
-    router.get('/:commentID/replys', middlewares.auth, function(req, res) {
+    router.get('/:commentID/replys', middlewares.auth, function(req, res, next) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
@@ -50,12 +50,10 @@ module.exports = function(passThrough) {
 
         commentModel.fetchRepliesForComment(commentID, (user ? user.id : -1)).then(function(results) {
             res.json(helpers.outputResult(results));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.post('/:commentID/reply', middlewares.session, function(req, res) {
+    router.post('/:commentID/reply', middlewares.session, function(req, res, next) {
         var user = req.session.user;
 
         var commentID = req.params.commentID;
@@ -79,12 +77,10 @@ module.exports = function(passThrough) {
             return Promise.all([p1, p2, p3, p4]);
         }).then(function() {
             res.json(helpers.outputResult({}));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:commentID/repost', middlewares.session, function (req, res) {
+    router.get('/:commentID/repost', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
@@ -97,23 +93,19 @@ module.exports = function(passThrough) {
             }
 
             res.json(helpers.outputResult({}));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:commentID/unrepost', middlewares.session, function (req, res) {
+    router.get('/:commentID/unrepost', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
-            return res.json(helpers.outputError('Missing Paramater', false, req));
+            return res.json(helpers.outputError('Missing Paramater'));
         }
 
         commentModel.unrepostComment(commentID, user.id).then(function (result) {
             res.json(helpers.outputResult({}));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
     return router;
