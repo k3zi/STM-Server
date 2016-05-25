@@ -195,9 +195,11 @@ module.exports = function(passThrough) {
         logger.debug('created signature for photo: ' + photoSignature);
         userModel.updatePropertyForUser('photoSignature', photoSignature, user.id).then(function(result) {
             req.session.user = result;
+            logger.debug('did update photo signature');
 
+            logger.debug('creating pipe to directory: ' + userModel.getUserDir(user.id) + 'profilePicture.png');
             var fstream = fs.createWriteStream(userModel.getUserDir(user.id) + 'profilePicture.png');
-            logger.debug('created pipe to directory: ' + userModel.getUserDir(user.id) + 'profilePicture.png');
+            logger.debug('piping into stream');
             req.pipe(fstream);
 
             fstream.on('error', function(err) {
