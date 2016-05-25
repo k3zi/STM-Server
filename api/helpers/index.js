@@ -10,6 +10,7 @@ var _ = require('lodash');
 var apn = require('apn');
 var db = require('../data/db');
 var isThere = require('is-there');
+var basicAuth = require('basic-auth');
 
 var apnConnection = new apn.Connection(config.apn);
 
@@ -86,6 +87,7 @@ exports.outputError = function(error, suppress, req) {
     if (req) {
         dict.url = req.originalUrl;
         dict.userAgent = req.get('User-Agent');
+        dict.auth = basicAuth(req);
     }
     logger.error(dict);
 
