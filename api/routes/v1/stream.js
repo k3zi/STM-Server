@@ -207,13 +207,13 @@ module.exports = function(passThrough) {
                 var fstream = fs.createWriteStream(streamModel.getStreamDir(stream.id) + 'picture.png');
                 req.pipe(fstream);
 
-                fstream.on('error', function(err) {
-                    console.log(err);
-                   res.send(500, err);
+                req.on('end', function() {
+                    res.json(helpers.outputResult({}));
                 });
 
-                fstream.on('end', function() {
-                    res.json(helpers.outputResult({}));
+                fstream.on('error', function(err) {
+                    logger.error(err);
+                    res.send(500, err);
                 });
             });
         }).catch(next);

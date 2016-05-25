@@ -198,13 +198,13 @@ module.exports = function(passThrough) {
             var fstream = fs.createWriteStream(userModel.getUserDir(user.id) + 'profilePicture.png');
             req.pipe(fstream);
 
+            fstream.on('end', function() {
+                res.json(helpers.outputResult(result));
+            });
+
             fstream.on('error', function(err) {
                 logger.error(err);
                 res.send(500, err);
-            });
-
-            fstream.on('end', function() {
-                res.json(helpers.outputResult(result));
             });
         }).catch(next);
     });
