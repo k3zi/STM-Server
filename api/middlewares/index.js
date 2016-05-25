@@ -1,7 +1,6 @@
 var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
 var bodyParser = require('body-parser');
-var cookieParser = require('cookie-parser');
 
 module.exports = function(passThrough) {
     var exports = {};
