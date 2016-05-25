@@ -26,23 +26,19 @@ module.exports = function(passThrough) {
             }
 
             res.json(helpers.outputResult({}));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
-    router.get('/:commentID/unlike', middlewares.session, function (req, res) {
+    router.get('/:commentID/unlike', middlewares.session, function (req, res, next) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         commentModel.unlikeComment(commentID, user.id).then(function (result) {
             res.json(helpers.outputResult({}));
-        }).catch(function(err) {
-        	res.json(helpers.outputError(err));
-        });
+        }).catch(next);
     });
 
     router.get('/:commentID/replys', middlewares.auth, function(req, res) {
@@ -110,7 +106,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var commentID = req.params.commentID;
         if (!commentID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         commentModel.unrepostComment(commentID, user.id).then(function (result) {
