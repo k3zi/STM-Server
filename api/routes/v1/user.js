@@ -50,7 +50,7 @@ module.exports = function(passThrough) {
         var password = data.password || '';
 
         if (username.length == 0 || password.length == 0) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.find({username: data.username, password: data.password}).then(function(results) {
@@ -73,7 +73,7 @@ module.exports = function(passThrough) {
         var password = data.password || '';
 
         if (username.length == 0 || password.length == 0) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.find({username: data.username, password: helpers.hashPass(data.password)}).then(function(results) {
@@ -99,7 +99,7 @@ module.exports = function(passThrough) {
         var twitterAuthToken = data.twitterAuthToken || '';
 
         if (username.length == 0 || twitterAuthToken.length == 0) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.find({twitterAuthToken: twitterAuthToken}).then(function(results) {
@@ -167,7 +167,7 @@ module.exports = function(passThrough) {
         var token = req.body.token;
 
         if (!token) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.updateAPNSForUser(token, user.id).then(function(result) {
@@ -187,8 +187,8 @@ module.exports = function(passThrough) {
         var property = req.params.property;
         var value = req.body.value;
 
-        if (!property || !value) {
-            return res.json(helpers.outputError('Missing Paramater'));
+        if (!property || value === undefined) {
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.updatePropertyForUser(property, value, user.id).then(function(result) {
@@ -222,7 +222,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.fetchUserSelectiveTimeline(userID, (user ? user.id : -1)).then(function(results) {
@@ -236,7 +236,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.followUser(user.id, userID).then(function(result) {
@@ -254,7 +254,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.fetchUserLikes(userID, (user ? user.id : -1)).then(function(results) {
@@ -268,7 +268,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.listFollowers(userID, (user ? user.id : -1)).then(function(results) {
@@ -282,7 +282,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.listFollowing(userID, (user ? user.id : -1)).then(function(results) {
@@ -312,7 +312,7 @@ module.exports = function(passThrough) {
     router.get('/:userID/streams', middlewares.auth, function(req, res) {
         var userID = req.params.userID;
         if (!userID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         streamModel.fetchStreamsForUserID(userID).then(function(results) {
@@ -326,7 +326,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         var items = {};
@@ -359,7 +359,7 @@ module.exports = function(passThrough) {
         var user = req.session.user;
         var userID = req.params.userID;
         if (!userID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userModel.unfollowUser(user.id, userID).then(function(result) {

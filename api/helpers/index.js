@@ -81,8 +81,10 @@ exports.now = function() {
     return Math.floor(_.now()/1000);
 }
 
-exports.outputError = function(error, suppress) {
-    logger.error({message: error, trace: new Error().stack});
+exports.outputError = function(error, suppress, req) {
+    var dict = {message: error, trace: new Error().stack};
+    if (req) dict.url = req.originalUrl;
+    logger.error(dict);
 
     return {
         'success': false,

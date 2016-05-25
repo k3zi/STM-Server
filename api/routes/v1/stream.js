@@ -75,7 +75,7 @@ module.exports = function(passThrough) {
         var streamID = req.params.streamID;
 
         if (!streamID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         streamModel.delete(streamID, user.id).then(function() {
@@ -89,7 +89,7 @@ module.exports = function(passThrough) {
         var streamID = req.params.streamID;
 
         if (!streamID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         helpers.checkID(streamID).then(streamModel.streamLastOnline).then(function(lastOnline) {
@@ -131,7 +131,7 @@ module.exports = function(passThrough) {
         var streamID = req.params.streamID;
 
         if (!streamID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         streamModel.findOrCreateStreamSession(streamID, user.id).then(function(session) {
@@ -166,7 +166,7 @@ module.exports = function(passThrough) {
         var xsocket = false;
 
         if (!streamID || !userID || !auth) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         req.on('close', function(){
@@ -208,7 +208,7 @@ module.exports = function(passThrough) {
         var streamID = req.params.streamID;
 
         if (!property || !value || !streamID) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         streamModel.updatePropertyForStream(property, value, streamID, user.id).then(function(result) {

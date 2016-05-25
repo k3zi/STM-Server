@@ -19,7 +19,7 @@ module.exports = function(passThrough) {
         var userList = req.body.users;
 
         if (!userList || !_.isArrayLikeObject(userList)) {
-            return res.json(helpers.outputError('Missing Paramater'));
+            return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
         userList.push(user.id);

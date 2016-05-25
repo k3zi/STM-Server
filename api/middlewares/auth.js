@@ -8,7 +8,7 @@ module.exports = function(passThrough) {
 
     unauthorized = function(req, res) {
         res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-        var result = helpers.outputError('Authorization Required: ' + req.originalUrl);
+        var result = helpers.outputError('Authorization Required', false, req);
         res.status(401).json(result);
     }
 
