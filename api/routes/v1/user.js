@@ -205,16 +205,21 @@ module.exports = function(passThrough) {
 
     router.post('/upload/profilePicture', middlewares.uploadSession, function(req, res) {
         var user = req.session.user;
-        var fstream = fs.createWriteStream(userModel.getUserDir(user.id) + 'profilePicture.png');
-        req.pipe(fstream);
+        var photoSignature = helpers.randomStr(27);
+        userModel.updatePropertyForUser('photoSignature', photoSignature, user.id).then(function(result) {
+            req.session.user = result;
 
-        fstream.on('error', function(err) {
-            console.log(err);
-           res.send(500, err);
-        });
+            var fstream = fs.createWriteStream(userModel.getUserDir(user.id) + 'profilePicture.png');
+            req.pipe(fstream);
 
-        fstream.on('finish', function() {
-            res.json(helpers.outputResult({}));
+            fstream.on('error', function(err) {
+                console.log(err);
+               res.send(500, err);
+            });
+
+            fstream.on('finish', function() {
+                res.json(helpers.outputResult(result));
+            });
         });
     });
 
