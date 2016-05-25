@@ -6,18 +6,10 @@ module.exports = function(passThrough) {
     var exports = {};
     var userModel = require(config.directory.api + '/models/user')(passThrough);
 
-    unauthorized = function(req, res) {
+    unauthorized = function(req, res, message) {
         res.set('WWW-Authenticate', 'Basic realm=Authorization Required');
-        var result = helpers.outputError('Authorization Required', false, req);
+        var result = helpers.outputError(message, false, req);
         res.status(401).json(result);
-    }
-
-    determineAuthentication = function(authorized, req, res, next) {
-        if (authorized) {
-            return next();
-        } else {
-            return unauthorized(req, res);
-        }
     }
 
     reauthenticate = function(req, valid) {
@@ -42,14 +34,22 @@ module.exports = function(passThrough) {
 
     exports.requireAuth = function(req, res, next) {
         var auth = basicAuth(req);
-        var authorized = auth && auth.name && auth.pass && auth.name === config.auth.username && auth.pass === config.auth.password;
+        var providedAuth = auth && auth.name && auth.pass;
+        if (!providedAuth) {
+            return unauthorized(req, res, 'Authorization Required');
+        }
 
-        if (authorized && !req.session.user && req.get('stm-username') && req.get('stm-password')) {
+        var isCorrectAuth = auth.name === config.auth.username && auth.pass === config.auth.password;
+        if (!isCorrectAuth) {
+            return unauthorized(req, res, 'Invalid Authorization');
+        }
+
+        if (!req.session.user && req.get('stm-username') && req.get('stm-password')) {
             reauthenticate(req, function (valid) {
-                determineAuthentication(authorized, req, res, next);
+                next();
             });
         } else {
-            return determineAuthentication(authorized, req, res, next);
+            next();
         }
     }
 
@@ -60,10 +60,10 @@ module.exports = function(passThrough) {
         if (req.get('stm-username') && req.get('stm-password')) {
             reauthenticate(req, function (valid) {
                 if (valid) next();
-                else unauthorized(req, res);
+                else unauthorized(req, res, 'Invalid User Authorization');
             });
         } else {
-            return unauthorized(req, res);
+            return unauthorized(req, res, 'User Authorization Required');
         }
     }
 

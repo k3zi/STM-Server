@@ -30,7 +30,6 @@ module.exports = function(passThrough) {
 
         db.read(userID).then(function(userX) {
             user = userX;
-            logger.debug('found user: ' + user);
 
             socket.join(roomID);
             if (!params.owner) {
@@ -45,7 +44,6 @@ module.exports = function(passThrough) {
         });
 
         socket.on('addComment', function(data, callback) {
-            logger.debug('create comment with text: ' + data.text);
             commentModel.create(data.text).then(function(comment) {
                 comment.user = user;
                 commentSocket.to(roomID).volatile.emit('newComment', comment);
@@ -56,7 +54,6 @@ module.exports = function(passThrough) {
 
                 return Promise.all([p1, p2, p3]);
             }).then(function() {
-                logger.debug('did create comment');
                 callback(helpers.outputResult({}));
             }).catch(function(err) {
             	callback(helpers.outputError(err));
@@ -114,7 +111,7 @@ module.exports = function(passThrough) {
                 if (isVerified) {
                     outputSocket.to(roomID).emit('streamData', data);
                     fs.appendFile(recordFile, new Buffer(data.data, 'base64'), (err) => {
-                        if (err) return logger.debug(err);
+                        if (err) return;
 
                         var wstream = fs.createWriteStream(liveFile);
                         wstream.write(helpers.now().toString());

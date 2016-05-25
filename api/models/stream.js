@@ -187,7 +187,6 @@ module.exports = function(passThrough) {
     exports.findOrCreateStreamSession = function(streamID, userID) {
         return exports.findStreamSession(streamID, userID).then(function(relationship) {
             if (relationship) {
-                logger.debug("didn't find duplicate session");
                 return incrementRelationship(relationship);
             } else {
                 return createStreamSession(streamID, userID);
@@ -258,7 +257,7 @@ module.exports = function(passThrough) {
             + " WHERE id(stream) = {streamID}"
             + " SET stream." + property + " = {value}"
             + " RETURN stream";
-            
+
             return db.query(cypher, {'userID': userID, 'streamID': streamID, 'value': value}).then(function (results) {
                 if (results.length > 0) {
                     return results[0];
