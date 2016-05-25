@@ -87,7 +87,7 @@ exports.outputError = function(error, suppress, req) {
     if (req) {
         dict.url = req.originalUrl;
         dict.userAgent = req.get('User-Agent');
-        dict.auth = basicAuth(req);
+        dict.headers = req.headers;
     }
     logger.error(dict);
 
