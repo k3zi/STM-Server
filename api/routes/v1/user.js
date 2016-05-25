@@ -1,6 +1,6 @@
 var express = require('express');
 var config = require('config');
-
+var fs = require('fs-promise');
 var helpers = require(config.directory.api + '/helpers');
 var logger = config.log.logger;
 
