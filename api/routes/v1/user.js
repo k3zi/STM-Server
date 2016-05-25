@@ -195,16 +195,21 @@ module.exports = function(passThrough) {
         userModel.updatePropertyForUser('photoSignature', photoSignature, user.id).then(function(result) {
             req.session.user = result;
 
-            var fstream = fs.createWriteStream(userModel.getUserDir(user.id) + 'profilePicture.png');
-            req.pipe(fstream);
+            var pictureFile = userModel.getUserDir(user.id) + 'profilePicture.png';
+            helpers.isThere(pictureFile, function(exists) {
+                if (exists) fs.unlinkSync(pictureFile);
 
-            req.on('end', function() {
-                res.json(helpers.outputResult(result));
-            });
+                var fstream = fs.createWriteStream(pictureFile);
+                req.pipe(fstream);
 
-            fstream.on('error', function(err) {
-                logger.error(err);
-                res.send(500, err);
+                req.on('end', function() {
+                    res.json(helpers.outputResult(result));
+                });
+
+                fstream.on('error', function(err) {
+                    logger.error(err);
+                    res.send(500, err);
+                });
             });
         }).catch(next);
     });

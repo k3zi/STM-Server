@@ -204,16 +204,21 @@ module.exports = function(passThrough) {
 
         helpers.checkID(streamID).then(function(streamID) {
             return streamModel.fetchStreamWithID(streamID, user.id).then(function(stream) {
-                var fstream = fs.createWriteStream(streamModel.getStreamDir(stream.id) + 'picture.png');
-                req.pipe(fstream);
+                var pictureFile = streamModel.getStreamDir(stream.id) + 'picture.png';
+                helpers.isThere(pictureFile, function(exists) {
+                    if (exists) fs.unlinkSync(pictureFile);
 
-                req.on('end', function() {
-                    res.json(helpers.outputResult({}));
-                });
+                    var fstream = fs.createWriteStream(pictureFile);
+                    req.pipe(fstream);
 
-                fstream.on('error', function(err) {
-                    logger.error(err);
-                    res.send(500, err);
+                    req.on('end', function() {
+                        res.json(helpers.outputResult({}));
+                    });
+
+                    fstream.on('error', function(err) {
+                        logger.error(err);
+                        res.send(500, err);
+                    });
                 });
             });
         }).catch(next);
