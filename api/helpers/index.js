@@ -83,7 +83,10 @@ exports.now = function() {
 
 exports.outputError = function(error, suppress, req) {
     var dict = {message: error, trace: new Error().stack};
-    if (req) dict.url = req.originalUrl;
+    if (req) {
+        dict.url = req.originalUrl;
+        dict.userAgent = req.get('User-Agent');
+    }
     logger.error(dict);
 
     return {
