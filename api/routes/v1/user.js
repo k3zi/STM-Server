@@ -197,6 +197,7 @@ module.exports = function(passThrough) {
             req.session.user = result;
 
             var fstream = fs.createWriteStream(userModel.getUserDir(user.id) + 'profilePicture.png');
+            logger.debug('created pipe to directory: ' + userModel.getUserDir(user.id) + 'profilePicture.png');
             req.pipe(fstream);
 
             fstream.on('error', function(err) {
