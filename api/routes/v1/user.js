@@ -198,7 +198,7 @@ module.exports = function(passThrough) {
             var fstream = fs.createWriteStream(userModel.getUserDir(user.id) + 'profilePicture.png');
             req.pipe(fstream);
 
-            fstream.on('end', function() {
+            req.on('end', function() {
                 res.json(helpers.outputResult(result));
             });
 
