@@ -192,14 +192,10 @@ module.exports = function(passThrough) {
     router.post('/upload/profilePicture', middlewares.uploadSession, function(req, res, next) {
         var user = req.session.user;
         var photoSignature = helpers.randomStr(27);
-        logger.debug('created signature for photo: ' + photoSignature);
         userModel.updatePropertyForUser('photoSignature', photoSignature, user.id).then(function(result) {
             req.session.user = result;
-            logger.debug('did update photo signature');
 
-            logger.debug('creating pipe to directory: ' + userModel.getUserDir(user.id) + 'profilePicture.png');
             var fstream = fs.createWriteStream(userModel.getUserDir(user.id) + 'profilePicture.png');
-            logger.debug('piping into stream');
             req.pipe(fstream);
 
             fstream.on('error', function(err) {
@@ -207,8 +203,7 @@ module.exports = function(passThrough) {
                 res.send(500, err);
             });
 
-            fstream.on('finish', function() {
-                logger.debug('finished uploading photo');
+            fstream.on('end', function() {
                 res.json(helpers.outputResult(result));
             });
         }).catch(next);

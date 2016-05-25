@@ -212,7 +212,7 @@ module.exports = function(passThrough) {
                    res.send(500, err);
                 });
 
-                fstream.on('finish', function() {
+                fstream.on('end', function() {
                     res.json(helpers.outputResult({}));
                 });
             });
