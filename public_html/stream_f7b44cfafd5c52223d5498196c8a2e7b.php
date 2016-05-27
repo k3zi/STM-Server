@@ -59,6 +59,21 @@ $stuffedRequest = urlencode($stuffedRequest);
     <script type="text/javascript" src="/js/jquery.js"></script>
 	<script type="text/javascript" src="/js/jquery.jplayer.min.js"></script>
     <? if(!$error): ?>
+	<script type="text/javascript">
+	(function() {
+		var app = {
+			launchApp: function() {
+				window.location.replace("streamtome://open-stream?stream=<?=$_GET['streamID']?>");
+				this.timer = setTimeout(this.openWebApp, 1000);
+		    },
+			openWebApp: function() {
+				window.location.replace("http://itunesstorelink/");
+		    }
+		};
+
+		app.launchApp();
+	})();
+	</script>
     <script type="text/javascript">
 		fetchTime = <?=$fetchTime?>;
 
