@@ -64,7 +64,7 @@ $stuffedRequest = urlencode($stuffedRequest);
 		var app = {
 			launchApp: function() {
 				window.location.replace("streamtome://open-stream?stream=<?=$_GET['streamID']?>");
-				this.timer = setTimeout(this.openWebApp, 1000);
+				this.timer = setTimeout(this.openWebApp, 10000);
 		    },
 			openWebApp: function() {
 				window.location.replace("http://itunesstorelink/");
