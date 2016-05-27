@@ -49,7 +49,7 @@ $stuffedRequest = urlencode($stuffedRequest);
 ?>
 
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" prefix="og: http://ogp.me/ns#"><!--<![endif]--><head>
-    <meta name="apple-itunes-app" content="app-id=933037647">
+    <meta name="apple-itunes-app" content="app-id=1109929158">
 
     <meta property="twitter:account_id" content="4503599627426989">
     <title>STM | <?=$name?></title>
@@ -147,7 +147,7 @@ $stuffedRequest = urlencode($stuffedRequest);
             supplied: "m4a"
           });
 
-            redirect('streamtome://stream?id=<?=$_GET['streamID']?>');
+            redirect('streamtome://?type=open-stream&stream=<?=$_GET['streamID']?>');
         });
     </script>
 	<? endif; ?>
