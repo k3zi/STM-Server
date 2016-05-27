@@ -147,7 +147,7 @@ $stuffedRequest = urlencode($stuffedRequest);
             supplied: "m4a"
           });
 
-            redirect('streamtome://?type=open-stream&stream=<?=$_GET['streamID']?>');
+            redirect('streamtome://open-stream?stream=<?=$_GET['streamID']?>');
         });
     </script>
 	<? endif; ?>
