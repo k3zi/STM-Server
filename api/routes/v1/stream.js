@@ -38,6 +38,14 @@ module.exports = function(passThrough) {
         }).catch(next);
     });
 
+    router.get('/:streamID', middlewares.auth, function(req, res, next) {
+        var streamID = req.params.streamID;
+
+        streamModel.fetchStreamWithID(streamID).then(function(stream) {
+            res.json(helpers.outputResult(stream));
+        }).catch(next);
+    });
+
     router.get('/:streamID/comments', middlewares.auth, function(req, res, next) {
         var streamID = req.params.streamID;
 

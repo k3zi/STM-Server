@@ -145,6 +145,8 @@ module.exports = function(passThrough) {
 
     exports.fetchStreamWithID = function(streamID, userID) {
         return helpers.checkID(streamID).then(function(streamID) {
+            if (!userID) return db.read(streamID);
+            
             var cypher = "START x = node({userID})"
             + " MATCH x-[:createdStream]->(stream)"
             + " WHERE id(stream) = {streamID}"
