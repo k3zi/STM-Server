@@ -67,7 +67,7 @@ $stuffedRequest = urlencode($stuffedRequest);
 				this.timer = setTimeout(this.openWebApp, 10000);
 		    },
 			openWebApp: function() {
-				window.location.replace("http://itunesstorelink/");
+				window.location.replace("https://itunes.apple.com/us/app/stm-stream-to-me/id1109929158");
 		    }
 		};
 
