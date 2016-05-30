@@ -50,7 +50,7 @@ config.regex.mentionRegex = /\B@[a-z0-9_-]+/gi;
 config.apn = {};
 config.apn.cert = config.directory.home + '/keychain/production_com.stormedgeapps.streamtome.pem';
 config.apn.key = config.directory.home + '/keychain/production_com.stormedgeapps.streamtome.pkey';
-config.apn.production = false;
+config.apn.production = true;
 
 config.db = {};
 config.db.server = 'http://69.4.80.29:7474';
