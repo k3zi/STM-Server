@@ -172,7 +172,7 @@ module.exports = function(passThrough) {
                 if (!session) return Promise.reject('No session found');
 
                 return streamModel.fetchStreamWithID(streamID).then(function(stream) {
-                    var streamURL = 'http://edgev1.den.echo.liquidcompass.net/KKDAFMAAC';
+                    var streamURL = stream.externalURL;
                     if (streamURL && streamURL.length > 0) {
                         res.redirect(streamURL);
                     } else {
