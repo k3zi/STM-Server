@@ -65,6 +65,8 @@ parseLiveStream = function(item) {
     var stream = item['stream'];
     if (!stream) return undefined;
 
+    if (stream.externalURL && stream.externalURL.length > 0) return stream;
+
     return streamLastOnline(stream.id).then(function(lastOnline) {
         if (lastOnline < 30) {
             stream['user'] = item['user'];
@@ -146,7 +148,7 @@ module.exports = function(passThrough) {
     exports.fetchStreamWithID = function(streamID, userID) {
         return helpers.checkID(streamID).then(function(streamID) {
             if (!userID) return db.read(streamID);
-            
+
             var cypher = "START x = node({userID})"
             + " MATCH x-[:createdStream]->(stream)"
             + " WHERE id(stream) = {streamID}"
