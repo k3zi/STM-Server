@@ -92,13 +92,20 @@ module.exports = function(passThrough) {
             return res.json(helpers.outputError('Missing Paramater', false, req));
         }
 
-        helpers.checkID(streamID).then(streamModel.streamLastOnline).then(function(lastOnline) {
-            if (lastOnline < 10) {
+        helpers.checkID(streamID).then(streamModel.fetchStreamWithID).then(function(stream) {
+            var streamURL = stream.externalURL;
+            if (streamURL && streamURL.length > 0) {
                 res.json(helpers.outputResult({'online': 1}));
-            } else if (lastOnline < 45) {
-                res.json(helpers.outputResult({'online': 2}));
             } else {
-                res.json(helpers.outputResult({'online': 0}));
+                return streamModel.streamLastOnline(stream.id).then(function(lastOnline) {
+                    if (lastOnline < 10) {
+                        res.json(helpers.outputResult({'online': 1}));
+                    } else if (lastOnline < 45) {
+                        res.json(helpers.outputResult({'online': 2}));
+                    } else {
+                        res.json(helpers.outputResult({'online': 0}));
+                    }
+                });
             }
         }).catch(next);
     });
