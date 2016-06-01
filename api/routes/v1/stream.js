@@ -168,13 +168,21 @@ module.exports = function(passThrough) {
         });
 
         helpers.checkID(userID).then(function(userID) {
-            streamModel.findStreamSession(streamID, userID).then(function(session) {
+            return streamModel.findStreamSession(streamID, userID).then(function(session) {
                 if (!session) return Promise.reject('No session found');
-                startStream();
-            }).catch(next);
-        });
 
-        function startStream() {
+                return streamModel.fetchStreamWithID(streamID).then(function(stream) {
+                    var streamURL = 'http://edgev1.den.echo.liquidcompass.net/KKDAFMAAC';
+                    if (streamURL && streamURL.length > 0) {
+                        res.redirect(streamURL);
+                    } else {
+                        startInternalStream();
+                    }
+                });
+            });
+        }).catch(next);
+
+        function startInternalStream() {
             var roomID = streamID + '-audio';
             var xhost = 'http://127.0.0.1:' + passThrough.port + '/output';
             res.setHeader("Content-Type", "audio/aac");
