@@ -71,7 +71,7 @@ module.exports = function(passThrough) {
         mysqlDB = mysql.createConnection(config.mysql);
 
         mysqlDB.connect(function(err) {
-            if(err) {
+            if (err) {
                 logger.error('error when connecting to db:', err);
                 setTimeout(connectMySQL, 2000);
             }
@@ -89,7 +89,7 @@ module.exports = function(passThrough) {
       }
 
       connectMySQL();
-      
+
         var params = socket.handshake.query;
         if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
 
@@ -135,7 +135,7 @@ module.exports = function(passThrough) {
                 imageFile = helpers.md5(imageData) + "_" + helpers.sha1(imageData) + "_" + imageData.length + ".png";
                 var finalImageFile = config.directory.shared_content + "/images/" + imageFile;
                 helpers.isThere(finalImageFile, function(exists) {
-                  if !(exists) {
+                  if (!exists) {
                     var imageStream = fs.createWriteStream(finalImageFile);
                     imageStream.write(imageData);
                     imageStream.end();
