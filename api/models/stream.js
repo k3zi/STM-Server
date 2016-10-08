@@ -99,7 +99,7 @@ module.exports = function(passThrough) {
     exports.delete = function(streamID, userID) {
         return helpers.checkID(streamID).then(function(streamID) {
             var cypher = "START x = node({userID})"
-            + " MATCH x-[:createdStream]->(stream)"
+            + " MATCH (x)-[:createdStream]->(stream)"
             + " WHERE id(stream) = {streamID}"
             + " DETACH DELETE stream";
 
@@ -140,7 +140,7 @@ module.exports = function(passThrough) {
 
     exports.fetchStreamsForUserID = function(userID) {
         return helpers.checkID(userID).then(function(userID) {
-            var cypher = "START x = node({userID}) MATCH x-[:createdStream]->(stream) RETURN stream";
+            var cypher = "START x = node({userID}) MATCH (x)-[:createdStream]->(stream) RETURN stream";
             return db.query(cypher, {'userID': userID});
         });
     }
@@ -150,7 +150,7 @@ module.exports = function(passThrough) {
             if (!userID) return db.read(streamID);
 
             var cypher = "START x = node({userID})"
-            + " MATCH x-[:createdStream]->(stream)"
+            + " MATCH (x)-[:createdStream]->(stream)"
             + " WHERE id(stream) = {streamID}"
             + " RETURN stream";
             return db.query(cypher, {'userID': userID, 'streamID': streamID}).then(function(results) {
@@ -257,7 +257,7 @@ module.exports = function(passThrough) {
     exports.updatePropertyForStream = function(property, value, streamID, userID) {
         return helpers.checkID(streamID).then(function(streamID) {
             var cypher = "START x = node({userID})"
-            + " MATCH x-[:createdStream]->(stream: Stream)"
+            + " MATCH (x)-[:createdStream]->(stream: Stream)"
             + " WHERE id(stream) = {streamID}"
             + " SET stream." + property + " = {value}"
             + " RETURN stream";

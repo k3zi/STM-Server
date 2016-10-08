@@ -6,7 +6,7 @@ config.baseURL = 'https://api.stm.io';
 config.versions = ['/v1', '/v2'];
 
 config.directory = {};
-config.directory.home = "/home/stream";
+config.directory.home = "/home/stm";
 config.directory.api = config.directory.home + "/api";
 config.directory.user_content = config.directory.home + "/user_content";
 config.directory.stream_content = config.directory.home + "/stream_content";
@@ -52,7 +52,7 @@ config.apn.key = config.directory.home + '/keychain/production_com.stormedgeapps
 config.apn.production = true;
 
 config.db = {};
-config.db.server = 'http://69.4.80.29:7474';
+config.db.server = 'https://stm.io:7473';
 config.db.user = 'neo4j';
 config.db.pass = 'gbmpYiJq9f0KOQSjAj';
 config.db.constructLike = function(q) {
@@ -74,6 +74,7 @@ config.test.login = {
     'username': 'apitest',
     'password': 'zx$Peb{A3='
 };
+
 config.test.authRequest = function(request) {
     return request.auth(config.auth.username, config.auth.password);
 }
