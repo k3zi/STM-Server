@@ -65,6 +65,7 @@ config.mysql.host = 'localhost';
 config.mysql.user = 'stream_admin';
 config.mysql.database = 'stream_main';
 config.mysql.password = 'gbmpYiJq9f0KOQSjAj';
+config.mysql.connectionLimit = 30;
 
 config.test = {};
 config.test.session = {

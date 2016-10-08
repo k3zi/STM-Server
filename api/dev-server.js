@@ -10,7 +10,7 @@ var redis = require('socket.io-redis');
 var mysql = require('mysql');
 
 //Misc
-var Promise = require('promise');
+var Promise = require('bluebird');
 
 var config = require('config');
 var db = require('./data/db');

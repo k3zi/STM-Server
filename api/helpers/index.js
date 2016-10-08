@@ -3,7 +3,7 @@ var hasher = require("hashids")(config.hash.salt, config.hash.minLength, config.
 var logger = config.log.logger;
 
 var fs = require('fs');
-var Promise = require('promise');
+var Promise = require('bluebird');
 var md5 = require('md5');
 var crypto = require('crypto');
 var _ = require('lodash');

@@ -1,5 +1,5 @@
 var fs = require('fs-promise');
-var Promise = require('promise');
+var Promise = require('bluebird');
 var config = require('config');
 
 var logger = config.log.logger;
@@ -65,31 +65,6 @@ module.exports = function(passThrough) {
 
     //**************** HOST SOCKET ********************\\
 
-    hostSocket.on('connection', function(socket) {
-      var mysqlDB = false;
-      function connectMySQL() {
-        mysqlDB = mysql.createConnection(config.mysql);
-
-        mysqlDB.connect(function(err) {
-            if (err) {
-                logger.error('error when connecting to db:', err);
-                setTimeout(connectMySQL, 2000);
-            }
-        });
-
-        mysqlDB.on('error', function(err) {
-            logger.error('db error', err);
-
-            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-                connectMySQL();
-            } else {
-                throw err;
-            }
-        });
-      }
-
-      connectMySQL();
-
         var params = socket.handshake.query;
         if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
 
@@ -116,7 +91,7 @@ module.exports = function(passThrough) {
             var imageData = data.image;
             var imageFile = "";
 
-            if (mysqlDB) {
+            if (passThrough.mysql) {
               function updateDB() {
                 var meta = {
                   meta_stream_id: streamID,
@@ -126,13 +101,14 @@ module.exports = function(passThrough) {
                   meta_image_file: imageFile,
                   meta_date: helpers.now()
                 };
-                mysqlDB.query('INSERT INTO stream_meta SET ?', meta, function(err, result) {
-                  callback({err: err, result: result});
+                
+                passThrough.mysql.query('INSERT INTO stream_meta SET ?', meta).then(function (result) {
+                  callback(result);
                 });
               }
 
               if (imageData.length > 0) {
-                imageFile = helpers.md5(imageData) + "_" + helpers.sha1(imageData) + "_" + imageData.length + ".png";
+                imageFile = helpers.md5(imageData) + "_" + helpers.sha1(imageData) + "_" + imageData.length + ".jpg";
                 var finalImageFile = config.directory.shared_content + "/images/" + imageFile;
                 helpers.isThere(finalImageFile, function(exists) {
                   if (!exists) {

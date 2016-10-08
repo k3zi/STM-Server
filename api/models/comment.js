@@ -2,7 +2,7 @@
 /*jslint nomen: true */
 
 var fs = require('fs-promise');
-var Promise = require('promise');
+var Promise = require('bluebird');
 var config = require('config');
 
 var logger = config.log.logger;
