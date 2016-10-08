@@ -21,30 +21,6 @@ module.exports = function(passThrough) {
     var relationships = require(config.directory.api + '/models/relationships')(passThrough)
 
     commentSocket.on('connection', function(socket) {
-      var mysqlDB = false;
-      function connectMySQL() {
-        mysqlDB = mysql.createConnection(config.mysql);
-
-        mysqlDB.connect(function(err) {
-            if(err) {
-                logger.error('error when connecting to db:', err);
-                setTimeout(connectMySQL, 2000);
-            }
-        });
-
-        mysqlDB.on('error', function(err) {
-            logger.error('db error', err);
-
-            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-                connectMySQL();
-            } else {
-                throw err;
-            }
-        });
-      }
-
-      connectMySQL();
-
         var params = socket.handshake.query;
         if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
 
@@ -90,6 +66,30 @@ module.exports = function(passThrough) {
     //**************** HOST SOCKET ********************\\
 
     hostSocket.on('connection', function(socket) {
+      var mysqlDB = false;
+      function connectMySQL() {
+        mysqlDB = mysql.createConnection(config.mysql);
+
+        mysqlDB.connect(function(err) {
+            if(err) {
+                logger.error('error when connecting to db:', err);
+                setTimeout(connectMySQL, 2000);
+            }
+        });
+
+        mysqlDB.on('error', function(err) {
+            logger.error('db error', err);
+
+            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                connectMySQL();
+            } else {
+                throw err;
+            }
+        });
+      }
+
+      connectMySQL();
+      
         var params = socket.handshake.query;
         if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
 
