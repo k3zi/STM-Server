@@ -3,8 +3,7 @@ var config = {};
 
 config.baseURL = 'https://api.stm.io';
 
-config.versions = [];
-config.versions.push('/v1');
+config.versions = ['/v1', '/v2'];
 
 config.directory = {};
 config.directory.home = "/home/stream";
