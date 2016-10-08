@@ -71,3 +71,5 @@ passThrough.middlewares = middlewares;
 for (var k in config.versions) {
     app.use(config.versions[k], require('./routes' + config.versions[k])(passThrough));
 }
+
+app.use('/github-hook', hookshot('refs/heads/master', 'git pull && make'));
