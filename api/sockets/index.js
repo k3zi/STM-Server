@@ -126,7 +126,7 @@ module.exports = function(passThrough) {
                   meta_image_file: imageFile,
                   meta_date: helpers.now()
                 };
-                connection.query('INSERT INTO stream_meta SET ?', meta, function(err, result) {
+                mysqlDB.query('INSERT INTO stream_meta SET ?', meta, function(err, result) {
                   callback({err: err, result: result});
                 });
               }
