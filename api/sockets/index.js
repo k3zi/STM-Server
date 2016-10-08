@@ -5,6 +5,7 @@ var config = require('config');
 var logger = config.log.logger;
 var helpers = require('../helpers');
 var db = require('../data/db');
+var mysql = require('mysql');
 var _ = require('lodash');
 
 getStreamDir = function(streamID) {
@@ -20,6 +21,30 @@ module.exports = function(passThrough) {
     var relationships = require(config.directory.api + '/models/relationships')(passThrough)
 
     commentSocket.on('connection', function(socket) {
+      var mysqlDB = false;
+      function connectMySQL() {
+        mysqlDB = mysql.createConnection(config.mysql);
+
+        mysqlDB.connect(function(err) {
+            if(err) {
+                logger.error('error when connecting to db:', err);
+                setTimeout(connectMySQL, 2000);
+            }
+        });
+
+        mysqlDB.on('error', function(err) {
+            logger.error('db error', err);
+
+            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+                connectMySQL();
+            } else {
+                throw err;
+            }
+        });
+      }
+
+      connectMySQL();
+
         var params = socket.handshake.query;
         if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
 
@@ -87,7 +112,43 @@ module.exports = function(passThrough) {
             wstream.write(JSON.stringify(data));
             wstream.end();
             commentSocket.to(commentRoomID).volatile.emit('didUpdateMetadata', {});
+
+            var imageData = data.image;
+            var imageFile = "";
+
+            if (mysqlDB) {
+              function updateDB() {
+                var meta = {
+                  meta_stream_id: streamID,
+                  meta_album: data.album,
+                  meta_artist: data.artist,
+                  meta_title: data.title,
+                  meta_image_file: imageFile,
+                  meta_date: helpers.now()
+                };
+                connection.query('INSERT INTO stream_meta SET ?', meta, function(err, result) {
+                  callback({err: err, result: result});
+                });
+              }
+
+              if (imageData.length > 0) {
+                imageFile = helpers.md5(imageData) + "_" + helpers.sha1(imageData) + "_" + imageData.length + ".png";
+                var finalImageFile = config.directory.shared_content + "/images/" + imageFile;
+                helpers.isThere(finalImageFile, function(exists) {
+                  if !(exists) {
+                    var imageStream = fs.createWriteStream(finalImageFile);
+                    imageStream.write(imageData);
+                    imageStream.end();
+                  }
+
+                  updateDB();
+                });
+              } else {
+                updateDB();
+              }
+          } else {
             callback({});
+          }
         });
 
         socket.on('updateHex', function(data, callback) {

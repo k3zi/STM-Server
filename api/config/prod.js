@@ -10,6 +10,7 @@ config.directory.home = "/home/stm";
 config.directory.api = config.directory.home + "/api";
 config.directory.user_content = config.directory.home + "/user_content";
 config.directory.stream_content = config.directory.home + "/stream_content";
+config.directory.shared_content = config.directory.home + "/shared_content";
 
 config.log = {};
 config.log.level = 'debug';
@@ -58,6 +59,12 @@ config.db.pass = 'gbmpYiJq9f0KOQSjAj';
 config.db.constructLike = function(q) {
     return  "=~ '(?i).*" + q + ".*'";
 }
+
+config.mysql = {};
+config.mysql.host = 'localhost';
+config.mysql.user = 'stream_admin';
+config.mysql.database = 'stream_main';
+config.mysql.password = 'gbmpYiJq9f0KOQSjAj';
 
 config.test = {};
 config.test.session = {

@@ -34,34 +34,6 @@ var hostSocket = io.of('/host');
 var outputSocket = io.of('/output');
 var commentSocket = io.of('/comment');
 
-function connectMySQL() {
-  mysqlDB = mysql.createConnection({
-    host: 'localhost',
-    user: 'stream_admin',
-    database: 'stream_main',
-    password: 'gbmpYiJq9f0KOQSjAj'
-  });
-
-  mysqlDB.connect(function(err) {
-      if(err) {
-          logger.error('error when connecting to db:', err);
-          setTimeout(connectMySQL, 2000);
-      }
-  });
-
-  mysqlDB.on('error', function(err) {
-      logger.error('db error', err);
-
-      if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-          connectMySQL();
-      } else {
-          throw err;
-      }
-  });
-}
-
-connectMySQL();
-
 app.use(require('express-json-promise')());
 
 var passThrough = {hostSocket: hostSocket, outputSocket: outputSocket, commentSocket: commentSocket, port: process.argv[3]};
