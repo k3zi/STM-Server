@@ -73,4 +73,5 @@ for (var k in config.versions) {
     app.use(config.versions[k], require('./routes' + config.versions[k])(passThrough));
 }
 
+var hookshot = require('hookshot');
 app.use('/github-hook', hookshot('refs/heads/master', 'git pull && make'));
