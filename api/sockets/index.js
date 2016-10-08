@@ -64,7 +64,7 @@ module.exports = function(passThrough) {
     });
 
     //**************** HOST SOCKET ********************\\
-
+    hostSocket.on('connection', function(socket) {
         var params = socket.handshake.query;
         if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
 
