@@ -91,40 +91,36 @@ module.exports = function(passThrough) {
             var imageData = data.image;
             var imageFile = "";
 
-            if (passThrough.mysql) {
-              function updateDB() {
-                var meta = {
-                  meta_stream_id: streamID,
-                  meta_album: data.album,
-                  meta_artist: data.artist,
-                  meta_title: data.title,
-                  meta_image_file: imageFile,
-                  meta_date: helpers.now()
-                };
-                
-                passThrough.mysql.query('INSERT INTO stream_meta SET ?', meta).then(function (result) {
-                  callback(result);
-                });
-              }
+            function updateDB() {
+              var meta = {
+                meta_stream_id: streamID,
+                meta_album: data.album,
+                meta_artist: data.artist,
+                meta_title: data.title,
+                meta_image_file: imageFile,
+                meta_date: helpers.now()
+              };
 
-              if (imageData.length > 0) {
-                imageFile = helpers.md5(imageData) + "_" + helpers.sha1(imageData) + "_" + imageData.length + ".jpg";
-                var finalImageFile = config.directory.shared_content + "/images/" + imageFile;
-                helpers.isThere(finalImageFile, function(exists) {
-                  if (!exists) {
-                    var imageStream = fs.createWriteStream(finalImageFile);
-                    imageStream.write(imageData);
-                    imageStream.end();
-                  }
+              passThrough.mysql.query('INSERT INTO stream_meta SET ?', meta).then(function (result) {
+                callback(result);
+              });
+            }
 
-                  updateDB();
-                });
-              } else {
+            if (imageData.length > 0) {
+              imageFile = helpers.md5(imageData) + "_" + helpers.sha1(imageData) + "_" + imageData.length + ".jpg";
+              var finalImageFile = config.directory.shared_content + "/images/" + imageFile;
+              helpers.isThere(finalImageFile, function(exists) {
+                if (!exists) {
+                  var imageStream = fs.createWriteStream(finalImageFile);
+                  imageStream.write(imageData);
+                  imageStream.end();
+                }
+
                 updateDB();
-              }
-          } else {
-            callback({});
-          }
+              });
+            } else {
+              updateDB();
+            }
         });
 
         socket.on('updateHex', function(data, callback) {
