@@ -1,4 +1,5 @@
 process.env.NODE_ENV = process.argv[2];
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
 var http = require('http');
 var express = require('express');
