@@ -112,7 +112,7 @@ module.exports = function(passThrough) {
               helpers.isThere(finalImageFile, function(exists) {
                 if (!exists) {
                   var imageStream = fs.createWriteStream(finalImageFile);
-                  imageStream.write(imageData);
+                  imageStream.write(Buffer.from(imageData, 'base64'));
                   imageStream.end();
                 }
 
