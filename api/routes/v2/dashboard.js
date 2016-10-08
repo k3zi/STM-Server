@@ -12,7 +12,7 @@ module.exports = function(passThrough) {
     var streamModel = require(config.directory.api + '/models/stream')(passThrough);
 
     function fetchMeta(stream) {
-      return passThrough.mysql.query('SELECT * FROM stream_meta WHERE meta_stream_id = ' + stream.id).then(function (rows) {
+      return passThrough.mysql.query('SELECT * FROM stream_meta WHERE meta_stream_id = ' + stream.id + ' ORDER BY meta_id DESC LIMIT 1').then(function (rows) {
         stream.meta = rows.length > 0 ? rows[0] : {};
         return stream;
       });

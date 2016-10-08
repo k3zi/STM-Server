@@ -62,14 +62,14 @@ streamLastOnline = function(streamID) {
 }
 
 parseLiveStream = function(item) {
-    var stream = item['stream'];
+    var stream = item.stream;
     if (!stream) return undefined;
 
     if (stream.externalURL && stream.externalURL.length > 0) return stream;
 
     return streamLastOnline(stream.id).then(function(lastOnline) {
         if (lastOnline < 30) {
-            stream['user'] = item['user'];
+            stream.user = item.user;
             return stream;
         } else {
             return undefined;

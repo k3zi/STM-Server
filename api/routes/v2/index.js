@@ -17,6 +17,18 @@ module.exports = function (passThrough) {
         res.json(result);
     });
 
+    router.get('/resource/:filePath', function(req, res) {
+      var file = config.directory.shared_content + "/images/" + req.params.filePath;
+      helpers.isThere(file, function(exists) {
+          if (exists) {
+              res.sendFile(file);
+          } else {
+              res.status(404);
+              res.end();
+          }
+      });
+    });
+
     // Error Handling
 
     router.use(function(req, res) {
