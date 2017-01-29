@@ -131,20 +131,22 @@ module.exports = function(passThrough) {
         //Hosting
         socket.on('dataForStream', function(data, callback) {
             helpers.isThere(lockFile, function(exists) {
-                if (!exists) return;
+                if (!exists) return callback({'status': 'err', 'error': 'Lock file does not exist.', 'bytes': 0, 'listeners': 0});;
 
                 if (!isVerified) {
                     var securityHash = fs.readFileSync(lockFile, 'utf8');
                     if  (securityHash == givenSecurityHash) {
                         isVerified = true;
                         socket.join(roomID);
+                    } else {
+                        callback({'status': 'err', 'error': 'Could not verify stream source.', 'bytes': 0, 'listeners': 0});
                     }
                 }
 
                 if (isVerified) {
                     outputSocket.to(roomID).emit('streamData', data);
                     fs.appendFile(recordFile, new Buffer(data.data, 'base64'), (err) => {
-                        if (err) return;
+                        if (err) return callback({'status': 'err', 'error': 'Could not append stream data.', 'bytes': 0, 'listeners': 0});
 
                         var wstream = fs.createWriteStream(liveFile);
                         wstream.write(helpers.now().toString());
