@@ -44,6 +44,7 @@ require(config.directory.api + '/sockets')(passThrough);
 var middlewares = require(config.directory.api + '/middlewares')(passThrough);
 passThrough.middlewares = middlewares;
 
+app.use('/.well-known', express.static('/home/stm/.well-known'));
 
 for (var k in config.versions) {
     app.use(config.versions[k], require('./routes' + config.versions[k])(passThrough));
