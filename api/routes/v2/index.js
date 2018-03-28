@@ -31,14 +31,14 @@ module.exports = function (passThrough) {
 
     // Error Handling
 
-    router.use(function(req, res) {
+    router.use(function(req, res, next) {
         var result = helpers.outputError('404: Method Not Found');
         res.status(404).json(result);
     });
 
     router.use(function(error, req, res, next) {
         var result = helpers.outputError(error, false, req);
-        res.json(result);
+        res.status(500).json(result);
     });
 
     return router;

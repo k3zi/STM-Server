@@ -1,5 +1,6 @@
 var config = require('config');
-var hasher = require("hashids")(config.hash.salt, config.hash.minLength, config.hash.characters);
+var Hashids = require('hashids');
+var hasher = new Hashids(config.hash.salt, config.hash.minLength, config.hash.characters);
 var logger = config.log.logger;
 
 var fs = require('fs');
@@ -12,23 +13,22 @@ var db = require('../data/db');
 var isThere = require('is-there');
 var basicAuth = require('basic-auth');
 
-var apnConnection = new apn.Connection(config.apn);
+var apnConnection = new apn.Provider(config.apn);
 
 sendMessageToAPNS = function(message, token, badge) {
     if (!token || token.length == 0) {
         return;
     }
 
-    var myDevice = new apn.Device(token);
-    var note = new apn.Notification();
+    logger.info('sendMessageToAPNS >> ' + token + ' >> ' + message);
 
     note.expiry = Math.floor(Date.now() / 1000) + 3600;
     note.badge = badge || 1;
     note.sound = "default";
     note.alert = message;
 
-    apnConnection.pushNotification(note, myDevice);
-}
+    return apnConnection.send(note, token);
+};
 
 sha1 = function(data) {
     var generator = crypto.createHash('sha1');
@@ -83,17 +83,16 @@ exports.now = function() {
 }
 
 exports.outputError = function(error, suppress, req) {
-    var dict = {message: error, trace: new Error().stack};
+    var dict = typeof error.message !== 'undefined' ? { message: error.message, trace: error.stack } : { message: error };
     if (req) {
         dict.url = req.originalUrl;
         dict.userAgent = req.get('User-Agent');
         dict.headers = req.headers;
     }
     logger.error(dict);
-
     return {
         'success': false,
-        'error': error,
+        'error': dict.message,
         'suppress': suppress || false
     };
 }
@@ -135,10 +134,11 @@ exports.sendMentionsForComment = function(comment, user) {
     return db.query(cypher, {'filteredMentions': filteredMentions, 'userID': user.id}).then(function(results) {
         var apnsMessage = 'Mentioned by @' + user.username + ': "' + comment.text + '"';
 
-        for (var i in results) {
-            var toUser = results[i];
-            sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
-        }
+        logger.info('sendMentionsForComment >> apnsMessage >> ' + apnsMessage);
+        return Promise.map(results, function (toUser) {
+            logger.debug(toUser);
+            return sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
+        });
     });
 }
 
@@ -150,10 +150,11 @@ exports.sendNotificationsForMessage = function(message, convoID, user) {
     return db.query(cypher, {'convoID': convoID, 'userID': user.id}).then(function(results) {
         var apnsMessage = '@' + user.username + ': ' + message.text;
 
-        for (var i in results) {
-            var toUser = results[i];
-            sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
-        }
+        logger.info('sendNotificationsForMessage >> apnsMessage >> ' + apnsMessage);
+        return Promise.map(results, function (toUser) {
+            logger.debug(toUser);
+            return sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
+        });
     });
 }
 
@@ -162,17 +163,21 @@ exports.sendNotificationsForStreamContinue = function(stream, user) {
     + " WHERE id(thisUser) = {userID}"
     + " SET user.badge = user.badge + 1"
     + " RETURN user";
+    logger.debug('sendNotificationsForStreamContinue >> ' + cypher);
     return db.query(cypher, {'userID': user.id}).then(function(results) {
+        logger.info('sendNotificationsForStreamContinue >> results >> ' + results);
+        logger.debug(results);
         var apnsMessage = '@' + user.username + ' continued streaming: ' + stream.name;
 
-        for (var i in results) {
-            var toUser = results[i];
-            sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
-        }
+        logger.info('sendNotificationsForStreamContinue >> apnsMessage >> ' + apnsMessage);
+        return Promise.map(results, function (toUser) {
+            logger.debug(toUser);
+            return sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
+        });
     });
 }
 
-exports.sendNotificationsForStreamCreated = function(stream, user) {
+exports.sendNotificationsForStreamCreated = function (stream, user) {
     var cypher = "MATCH (user: User)-[:follows]->(thisUser: User)"
     + " WHERE id(thisUser) = {userID}"
     + " SET user.badge = user.badge + 1"
@@ -180,10 +185,11 @@ exports.sendNotificationsForStreamCreated = function(stream, user) {
     return db.query(cypher, {'userID': user.id}).then(function(results) {
         var apnsMessage = '@' + user.username + ' created a stream called: ' + stream.name;
 
-        for (var i in results) {
-            var toUser = results[i];
-            sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
-        }
+        logger.info('sendNotificationsForStreamCreated >> apnsMessage >> ' + apnsMessage);
+        return Promise.map(results, function (toUser) {
+            logger.debug(toUser);
+            return sendMessageToAPNS(apnsMessage, toUser.apnsToken, toUser.badge);
+        });
     });
 }
 

@@ -1,1 +1,0 @@
-<h1><?php _e( 'Posted By: '. get_the_author() .'' , 'spyropress' );  ?></h1>

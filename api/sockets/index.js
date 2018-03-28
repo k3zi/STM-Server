@@ -22,7 +22,11 @@ module.exports = function(passThrough) {
 
     commentSocket.on('connection', function(socket) {
         var params = socket.handshake.query;
-        if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
+        if (params.stmHash != config.app.stream.socketAuth) {
+            logger.error('>> comment: User connected with incorrect hash');
+            return socket.disconnect();
+        }
+        logger.info('>> comment: User connected with correct hash');
 
         var streamID = parseInt(params.streamID);
         var userID = parseInt(params.userID);
@@ -36,8 +40,8 @@ module.exports = function(passThrough) {
             if (!params.owner) {
                 var item = {'message': '@' + user.username + ' joined the stream'};
                 item.user = user;
-
                 commentSocket.to(roomID).volatile.emit('item', item);
+                logger.info('>> comment: User joined room: ' + roomID);
             }
         }).catch(function(err) {
             logger.error(err);
@@ -45,7 +49,9 @@ module.exports = function(passThrough) {
         });
 
         socket.on('addComment', function(data, callback) {
+            logger.info('>> comment: User added comment: ' + data.text);
             commentModel.create(data.text).then(function(comment) {
+                logger.info('>> comment: Created comment: ' + comment);
                 comment.user = user;
                 commentSocket.to(roomID).volatile.emit('newComment', comment);
 
@@ -67,6 +73,7 @@ module.exports = function(passThrough) {
     hostSocket.on('connection', function(socket) {
         var params = socket.handshake.query;
         if (params.stmHash != config.app.stream.socketAuth) return socket.disconnect();
+        logger.info('>> host: User connected with correct hash');
 
         var userID = parseInt(params.userID);
         var streamID = parseInt(params.streamID);

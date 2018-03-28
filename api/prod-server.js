@@ -10,7 +10,7 @@ var redis = require('socket.io-redis');
 
 var mysql = require('promise-mysql');
 
-//Misc
+// Misc
 var Promise = require('bluebird');
 
 var config = require('config');
@@ -18,7 +18,7 @@ var db = require('./data/db');
 var logger = config.log.logger;
 
 //************** Let's Connect Everything! **************\\\
-logger.info('Running Fork on Port: %d', process.argv[3]);
+logger.info('Running fork on port: %d', process.argv[3]);
 
 var app = new express();
 app.set('trust proxy', 1);
@@ -28,6 +28,7 @@ var io = sio(server);
 var adapter = redis({ host: '127.0.0.1', port: 6379 });
 io.adapter(adapter);
 
+logger.info('Listen to port: %d', process.argv[3]);
 server.listen(process.argv[3], '127.0.0.1');
 
 var hostSocket = io.of('/host');
@@ -36,10 +37,17 @@ var commentSocket = io.of('/comment');
 
 app.use(require('express-json-promise')());
 
-var passThrough = {hostSocket: hostSocket, outputSocket: outputSocket, commentSocket: commentSocket, port: process.argv[3]};
-passThrough.mysql = mysql.createPool(config.mysql);
+var passThrough = {
+    app: app,
+    hostSocket: hostSocket,
+    outputSocket: outputSocket,
+    commentSocket: commentSocket,
+    port: process.argv[3],
+    mysql: mysql.createPool(config.mysql)
+};
 
 require(config.directory.api + '/sockets')(passThrough);
+logger.info('Added socket routes');
 
 var middlewares = require(config.directory.api + '/middlewares')(passThrough);
 passThrough.middlewares = middlewares;
@@ -50,5 +58,9 @@ for (var k in config.versions) {
     app.use(config.versions[k], require('./routes' + config.versions[k])(passThrough));
 }
 
+logger.info('Added API version routes');
+
 var hookshot = require('hookshot');
 app.use('/github-hook', hookshot('refs/heads/master', 'git pull && make'));
+
+logger.info('Finished setup');

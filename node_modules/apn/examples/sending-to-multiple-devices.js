@@ -1,67 +1,41 @@
 "use strict";
 
-var apn = require ("../index.js");
+/**
 
-var tokens = ["<insert token here>", "<insert token here>"];
+Send an identical notification to multiple devices.
 
-if(tokens[0] === "<insert token here>") {
-	console.log("Please set token to a valid device token for the push notification service");
-	process.exit();
-}
+Possible use cases:
 
-// Create a connection to the service using mostly default parameters.
+ - Breaking news
+ - Announcements
+ - Sport results
+*/
 
-var service = new apn.connection({ production: false });
+const apn = require("apn");
 
-service.on("connected", function() {
-    console.log("Connected");
+let tokens = ["<insert token here>", "<insert token here>"];
+
+let service = new apn.Provider({
+  cert: "certificates/cert.pem",
+  key: "certificates/key.pem",
 });
 
-service.on("transmitted", function(notification, device) {
-    console.log("Notification transmitted to:" + device.token.toString("hex"));
+let note = new apn.Notification({
+	alert:  "Breaking News: I just sent my first Push Notification",
 });
 
-service.on("transmissionError", function(errCode, notification, device) {
-    console.error("Notification caused error: " + errCode + " for device ", device, notification);
-    if (errCode === 8) {
-        console.log("A error code of 8 indicates that the device token is invalid. This could be for a number of reasons - are you using the correct environment? i.e. Production vs. Sandbox");
-    }
+// The topic is usually the bundle identifier of your application.
+note.topic = "<bundle identifier>";
+
+console.log(`Sending: ${note.compile()} to ${tokens}`);
+service.send(note, tokens).then( result => {
+    console.log("sent:", result.sent.length);
+    console.log("failed:", result.failed.length);
+    console.log(result.failed);
 });
 
-service.on("timeout", function () {
-    console.log("Connection Timeout");
-});
 
-service.on("disconnected", function() {
-    console.log("Disconnected from APNS");
-});
-
-service.on("socketError", console.error);
-
-
-// If you plan on sending identical paylods to many devices you can do something like this.
-function pushNotificationToMany() {
-    console.log("Sending the same notification each of the devices with one call to pushNotification.");
-    var note = new apn.notification();
-    note.setAlertText("Hello, from node-apn!");
-    note.badge = 1;
-
-    service.pushNotification(note, tokens);
-}
-
-pushNotificationToMany();
-
-
-// If you have a list of devices for which you want to send a customised notification you can create one and send it to and individual device.
-function pushSomeNotifications() {
-    console.log("Sending a tailored notification to %d devices", tokens.length);
-    tokens.forEach(function(token, i) {
-        var note = new apn.notification();
-        note.setAlertText("Hello, from node-apn! You are number: " + i);
-        note.badge = i;
-
-        service.pushNotification(note, token);
-    });
-}
-
-pushSomeNotifications();
+// For one-shot notification tasks you may wish to shutdown the connection
+// after everything is sent, but only call shutdown if you need your 
+// application to terminate.
+service.shutdown();

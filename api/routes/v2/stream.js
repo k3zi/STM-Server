@@ -57,17 +57,20 @@ module.exports = function(passThrough) {
     router.post('/:streamID/continue', middlewares.session, function(req, res, next) {
         var user = req.session.user;
         var streamID = req.params.streamID;
-
         var streamAlpha = helpers.encodeStr(streamID);
-
+        logger.info('/:streamID/continue >> ' + streamAlpha);
         streamModel.fetchStreamWithID(streamID, user.id).then(function(stream) {
+            logger.debug('/:streamID/continue >> ' + streamAlpha + ' fetchStreamWithID >> ' + stream);
             return streamModel.incrementStream(stream.id).then(function(securityHash) {
+                logger.debug('/:streamID/continue >> ' + streamAlpha + ' fetchStreamWithID >> incrementStream >> ' + securityHash);
                 stream.securityHash = securityHash;
                 return helpers.sendNotificationsForStreamContinue(stream, user);
             }).then(function() {
+                logger.debug('/:streamID/continue >> ' + streamAlpha + ' >> sent notifications');
                 return streamModel.save(stream);
             });
         }).then(function(stream) {
+            logger.debug('/:streamID/continue >> ' + stream + ' >> output');
             res.json(helpers.outputResult(stream));
         }).catch(next);
     });

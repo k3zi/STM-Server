@@ -53,12 +53,12 @@ config.apn.key = config.directory.home + '/keychain/production_com.stormedgeapps
 config.apn.production = true;
 
 config.db = {};
-config.db.server = 'https://stm.io:7473';
+config.db.server = 'https://stm.kez.io:7473';
 config.db.user = 'neo4j';
 config.db.pass = 'gbmpYiJq9f0KOQSjAj';
 config.db.constructLike = function(q) {
     return  "=~ '(?i).*" + q + ".*'";
-}
+};
 
 config.mysql = {};
 config.mysql.host = 'localhost';
@@ -85,10 +85,10 @@ config.test.login = {
 
 config.test.authRequest = function(request) {
     return request.auth(config.auth.username, config.auth.password);
-}
+};
 
 config.test.loginRequest = function(request) {
     return request.auth(config.auth.username, config.auth.password).set('STM-USERNAME', config.test.session.username).set('STM-PASSWORD', config.test.session.password);
-}
+};
 
 module.exports = config;

@@ -2,31 +2,68 @@
 
 node-apn provides a non-blocking, fully managed interface to push notifications to iOS devices using the Apple Push Notification System.
 
-To use the APN Module one must `require('apn')`.
+To begin using the APN Module simply `let apn = require('apn')`.
 
-If you are not familiar with how the Apple Push Notificaion System (APNS) works, it is recommended that you read the [Local and Push Notification Programming Guide][pg] in particular the section on [A Push Notification and Its Path][pnpath].
+If you are not familiar with how the Apple Push Notification System (APNS) works, it is recommended that you read the [Local and Push Notification Programming Guide][programming-guide], in particular the section on [The Path of a Remote Notification][push-path].
 
+## The Basics
 
-### Sending a Push Notification
+### Provider
 
-Sending push notifications is as simple as creating a new connection to APNS using the `Connection` class which should be configured, at minimum, with your applications' certificate and private key. The `Connection` class manages underlying sockets automatically.
+Sending push notifications starts with creating a connection to APNS using the `apn.Provider` class. This must be configured with your credentials issued by Apple - using [Provider Authentication Tokens][provider-auth-tokens] is preferred. The `apn.Provider` will manage underlying sockets automatically. You will never need more than one `apn.Provider` for each application, per-process. They should always be reused rather than recreated to achieve the best possible performance.
 
-Pushing a notification to a device is as simple as creating an instance of `Notification` and configuring its payload. When the payload is prepared and the [Device token](#apn.devicedevicetoken) is ready, call `Connection#pushNotification` with the notification object and the device token you wish to send it to. It is also possible to send the same notification object to multiple devices very efficiently please consult the documentation for `Connection#pushNotification` for more details.
+```javascript
+let provider = new apn.Provider({
+  token: {
+    key: "path/to/key.pem",
+    keyId: "key-id",
+    teamId: "developer-team-id"
+  },
+  production: false
+});
+```
 
-[Connection documentation](connection.markdown)
-[Notification documentation](notification.markdown)
+See the [Provider documentation](provider.markdown) for more information.
 
-The status of the `Connection` object, including underlying connections, can be observed by the events emitted. It is particularly important that you read [Handling Errors](Handling%20Errors.markdown)
+### Device Tokens
 
-### Monitoring the Feedback Service.
+To push a notification you will need a set of device tokens to send a notification to. These are in the form of a hex-encoded string (see example below). Information about getting device tokens can be found in [Registering for Remote Notifications][registration].
 
-Apple provides the "Feedback Service" to inform you when devices you have attempted to send notifications to are no longer reachable - usually because the app has been deleted from the users device. The `Feedback` class will handle connecting to the Feedback service periodically and providing the results to your application for processing.
+```javascript
+let deviceTokens = ["834c8b48e6254e47435d74720b1d4a13e3e57d0bf318333c284c1db8ce8ddc58"];
+```
 
-[Feedback documentation](feedback.markdown)
+### Notification
 
-## apn.Device(deviceToken)
+You will also need something to send to the devices. A push notification takes the form of a JSON payload sent to Apple which is then relayed to the devices. `node-apn` provides the `apn.Notification` class, a programmatic interface to generate notification payloads.
 
-Returns a new `Device` object. `deviceToken` can be a `Buffer` or a `String` containing a "hex" representation of the token. Throws an error if the deviceToken supplied is invalid.
+```javascript
+let notification = new apn.Notification();
+notification.alert = "Hello, world!";
+notification.badge = 1;
+notification.topic = "io.github.node-apn.test-app";
+```
 
-[pg]:https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Introduction.html#//apple_ref/doc/uid/TP40008194-CH1-SW1 "Local and Push Notification Programming Guide"
-[pnpath]:https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/Chapters/ApplePushService.html#//apple_ref/doc/uid/TP40008194-CH100-SW10 "A Push Notification and Its Path"
+See the [Notification documentation](notification.markdown) for more information.
+
+### Sending the notification
+
+After you have created a `Provider` and a `Notification` you can send it to Apple. The module will take care of creating a secure connection, encoding the payload, transmitting it, handling errors and processing the response.
+
+The `send` method returns a [`Promise`][promise] which will be fulfilled when all notifications have been successfully sent, or failed due to an error. The resolved value contains information about successful transmissions as well as details of failures.
+
+```javascript
+provider.send(notification, deviceTokens).then( (response) => {
+		// response.sent: Array of device tokens to which the notification was sent succesfully
+		// response.failed: Array of objects containing the device token (`device`) and either an `error`, or a `status` and `response` from the API
+});
+```
+
+See the [Provider documentation](provider.markdown) for more information.
+
+[programming-guide]:https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/index.html
+[push-path]:https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html#//apple_ref/doc/uid/TP40008194-CH8-SW6
+[provider-auth-tokens]:https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html#//apple_ref/doc/uid/TP40008194-CH11-SW3
+[registration]:https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/HandlingRemoteNotifications.html#//apple_ref/doc/uid/TP40008194-CH6-SW3
+
+[promise]:https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Global_Objects/Promise
